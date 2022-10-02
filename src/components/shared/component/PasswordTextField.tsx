@@ -1,12 +1,11 @@
 import React, { useState, useCallback } from "react";
-import makeStyles from "@mui/styles/makeStyles";
+import { makeStyles, styled } from "@mui/styles";
 import IconButton from "@mui/material/IconButton";
 import InputAdornment from "@mui/material/InputAdornment";
 import MuiTextField from "@mui/material/TextField";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { fieldToTextField, TextFieldProps } from "formik-mui";
-import { styled } from "@mui/styles";
 
 const useStyles = makeStyles(() => ({
   styling: {

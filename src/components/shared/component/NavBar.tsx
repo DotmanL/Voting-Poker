@@ -3,7 +3,7 @@ import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
-import makeStyles from "@mui/styles/makeStyles";
+import { makeStyles } from "@mui/styles";
 import { Typography } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import { Link } from "./Link";
