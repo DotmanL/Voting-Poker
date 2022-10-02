@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, Grid, Typography } from "@mui/material";
+import { Box, Button, Grid, Typography } from "@mui/material";
 import bg1 from "./assets/bg1.svg";
 import teams from "./assets/teams.svg";
 import waveBottom from "./assets/wavesBottom.svg";
@@ -10,7 +10,7 @@ function LandingPage() {
     <Grid
       sx={{
         display: "flex",
-        flexDirection: "column",
+        flexDirection: { md: "row", xs: "column" },
         position: "relative",
         boxShadow: "inset 0 0 0 2000px rgba(255, 255, 255, 0.5)",
         mt: "80px",
@@ -19,40 +19,46 @@ function LandingPage() {
         overflowX: "hidden"
       }}
     >
-      <img
-        src={waveBottom}
-        alt="waves"
-        style={{
-          position: "absolute",
-          opacity: 0.7,
-          bottom: 0,
-          height: "45vh",
-          width: "100%"
-        }}
-      />
+      <Grid sx={{ display: { md: "flex", xs: "none" } }}>
+        <img
+          src={waveBottom}
+          alt="waves"
+          style={{
+            position: "absolute",
+            opacity: 0.7,
+            bottom: 0,
+            height: "45vh",
+            width: "100%"
+          }}
+        />
+      </Grid>
       <Grid
         sx={{
           display: "flex",
-          flexDirection: "row",
+          flexDirection: { md: "row", xs: "column" },
           position: "relative",
           height: "auto"
         }}
       >
         <Grid
           sx={{
-            width: "45%",
-            p: 3
+            width: { md: "45%", xs: "100%" },
+            p: { md: 3, xs: 0.5 }
           }}
         >
-          <Grid sx={{ mt: 15, ml: "15%" }}>
+          <Grid sx={{ mt: { md: 15, xs: 2 }, ml: "15%" }}>
             <Typography
               variant="h2"
-              sx={{ fontSize: "100px", fontWeight: "bold", fontFamily: "Aleo" }}
+              sx={{
+                fontSize: { md: "100px", xs: "30px" },
+                fontWeight: "bold",
+                fontFamily: "Aleo"
+              }}
             >
               Create your
               <Typography
                 sx={{
-                  fontSize: "90px",
+                  fontSize: { md: "90px", xs: "30px" },
                   fontWeight: "bold",
                   fontFamily: "Aleo"
                 }}
@@ -62,7 +68,7 @@ function LandingPage() {
             </Typography>
             <Typography
               sx={{
-                fontSize: "30px",
+                fontSize: { md: "30px", xs: "15px" },
                 fontWeight: 500,
                 fontStyle: "italic",
                 fontFamily: "Montserrat Alternates"
@@ -76,11 +82,11 @@ function LandingPage() {
                 sx={[
                   {
                     mt: 4,
-                    ml: 15,
+                    ml: { md: 15, xs: 2 },
                     background: "#67A3EE",
                     color: "white",
-                    px: 4,
-                    py: 1,
+                    px: { md: 4, xs: 2 },
+                    py: { md: 1, xs: 0.5 },
                     fontSize: "20px"
                   },
                   {
@@ -99,23 +105,36 @@ function LandingPage() {
         <Grid
           sx={{
             disply: "flex",
-            flexDirection: "row",
+            flexDirection: { md: "row", xs: "column" },
             justifyContent: "center",
-            width: "55%"
+            width: { md: "55%", xs: "100%" }
           }}
         >
-          <Grid sx={{ display: "flex", flexDirection: "row", mt: 5 }}>
-            <img
-              style={{ width: "550px", height: "550px", marginTop: "-40px" }}
+          <Grid
+            sx={{
+              display: "flex",
+              flexDirection: { md: "row", xs: "column" },
+              justifyContent: "center",
+              alignItems: "center",
+              mt: { md: 5, xs: 0 }
+            }}
+          >
+            <Box
+              component="img"
+              sx={{
+                width: { md: "550px", xs: "400px" },
+                mt: { md: -2, xs: 1 }
+              }}
               src={teams}
               alt="teams card"
             />
-            <img
-              style={{
-                width: "350px",
-                height: "450px",
-                marginTop: "150px",
-                marginLeft: "-30px"
+
+            <Box
+              component="img"
+              sx={{
+                width: { md: "350px", xs: "400px" },
+                mt: { md: 10, xs: -3 },
+                ml: { md: 10, xs: 0 }
               }}
               src={bg1}
               alt="work planning"

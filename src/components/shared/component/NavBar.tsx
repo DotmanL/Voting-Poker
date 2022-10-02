@@ -164,7 +164,7 @@ export const NavBar: React.FC<NavBarProps> = ({ appName, isHomePage }) => {
                 sx={{
                   fontFamily: "Jost",
                   fontWeight: "bold",
-                  fontSize: "40px",
+                  fontSize: { md: "40px", xs: "20px" },
                   color: "#67A3EE"
                 }}
               >

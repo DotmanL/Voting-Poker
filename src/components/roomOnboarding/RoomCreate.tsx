@@ -47,15 +47,15 @@ function RoomCreate(props: Props) {
     <Grid
       sx={{
         display: "flex",
-        flexDirection: "row",
+        flexDirection: { md: "row", xs: "column" },
         mt: "80px"
       }}
     >
-      <Grid sx={{ width: "40%" }}>
+      <Grid sx={{ width: { md: "40%", xs: "100%" } }}>
         <Typography
           variant="h4"
           sx={{
-            mt: 20,
+            mt: { md: 8, xs: 2 },
             px: 6,
             fontSize: "24px",
             fontWeigth: "bolder"
@@ -120,8 +120,15 @@ function RoomCreate(props: Props) {
           )}
         </Formik>
       </Grid>
-      <Grid sx={{ width: "60%", background: "#67A3EE", height: "100vh" }}>
-        <Grid sx={{ mt: 10 }}>PICTURE</Grid>
+      <Grid
+        sx={{
+          width: { md: "60%", xs: "100%" },
+          mt: 2,
+          background: "#67A3EE",
+          height: "100vh"
+        }}
+      >
+        <Grid sx={{ mt: 10 }}></Grid>
       </Grid>
     </Grid>
   );
