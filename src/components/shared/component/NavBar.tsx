@@ -93,10 +93,10 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-interface NavBarProps {
+type NavBarProps = {
   appName: string;
   isHomePage?: boolean;
-}
+};
 
 export const NavBar: React.FC<NavBarProps> = ({ appName, isHomePage }) => {
   const classes = useStyles();
