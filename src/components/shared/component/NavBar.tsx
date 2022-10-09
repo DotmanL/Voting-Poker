@@ -3,7 +3,6 @@ import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
-import { makeStyles } from "@mui/styles";
 import { Typography } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import { Link } from "./Link";
@@ -73,7 +72,7 @@ export const NavBar = (props: Props) => {
                 sx={{
                   fontFamily: "Jost",
                   fontWeight: "bold",
-                  fontSize: { md: "40px", xs: "28px" },
+                  fontSize: { md: "40px", xs: "24px" },
                   color: "#67A3EE"
                 }}
               >
@@ -147,7 +146,8 @@ export const NavBar = (props: Props) => {
                   {
                     background: "#67A3EE",
                     px: { md: 3, xs: 1.5 },
-                    py: { md: 1, xs: 0.5 }
+                    py: { md: 1, xs: 0.5 },
+                    fontSize: { md: "20px", xs: "13px" }
                   },
                   {
                     "&:hover": {

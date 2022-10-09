@@ -85,7 +85,7 @@ function LandingPage() {
                 sx={[
                   {
                     mt: 4,
-                    ml: { md: 15, xs: 2 },
+                    ml: { md: 5, xs: 0 },
                     background: "#67A3EE",
                     color: "white",
                     px: { md: 4, xs: 2 },
@@ -120,14 +120,15 @@ function LandingPage() {
               flexDirection: { md: "row", xs: "column" },
               justifyContent: "center",
               alignItems: "center",
-              mt: { md: 2, xs: 0 },
+              mt: { md: 2, xs: 4 },
               ml: { md: -2, xs: 1 }
             }}
           >
             <Box
               component="img"
               sx={{
-                width: { md: "550px", xs: "400px" }
+                width: { md: "550px", xs: "400px" },
+                mt: { md: -10, xs: 1 }
               }}
               src={teams}
               alt="teams card"
@@ -137,7 +138,7 @@ function LandingPage() {
               component="img"
               sx={{
                 width: { md: "400px", xs: "300px" },
-                mt: { md: 10, xs: 1 },
+                mt: { md: 25, xs: 1 },
                 ml: { md: -5, xs: 1 }
               }}
               src={bg1}
