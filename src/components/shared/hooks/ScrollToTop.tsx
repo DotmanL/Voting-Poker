@@ -8,7 +8,6 @@ const ScrollToTop = (props: Props) => {
   const { children } = props;
 
   const { pathname } = useLocation();
-  console.log(pathname);
 
   useEffect(() => {
     document.documentElement.scrollTo({

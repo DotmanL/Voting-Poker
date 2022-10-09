@@ -2,7 +2,7 @@ import { createTheme, Theme } from "@mui/material/styles";
 import { lightBlue, red } from "@mui/material/colors";
 
 declare module "@mui/styles/defaultTheme" {
-  interface DefaultTheme extends Theme {}
+  interface DefaultTheme extends Theme { }
 }
 
 const theme = createTheme({
@@ -19,6 +19,7 @@ const theme = createTheme({
   },
   spacing: (value: number) => `${value * 10}px`,
   typography: {
+
     fontFamily: [
       "-apple-system",
       "BlinkMacSystemFont",
@@ -39,7 +40,10 @@ const theme = createTheme({
     fontWeightLight: 300,
     fontWeightRegular: 400,
     fontWeightMedium: 600,
-    fontWeightBold: 900
+    fontWeightBold: 900,
+    button: {
+      textTransform: "none"
+    }
   }
 });
 

@@ -5,40 +5,47 @@ import * as yup from "yup";
 import { Formik, Form, Field, FormikHelpers } from "formik";
 import { InputTextField } from "../shared/component/InputTextField";
 import { IRoom } from "interfaces/Room/IRoom";
+import { VotingType } from "interfaces/Room/IVotingTypes";
 import letsVote from "./assets/wevote.jpg";
+import Spinner from "components/shared/component/Spinner";
 
 const validationSchema = yup.object().shape({
-  roomName: yup
+  name: yup
     .string()
     .required("Room Name is required")
     .min(4, "Minimum of 4 characters"),
-  votingSystem: yup.string().required()
+  votingSystem: yup.string().required("A voting system is required")
 });
 
 type Props = {
   visible?: boolean;
-  isSubmitting?: boolean;
-  onFormSubmitted?: (room: IRoom) => void;
+  isSubmitting: boolean;
+  onFormSubmitted: (room: IRoom) => void;
 };
 
 function RoomCreate(props: Props) {
   const { onFormSubmitted, isSubmitting } = props;
-  const id = uuidv4();
-  console.log(id);
+  const roomId = uuidv4();
 
   const initialValues = {
-    roomName: "",
+    id: roomId,
+    name: "",
     votingSystem: ""
   };
 
   const data = [
-    { type: { votingSystemType: "fibonnacci (0, 1, 2, 3, 5, 8, 13, 21, )" } },
-    { type: { votingSystemType: "random" } }
+    {
+      votingType: VotingType.Fibonnacci,
+      text: "fibonnacci (0, 1, 2, 3, 5, 8, 13, 21, )"
+    },
+    { votingType: VotingType.Random, text: "random" }
   ];
 
   const handleSubmit = useCallback(
     (values: IRoom, formik: FormikHelpers<IRoom>) => {
-      onFormSubmitted && onFormSubmitted(values);
+      onFormSubmitted(values);
+      console.log(values);
+
       formik.setSubmitting(false);
     },
     [onFormSubmitted]
@@ -83,14 +90,14 @@ function RoomCreate(props: Props) {
               <Form>
                 <Field
                   variant="outlined"
-                  id="roomName"
-                  name="roomName"
+                  id="name"
+                  name="name"
                   label="Room Name"
                   component={InputTextField}
-                  value={values.roomName}
+                  value={values.name}
                   onChange={handleChange}
-                  error={touched.roomName && Boolean(errors.roomName)}
-                  helperText={touched.roomName && errors.roomName}
+                  error={touched.name && Boolean(errors.name)}
+                  helperText={touched.name && errors.name}
                 />
                 <Grid sx={{ mt: 2 }}>
                   <Field
@@ -117,9 +124,9 @@ function RoomCreate(props: Props) {
                     error={touched.votingSystem && Boolean(errors.votingSystem)}
                     helperText={touched.votingSystem && errors.votingSystem}
                   >
-                    {data.map((types, i) => (
-                      <MenuItem key={i} value={types.type.votingSystemType}>
-                        {types.type.votingSystemType}
+                    {data.map((type, i) => (
+                      <MenuItem key={i} value={type.votingType}>
+                        {type.text}
                       </MenuItem>
                     ))}
                   </Field>
@@ -155,7 +162,7 @@ function RoomCreate(props: Props) {
                     Create Room
                   </Button>
                 </Grid>
-                {/* {isSubmitting && <Spinner />} */}
+                {isSubmitting && <Spinner />}
               </Form>
             </Grid>
           )}
@@ -164,7 +171,6 @@ function RoomCreate(props: Props) {
       <Grid
         sx={{
           width: { md: "60%", xs: "100%" },
-          mt: { md: 2 },
           background: "#67A3EE",
           height: { md: "100vh", xs: "auto" }
         }}

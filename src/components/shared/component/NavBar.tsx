@@ -52,6 +52,7 @@ export const NavBar = (props: Props) => {
             ? "none"
             : "0 5px 5px -2px rgba(0, 0, 0, 0.2)",
           height: { md: "90px", xs: "80px" },
+          borderBottom: "2px solid #67A3EE",
           p: 2,
           justifyContent: { md: "space-between", xs: "flex-start" }
         }}
@@ -157,7 +158,9 @@ export const NavBar = (props: Props) => {
                   }
                 ]}
               >
-                <Link to="/signup">Sign Up</Link>
+                {/* <Link to="/signup"> */}
+                Sign Up
+                {/* </Link> */}
               </Button>
             </Grid>
           </Grid>

@@ -120,6 +120,7 @@ function LandingPage() {
               flexDirection: { md: "row", xs: "column" },
               justifyContent: "center",
               alignItems: "center",
+              mb: { md: 2, xs: 6 },
               mt: { md: 2, xs: 4 },
               ml: { md: -2, xs: 1 }
             }}
