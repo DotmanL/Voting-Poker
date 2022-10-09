@@ -1,10 +1,11 @@
 import React, { useCallback } from "react";
-import { Grid, MenuItem, Typography } from "@mui/material";
+import { Button, Grid, MenuItem, Typography } from "@mui/material";
 import { v4 as uuidv4 } from "uuid";
 import * as yup from "yup";
 import { Formik, Form, Field, FormikHelpers } from "formik";
 import { InputTextField } from "../shared/component/InputTextField";
 import { IRoom } from "interfaces/Room/IRoom";
+import letsVote from "./assets/letsVote.jpg";
 
 const validationSchema = yup.object().shape({
   roomName: yup
@@ -21,7 +22,7 @@ type Props = {
 };
 
 function RoomCreate(props: Props) {
-  const { onFormSubmitted } = props;
+  const { onFormSubmitted, isSubmitting } = props;
   const id = uuidv4();
   console.log(id);
 
@@ -51,14 +52,22 @@ function RoomCreate(props: Props) {
         mt: "80px"
       }}
     >
-      <Grid sx={{ width: { md: "40%", xs: "100%" } }}>
+      <Grid
+        sx={{
+          flexDirection: "column",
+          width: { md: "40%", xs: "100%" },
+          height: { md: "auto", xs: "50vh" },
+          justifyContent: { xs: "center" }
+        }}
+      >
         <Typography
           variant="h4"
           sx={{
-            mt: { md: 8, xs: 2 },
+            mt: { md: 12, xs: 7 },
             px: 6,
-            fontSize: "24px",
-            fontWeigth: "bolder"
+            fontSize: { md: "24px", xs: "18px" },
+            fontWeigth: "bolder",
+            textAlign: "center"
           }}
         >
           Choose a name and voting system for your poll
@@ -95,8 +104,7 @@ function RoomCreate(props: Props) {
                         transformOrigin: {
                           vertical: "top",
                           horizontal: "left"
-                        },
-                        getContentAnchorEl: null
+                        }
                       }
                     }}
                     id="votingSystem"
@@ -115,6 +123,14 @@ function RoomCreate(props: Props) {
                     ))}
                   </Field>
                 </Grid>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  variant="contained"
+                >
+                  Create Room
+                </Button>
+                {/* {isSubmitting && <Spinner />} */}
               </Form>
             </Grid>
           )}
@@ -123,12 +139,21 @@ function RoomCreate(props: Props) {
       <Grid
         sx={{
           width: { md: "60%", xs: "100%" },
-          mt: 2,
+          mt: { md: 2, xs: -4 },
           background: "#67A3EE",
-          height: "100vh"
+          height: { md: "100vh", xs: "auto" }
         }}
       >
-        <Grid sx={{ mt: 10 }}></Grid>
+        <Grid sx={{ mt: { md: 0, xs: -3 } }}>
+          <img
+            src={letsVote}
+            alt="vote"
+            style={{
+              height: "100vh",
+              width: "100%"
+            }}
+          />
+        </Grid>
       </Grid>
     </Grid>
   );

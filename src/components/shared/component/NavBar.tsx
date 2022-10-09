@@ -7,103 +7,19 @@ import { makeStyles } from "@mui/styles";
 import { Typography } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import { Link } from "./Link";
-import { Navbox } from "./styles/Navbar.styles";
 import { AccountCircle } from "@mui/icons-material";
 import MenuItem from "@mui/material/MenuItem";
 import Menu from "@mui/material/Menu";
 
-const useStyles = makeStyles((theme) => ({
-  appBarHomePage: {
-    top: "0",
-    boxShadow: "none",
-    background: "red",
-    height: "90px",
-    padding: theme.spacing(3, 2),
-    justifyContent: "center",
-    [theme.breakpoints.down("md")]: {
-      height: "60px",
-      padding: theme.spacing(2, 0),
-      borderBottom: "2px solid white"
-    }
-  },
-
-  logoo: {
-    width: "50px",
-    height: "50px",
-    marginTop: "13px",
-    [theme.breakpoints.down("md")]: {
-      width: "30px",
-      height: "30px",
-      marginTop: "2px"
-    }
-  },
-
-  button: {
-    color: theme.palette.background.default,
-    background: theme.palette.primary.main,
-    width: "auto",
-    height: "auto",
-    borderRadius: "15px",
-    padding: theme.spacing(0.3, 2),
-    "&:hover": {
-      background: theme.palette.primary.main,
-      opacity: 0.9
-    }
-  },
-  menuIconDiv: {
-    display: "none",
-    [theme.breakpoints.down("md")]: {
-      display: "flex",
-      flexDirection: "column"
-    }
-  },
-  menuIcon: {
-    display: "none",
-    [theme.breakpoints.down("md")]: {
-      display: "flex",
-      color: "white"
-    }
-  },
-  mobileMenu: {
-    height: "100vh",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center"
-  },
-
-  menuText: {
-    fontSize: theme.spacing(3.5),
-    margin: theme.spacing(2, 0.8),
-    color: "black"
-  },
-  new: {
-    backgroundColor: theme.palette.secondary.main,
-    top: "0",
-    color: "black",
-    height: "90px",
-    padding: theme.spacing(3, 2),
-    justifyContent: "center",
-    boxShadow: "0 5px 5px -2px rgba(0, 0, 0, 0.2)",
-    marginTop: theme.spacing(-0.1),
-    [theme.breakpoints.down("md")]: {
-      height: "60px",
-      padding: theme.spacing(3, 0)
-    }
-  }
-}));
-
-type NavBarProps = {
+type Props = {
   appName: string;
-  isHomePage?: boolean;
 };
 
-export const NavBar: React.FC<NavBarProps> = ({ appName, isHomePage }) => {
-  const classes = useStyles();
+export const NavBar = (props: Props) => {
+  const { appName } = props;
   const [auth] = React.useState(true);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
-  const [mobileMenu, setMobileMenu] = useState(false);
   const [scrolledDownEnough, setScrolledDownEnough] = useState(false);
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -112,13 +28,6 @@ export const NavBar: React.FC<NavBarProps> = ({ appName, isHomePage }) => {
 
   const handleClose = () => {
     setAnchorEl(null);
-  };
-
-  const handleMobileMenu = (
-    event: React.MouseEvent<HTMLButtonElement, MouseEvent>
-  ): void => {
-    event.preventDefault();
-    setMobileMenu(!mobileMenu);
   };
 
   useEffect(() => {
@@ -143,9 +52,9 @@ export const NavBar: React.FC<NavBarProps> = ({ appName, isHomePage }) => {
           boxShadow: !scrolledDownEnough
             ? "none"
             : "0 5px 5px -2px rgba(0, 0, 0, 0.2)",
-          height: "90px",
+          height: { md: "90px", xs: "80px" },
           p: 2,
-          justifyContent: "center"
+          justifyContent: { md: "space-between", xs: "flex-start" }
         }}
         position="fixed"
       >
@@ -154,7 +63,7 @@ export const NavBar: React.FC<NavBarProps> = ({ appName, isHomePage }) => {
             display: "flex",
             flexDirection: "row",
             alignItems: "center",
-            justifyContent: "space-between"
+            justifyContent: { md: "space-between", xs: "flex-start" }
           }}
         >
           <Link to="/">
@@ -164,7 +73,7 @@ export const NavBar: React.FC<NavBarProps> = ({ appName, isHomePage }) => {
                 sx={{
                   fontFamily: "Jost",
                   fontWeight: "bold",
-                  fontSize: { md: "40px", xs: "20px" },
+                  fontSize: { md: "40px", xs: "28px" },
                   color: "#67A3EE"
                 }}
               >
@@ -181,7 +90,7 @@ export const NavBar: React.FC<NavBarProps> = ({ appName, isHomePage }) => {
               alignItems: "center"
             }}
           >
-            <Grid sx={{ ml: 3 }}>
+            <Grid>
               {auth && (
                 <Grid
                   sx={{
@@ -191,7 +100,13 @@ export const NavBar: React.FC<NavBarProps> = ({ appName, isHomePage }) => {
                     alignItems: "center"
                   }}
                 >
-                  <Typography variant="h5" sx={{ mr: 4 }}>
+                  <Typography
+                    variant="h5"
+                    sx={{
+                      mr: { md: 4, xs: 2 },
+                      display: { md: "flex", xs: "none" }
+                    }}
+                  >
                     Ola
                   </Typography>
                   <IconButton
@@ -201,7 +116,7 @@ export const NavBar: React.FC<NavBarProps> = ({ appName, isHomePage }) => {
                     aria-haspopup="true"
                     onClick={handleMenu}
                     color="inherit"
-                    sx={{ mr: 15 }}
+                    sx={{ mr: { md: 15, xs: 2 } }}
                   >
                     <AccountCircle />
                   </IconButton>
@@ -229,7 +144,11 @@ export const NavBar: React.FC<NavBarProps> = ({ appName, isHomePage }) => {
             <Grid>
               <Button
                 sx={[
-                  { background: "#67A3EE", px: 3, py: 1 },
+                  {
+                    background: "#67A3EE",
+                    px: { md: 3, xs: 1.5 },
+                    py: { md: 1, xs: 0.5 }
+                  },
                   {
                     "&:hover": {
                       color: "white",
@@ -242,26 +161,8 @@ export const NavBar: React.FC<NavBarProps> = ({ appName, isHomePage }) => {
               </Button>
             </Grid>
           </Grid>
-
-          <IconButton
-            className={classes.menuIconDiv}
-            onClick={handleMobileMenu}
-            size="large"
-          >
-            {/* {mobileMenu ? <Hamburger hidden={false} /> : <Hamburger />} */}
-          </IconButton>
         </Toolbar>
       </AppBar>
-      {mobileMenu && (
-        <Navbox>
-          <Typography className={classes.menuText} onClick={handleMobileMenu}>
-            <Link to="/signup">Sign Up</Link>
-          </Typography>
-          <Typography className={classes.menuText} onClick={handleMobileMenu}>
-            <Link to="/signin">Sign In</Link>
-          </Typography>
-        </Navbox>
-      )}
     </Grid>
   );
 };

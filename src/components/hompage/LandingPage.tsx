@@ -9,8 +9,8 @@ function LandingPage() {
   return (
     <Grid
       sx={{
-        display: "flex",
         flexDirection: { md: "row", xs: "column" },
+        justifyContent: "flex-start",
         position: "relative",
         boxShadow: "inset 0 0 0 2000px rgba(255, 255, 255, 0.5)",
         mt: "80px",
@@ -42,17 +42,21 @@ function LandingPage() {
       >
         <Grid
           sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: { xs: "center" },
             width: { md: "45%", xs: "100%" },
+            height: { md: "auto", xs: "30vh" },
             p: { md: 3, xs: 0.5 }
           }}
         >
-          <Grid sx={{ mt: { md: 15, xs: 2 }, ml: "15%" }}>
+          <Grid sx={{ mt: { md: 15, xs: 5 }, ml: "5%" }}>
             <Typography
               variant="h2"
               sx={{
                 fontSize: { md: "100px", xs: "30px" },
                 fontWeight: "bold",
-                fontFamily: "Aleo"
+                fontFamily: "Roboto"
               }}
             >
               Create your
@@ -60,7 +64,7 @@ function LandingPage() {
                 sx={{
                   fontSize: { md: "90px", xs: "30px" },
                   fontWeight: "bold",
-                  fontFamily: "Aleo"
+                  fontFamily: "Roboto"
                 }}
               >
                 polls here
@@ -69,9 +73,8 @@ function LandingPage() {
             <Typography
               sx={{
                 fontSize: { md: "30px", xs: "15px" },
-                fontWeight: 500,
-                fontStyle: "italic",
-                fontFamily: "Montserrat Alternates"
+                fontWeight: 400,
+                fontStyle: "italic"
               }}
             >
               Help your team make decisions faster
@@ -104,10 +107,11 @@ function LandingPage() {
         </Grid>
         <Grid
           sx={{
-            disply: "flex",
+            display: "flex",
             flexDirection: { md: "row", xs: "column" },
-            justifyContent: "center",
-            width: { md: "55%", xs: "100%" }
+            justifyContent: "flex-start",
+            width: { md: "55%", xs: "100%" },
+            p: { md: 1, xs: 0.5 }
           }}
         >
           <Grid
@@ -116,14 +120,14 @@ function LandingPage() {
               flexDirection: { md: "row", xs: "column" },
               justifyContent: "center",
               alignItems: "center",
-              mt: { md: 5, xs: 0 }
+              mt: { md: 2, xs: 0 },
+              ml: { md: -2, xs: 1 }
             }}
           >
             <Box
               component="img"
               sx={{
-                width: { md: "550px", xs: "400px" },
-                mt: { md: -2, xs: 1 }
+                width: { md: "550px", xs: "400px" }
               }}
               src={teams}
               alt="teams card"
@@ -132,9 +136,9 @@ function LandingPage() {
             <Box
               component="img"
               sx={{
-                width: { md: "350px", xs: "400px" },
-                mt: { md: 10, xs: -3 },
-                ml: { md: 10, xs: 0 }
+                width: { md: "400px", xs: "300px" },
+                mt: { md: 10, xs: 1 },
+                ml: { md: -5, xs: 1 }
               }}
               src={bg1}
               alt="work planning"

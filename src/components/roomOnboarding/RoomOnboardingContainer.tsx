@@ -6,7 +6,7 @@ import RoomCreate from "./RoomCreate";
 function RoomOnboardingContainer() {
   return (
     <Grid>
-      <NavBar isHomePage={false} appName="Dot Voting" />
+      <NavBar appName="Dot Voting" />
       <RoomCreate />
     </Grid>
   );
