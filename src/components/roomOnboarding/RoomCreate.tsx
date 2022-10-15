@@ -5,16 +5,16 @@ import * as yup from "yup";
 import { Formik, Form, Field, FormikHelpers } from "formik";
 import { InputTextField } from "../shared/component/InputTextField";
 import { IRoom } from "interfaces/Room/IRoom";
-import { VotingType } from "interfaces/Room/IVotingTypes";
+import CircularProgress from "@mui/material/CircularProgress";
 import letsVote from "./assets/wevote.jpg";
-import Spinner from "components/shared/component/Spinner";
+import { votingTypeData } from "api/VotingTypesData";
 
 const validationSchema = yup.object().shape({
   name: yup
     .string()
     .required("Room Name is required")
     .min(4, "Minimum of 4 characters"),
-  votingSystem: yup.string().required("A voting system is required")
+  votingSystem: yup.number().required("A voting system is required")
 });
 
 type Props = {
@@ -30,22 +30,12 @@ function RoomCreate(props: Props) {
   const initialValues = {
     id: roomId,
     name: "",
-    votingSystem: ""
+    votingSystem: 1
   };
-
-  const data = [
-    {
-      votingType: VotingType.Fibonnacci,
-      text: "fibonnacci (0, 1, 2, 3, 5, 8, 13, 21, )"
-    },
-    { votingType: VotingType.Random, text: "random" }
-  ];
 
   const handleSubmit = useCallback(
     (values: IRoom, formik: FormikHelpers<IRoom>) => {
       onFormSubmitted(values);
-      console.log(values);
-
       formik.setSubmitting(false);
     },
     [onFormSubmitted]
@@ -124,7 +114,7 @@ function RoomCreate(props: Props) {
                     error={touched.votingSystem && Boolean(errors.votingSystem)}
                     helperText={touched.votingSystem && errors.votingSystem}
                   >
-                    {data.map((type, i) => (
+                    {votingTypeData.map((type, i) => (
                       <MenuItem key={i} value={type.votingType}>
                         {type.text}
                       </MenuItem>
@@ -160,9 +150,11 @@ function RoomCreate(props: Props) {
                     variant="contained"
                   >
                     Create Room
+                    {isSubmitting && (
+                      <CircularProgress size={24} sx={{ ml: 2 }} />
+                    )}
                   </Button>
                 </Grid>
-                {isSubmitting && <Spinner />}
               </Form>
             </Grid>
           )}

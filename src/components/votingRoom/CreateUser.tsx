@@ -33,9 +33,7 @@ function CreateUser(props: Props) {
 
   const handleSubmit = useCallback(
     (values: IUser, formik: FormikHelpers<IUser>) => {
-      console.log(values);
       onFormSubmitted(values);
-
       formik.setSubmitting(false);
     },
     [onFormSubmitted]

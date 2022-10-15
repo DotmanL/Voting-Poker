@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import Grid from "@mui/material/Grid";
@@ -9,17 +9,22 @@ import { Link } from "./Link";
 import { AccountCircle } from "@mui/icons-material";
 import MenuItem from "@mui/material/MenuItem";
 import Menu from "@mui/material/Menu";
+import { userContext } from "../../../App";
+import { IUser } from "interfaces/User/IUser";
 
 type Props = {
   appName: string;
+  currentUser?: IUser;
 };
 
 export const NavBar = (props: Props) => {
-  const { appName } = props;
-  const [auth] = React.useState(true);
+  const { appName, currentUser } = props;
+  const userData = useContext(userContext);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-
   const [scrolledDownEnough, setScrolledDownEnough] = useState(false);
+  const [user, setUser] = useState<IUser>(
+    currentUser ? currentUser : userData!
+  );
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -30,6 +35,11 @@ export const NavBar = (props: Props) => {
   };
 
   useEffect(() => {
+    if (currentUser) {
+      setUser(currentUser);
+    } else {
+      setUser(userData!);
+    }
     const handleScroll = () => {
       const bodyScrollTop =
         document.documentElement.scrollTop || document.body.scrollTop;
@@ -40,7 +50,7 @@ export const NavBar = (props: Props) => {
     window.addEventListener("scroll", handleScroll, { passive: true });
 
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [scrolledDownEnough]);
+  }, [scrolledDownEnough, currentUser, userData]);
 
   return (
     <Grid>
@@ -91,7 +101,7 @@ export const NavBar = (props: Props) => {
             }}
           >
             <Grid>
-              {auth && (
+              {user && (
                 <Grid
                   sx={{
                     display: "flex",
@@ -107,7 +117,7 @@ export const NavBar = (props: Props) => {
                       display: { md: "flex", xs: "none" }
                     }}
                   >
-                    Ola
+                    Welcome {user?.name}
                   </Typography>
                   <IconButton
                     size="large"

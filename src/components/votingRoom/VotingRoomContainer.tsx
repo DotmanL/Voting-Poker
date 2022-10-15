@@ -1,49 +1,77 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
+import { useQuery } from "react-query";
+import { IUser } from "interfaces/User/IUser";
 import { Grid } from "@mui/material";
 import { IRoom } from "interfaces/Room/IRoom";
-import { useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { NavBar } from "components/shared/component/NavBar";
+import { userContext } from "../../App";
 import { io } from "socket.io-client";
 import VotingRoom from "./VotingRoom";
+import RoomService from "../../api/RoomService";
+import Spinner from "components/shared/component/Spinner";
 
 const socket = io("http://localhost:4000");
 
 console.log(socket);
 
 function VotingRoomContainer() {
-  const navigate = useNavigate();
-  const [roomDetails, setRoomDetails] = useState<IRoom>();
+  // const navigate = useNavigate();
+  const getRoomId = useParams();
+  const roomId = Object.values(getRoomId)[0];
+  const { isLoading, error, data } = useQuery<IRoom | undefined, Error>(
+    "getRoom",
+    async () => RoomService.getRoomDetails(roomId!)
+  );
+  const [roomDetails, setRoomDetails] = useState<IRoom>(data!);
+
   const [votes, setVotes] = useState<any>([]);
+  const user = useContext(userContext);
+  const [currentUser, setCurrentUser] = useState<IUser | null>(user);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(!!user);
 
-  const getRoomDetails = useCallback(() => {
-    const room = localStorage.getItem("room");
-
-    //TODO: updted to check for if not user id stored
-    if (!room) {
-      navigate("/new-room");
-    }
-    const roomData = JSON.parse(room!);
-    setRoomDetails(roomData);
-    return roomData;
-  }, [navigate]);
+  const handleCreateUser = (formData: IUser) => {
+    localStorage.setItem("user", JSON.stringify(formData));
+    const user = localStorage.getItem("user");
+    const userData = JSON.parse(user!);
+    setCurrentUser(userData);
+    setIsModalOpen(false);
+  };
 
   useEffect(() => {
+    if (user) {
+      setIsModalOpen(false);
+    } else {
+      setIsModalOpen(true);
+    }
     const res = socket.on("votesResponse", (data) =>
       setVotes([...votes, data])
     );
     console.log(res);
+    setRoomDetails(data!);
+  }, [votes, user, data]);
 
-    getRoomDetails();
-  }, [getRoomDetails, votes]);
-
-  console.log(votes);
+  if (error) {
+    return <p>{(error as Error)?.message}</p>;
+  }
 
   return (
     <Grid>
-      <NavBar appName={roomDetails?.name!} />
-      {roomDetails && (
+      <NavBar appName={roomDetails?.name!} currentUser={currentUser!} />
+      {isLoading ? (
+        <Spinner />
+      ) : (
         <Grid sx={{ mt: 8 }}>
-          <VotingRoom room={roomDetails} socket={socket} votesCasted={votes} />
+          {roomDetails && (
+            <VotingRoom
+              room={roomDetails}
+              socket={socket}
+              votesCasted={votes}
+              handleCreateUser={handleCreateUser}
+              isModalOpen={isModalOpen}
+              currentUser={currentUser!}
+            />
+          )}
         </Grid>
       )}
     </Grid>
