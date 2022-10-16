@@ -27,7 +27,7 @@ function CreateUser(props: Props) {
   const userId = uuidv4();
 
   const initialValues = {
-    id: userId,
+    userId: userId,
     name: ""
   };
 

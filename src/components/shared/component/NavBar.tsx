@@ -156,6 +156,7 @@ export const NavBar = (props: Props) => {
                 sx={[
                   {
                     background: "#67A3EE",
+                    color: "secondary.main",
                     px: { md: 3, xs: 1.5 },
                     py: { md: 1, xs: 0.5 },
                     fontSize: { md: "20px", xs: "13px" }

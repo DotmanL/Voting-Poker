@@ -11,7 +11,6 @@ function LandingPage() {
       sx={{
         flexDirection: { md: "row", xs: "column" },
         justifyContent: "flex-start",
-        position: "relative",
         boxShadow: "inset 0 0 0 2000px rgba(255, 255, 255, 0.5)",
         mt: "80px",
         p: 0,
@@ -86,7 +85,7 @@ function LandingPage() {
                   {
                     mt: 4,
                     ml: { md: 5, xs: 0 },
-                    background: "#67A3EE",
+                    background: "primary.main",
                     color: "white",
                     px: { md: 4, xs: 2 },
                     py: { md: 1, xs: 0.5 },
@@ -95,7 +94,7 @@ function LandingPage() {
                   {
                     "&:hover": {
                       color: "white",
-                      backgroundColor: "green"
+                      opacity: "0.6"
                     }
                   }
                 ]}

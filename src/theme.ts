@@ -1,17 +1,26 @@
 import { createTheme, Theme } from "@mui/material/styles";
-import { lightBlue, red } from "@mui/material/colors";
+import { red } from "@mui/material/colors";
 
 declare module "@mui/styles/defaultTheme" {
   interface DefaultTheme extends Theme { }
 }
 
 const theme = createTheme({
+  components: {
+    MuiAppBar: {
+      styleOverrides: {
+        colorPrimary: {
+          backgroundColor: "#FFFFFF"
+        }
+      }
+    }
+  },
   palette: {
     primary: {
-      main: "#FFFFFF"
+      main: "#67A3EE"
     },
     secondary: {
-      main: lightBlue[900]
+      main: "#FFFFFF"
     },
     error: {
       main: red[500]

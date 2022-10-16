@@ -6,39 +6,29 @@ import { IRoom } from "interfaces/Room/IRoom";
 import { useParams } from "react-router-dom";
 import { NavBar } from "components/shared/component/NavBar";
 import { userContext } from "../../App";
-import { io } from "socket.io-client";
 import VotingRoom from "./VotingRoom";
 import RoomService from "../../api/RoomService";
 import Spinner from "components/shared/component/Spinner";
+import { IVotingDetails } from "interfaces/User/IVotingDetails";
 
-const getBaseUrl = () => {
-  let url;
-  switch (process.env.NODE_ENV) {
-    case "production":
-      url = "https://dotvoting.onrender.com";
-      break;
-    case "development":
-    default:
-      url = "http://localhost:4000";
-  }
-
-  return url;
+type Props = {
+  socket: any;
 };
 
-const socket = io(getBaseUrl());
-
-console.log(socket);
-
-function VotingRoomContainer() {
+function VotingRoomContainer(props: Props) {
+  const { socket } = props;
   // const navigate = useNavigate();
   const getRoomId = useParams();
   const roomId = Object.values(getRoomId)[0];
-  const { isLoading, error, data } = useQuery<IRoom | undefined, Error>(
-    "getRoom",
-    async () => RoomService.getRoomDetails(roomId!)
+  const {
+    isLoading,
+    error,
+    data: roomData
+  } = useQuery<IRoom | undefined, Error>("getRoom", async () =>
+    RoomService.getRoomDetails(roomId!)
   );
-  const [roomDetails, setRoomDetails] = useState<IRoom>(data!);
 
+  const [roomDetails, setRoomDetails] = useState<IRoom>(roomData!);
   const [votes, setVotes] = useState<any>([]);
   const user = useContext(userContext);
   const [currentUser, setCurrentUser] = useState<IUser | null>(user);
@@ -58,12 +48,11 @@ function VotingRoomContainer() {
     } else {
       setIsModalOpen(true);
     }
-    const res = socket.on("votesResponse", (data) =>
-      setVotes([...votes, data])
-    );
-    console.log(res);
-    setRoomDetails(data!);
-  }, [votes, user, data]);
+    socket.on("votesResponse", (userVotingDetails: IVotingDetails) => {
+      setVotes(userVotingDetails);
+    });
+    setRoomDetails(roomData!);
+  }, [socket, user, roomData]);
 
   if (error) {
     return <p>{(error as Error)?.message}</p>;
@@ -71,7 +60,7 @@ function VotingRoomContainer() {
 
   return (
     <Grid>
-      <NavBar appName={roomDetails?.name!} currentUser={currentUser!} />
+      <NavBar appName={roomDetails?.name} currentUser={currentUser!} />
       {isLoading ? (
         <Spinner />
       ) : (

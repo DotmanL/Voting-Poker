@@ -1,0 +1,77 @@
+import React from "react";
+import { IRoom } from "interfaces/Room/IRoom";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import Paper from "@mui/material/Paper";
+import Button from "@mui/material/Button";
+import { Link } from "components/shared/component/Link";
+
+type Props = {
+  allRooms: IRoom[];
+};
+
+function RoomsTable(props: Props) {
+  const { allRooms } = props;
+
+  const handleJoinRoom = (roomDetails: IRoom) => {
+    localStorage.setItem("room", JSON.stringify(roomDetails));
+  };
+
+  return (
+    <TableContainer component={Paper}>
+      <Table aria-label="simple table">
+        <TableHead>
+          <TableRow>
+            <TableCell>No</TableCell>
+            <TableCell align="left">Room Name</TableCell>
+            <TableCell align="left"> </TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {allRooms.map((row, i) => (
+            <TableRow
+              key={row.roomId}
+              sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+            >
+              <TableCell component="th" scope="row">
+                {i}
+              </TableCell>
+              <TableCell align="left">{row.name}</TableCell>
+              <TableCell align="left">
+                <Link
+                  to={`/room/${row.roomId}`}
+                  onClick={() => handleJoinRoom(row)}
+                >
+                  <Button
+                    variant="contained"
+                    sx={[
+                      {
+                        background: "primary.main",
+                        color: "white",
+                        fontSize: "14px"
+                      },
+                      {
+                        "&:hover": {
+                          color: "white",
+                          opacity: "0.6"
+                        }
+                      }
+                    ]}
+                  >
+                    JOIN
+                  </Button>
+                </Link>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+}
+
+export default RoomsTable;

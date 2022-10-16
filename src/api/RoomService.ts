@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { toast } from "react-toastify";
 import { IRoom } from '../interfaces/Room/IRoom';
 
 const getBaseUrl = () => {
@@ -22,10 +23,20 @@ const apiClient = axios.create({
   },
 });
 
+const getRooms = async () => {
+  const response = await apiClient.get<IRoom[]>('getRooms')
+  return response.data
+}
+
 const createRoom = async (formData: IRoom) => {
-  const body = JSON.stringify(formData)
-  const response = await apiClient.post<IRoom>('createRoom', body);
-  return response.status
+  try {
+    const body = JSON.stringify(formData)
+    const response = await apiClient.post<IRoom>('createRoom', body);
+    toast.success('Room created successfully')
+    return response.status
+  } catch (err: any) {
+    console.error(err.message)
+  }
 };
 
 const getRoomDetails = async (id: string) => {
@@ -40,6 +51,7 @@ const getRoomDetails = async (id: string) => {
 
 export const RoomService = {
   createRoom,
+  getRooms,
   getRoomDetails
 };
 

@@ -6,13 +6,32 @@ import { IUser } from "interfaces/User/IUser";
 import ScrollToTop from "components/shared/hooks/ScrollToTop";
 import Layout from "./components/layout/Layout";
 import { QueryClient, QueryClientProvider } from "react-query";
+import { ToastContainer, Zoom } from "react-toastify";
+import { io } from "socket.io-client";
 import HomePageContainer from "components/hompage/HomePageContainer";
 import NotFoundContainer from "components/shared/NotFoundContainer";
 import VotingRoomContainer from "components/votingRoom/VotingRoomContainer";
 import RoomOnboardingContainer from "components/roomOnboarding/RoomOnboardingContainer";
+import "react-toastify/dist/ReactToastify.css";
 
 const queryClient = new QueryClient();
 export const userContext = createContext<IUser | null>(null);
+
+const getBaseUrl = () => {
+  let url;
+  switch (process.env.NODE_ENV) {
+    case "production":
+      url = "https://dotvoting.onrender.com";
+      break;
+    case "development":
+    default:
+      url = "http://localhost:4000";
+  }
+
+  return url;
+};
+
+const socket = io(getBaseUrl());
 
 function App() {
   useEffect(() => {
@@ -27,12 +46,21 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <userContext.Provider value={currentUser!}>
         <Grid>
+          <ToastContainer
+            style={{ marginTop: "80px" }}
+            closeOnClick
+            draggable
+            transition={Zoom}
+          />
           <ScrollToTop>
             <Routes>
               <Route path="/" element={<Layout />}>
                 <Route index element={<HomePageContainer />} />
                 <Route path="new-room" element={<RoomOnboardingContainer />} />
-                <Route path="room/:roomId" element={<VotingRoomContainer />} />
+                <Route
+                  path="room/:roomId"
+                  element={<VotingRoomContainer socket={socket} />}
+                />
 
                 <Route path="*" element={<NotFoundContainer />} />
               </Route>

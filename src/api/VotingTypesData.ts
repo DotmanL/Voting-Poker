@@ -1,10 +1,10 @@
-import { VotingType } from "interfaces/Room/IVotingTypes";
+import { VotingTypes } from "interfaces/Room/VotingTypes";
 
 export const votingTypeData = [
   {
-    votingType: VotingType.Fibonnacci,
+    votingType: VotingTypes.Fibonnacci,
     text: "fibonnacci (0, 1, 2, 3, 5, 8, 13, 21, )"
   },
-  { votingType: VotingType.Random, text: "random" }
+  { votingType: VotingTypes.Random, text: "random" }
 ];
 

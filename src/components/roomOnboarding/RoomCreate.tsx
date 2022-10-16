@@ -8,6 +8,7 @@ import { IRoom } from "interfaces/Room/IRoom";
 import CircularProgress from "@mui/material/CircularProgress";
 import letsVote from "./assets/wevote.jpg";
 import { votingTypeData } from "api/VotingTypesData";
+import RoomsTable from "./RoomsTable";
 
 const validationSchema = yup.object().shape({
   name: yup
@@ -21,14 +22,15 @@ type Props = {
   visible?: boolean;
   isSubmitting: boolean;
   onFormSubmitted: (room: IRoom) => void;
+  allRooms: IRoom[];
 };
 
 function RoomCreate(props: Props) {
-  const { onFormSubmitted, isSubmitting } = props;
+  const { onFormSubmitted, isSubmitting, allRooms } = props;
   const roomId = uuidv4();
 
   const initialValues = {
-    id: roomId,
+    roomId: roomId,
     name: "",
     votingSystem: 1
   };
@@ -54,14 +56,14 @@ function RoomCreate(props: Props) {
           flexDirection: "column",
           alignItems: { xs: "center" },
           width: { md: "40%", xs: "100%" },
-          height: { md: "auto", xs: "50vh" },
+          height: { md: "auto", xs: "auto" },
           justifyContent: { xs: "center" }
         }}
       >
         <Typography
           variant="h4"
           sx={{
-            mt: { md: 12, xs: 15 },
+            mt: { md: 12, xs: 5 },
             px: 6,
             fontSize: { md: "24px", xs: "18px" },
             fontWeigth: "bolder",
@@ -136,12 +138,12 @@ function RoomCreate(props: Props) {
                         fontSize: { md: "24px", xs: "16px" },
                         background: "#67A3EE",
                         color: "white",
-                        py: { md: 1 }
+                        py: { md: 0.5 }
                       },
                       {
                         "&:hover": {
                           color: "white",
-                          backgroundColor: "green"
+                          opacity: "0.6"
                         }
                       }
                     ]}
@@ -149,13 +151,18 @@ function RoomCreate(props: Props) {
                     disabled={isSubmitting}
                     variant="contained"
                   >
-                    Create Room
-                    {isSubmitting && (
+                    {isSubmitting ? (
                       <CircularProgress size={24} sx={{ ml: 2 }} />
+                    ) : (
+                      "Create Room"
                     )}
                   </Button>
                 </Grid>
               </Form>
+
+              <Grid sx={{ mt: 5, mb: { xs: 3 } }}>
+                <RoomsTable allRooms={allRooms} />
+              </Grid>
             </Grid>
           )}
         </Formik>

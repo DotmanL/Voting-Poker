@@ -1,5 +1,4 @@
-import { IBase } from "interfaces/Room/IBase";
-
-export interface IUser extends IBase {
+export interface IUser {
+  userId: string;
   name: string
 }
