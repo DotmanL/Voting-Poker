@@ -11,7 +11,21 @@ import VotingRoom from "./VotingRoom";
 import RoomService from "../../api/RoomService";
 import Spinner from "components/shared/component/Spinner";
 
-const socket = io("http://localhost:4000");
+const getBaseUrl = () => {
+  let url;
+  switch (process.env.NODE_ENV) {
+    case "production":
+      url = "https://dotvoting.onrender.com";
+      break;
+    case "development":
+    default:
+      url = "http://localhost:4000";
+  }
+
+  return url;
+};
+
+const socket = io(getBaseUrl());
 
 console.log(socket);
 
