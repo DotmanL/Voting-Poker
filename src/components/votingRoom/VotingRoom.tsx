@@ -125,12 +125,12 @@ function VotingRoom(props: Props) {
           alignItems: "center",
           backgroundColor: "#4BA3C3",
           border: "1px dashed #67A3EE",
-          width: "100%",
-          height: "350px",
+          width: {md:"100%", xs: '100vw'},
+          height: {md: "350px", xs: "250px"},
           left: 0,
           right: 0,
           bottom: 0,
-          px: 4
+          px: {md: 4, xs: 2}
         }}
       >
         <Grid sx={{ mt: 4 }}>

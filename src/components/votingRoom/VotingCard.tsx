@@ -24,15 +24,15 @@ function VotingCard(props: Props) {
   const cardValues = cardType(votingSystem);
 
   return (
-    <Grid sx={{ display: "flex", flexDirection: "row", mx: 2 }}>
+    <Grid sx={{ display: "flex", flexDirection: "row", mx: 2, overflowX: {xs: "scroll" }, width: {xs: "100vw"} }}>
       {cardValues.map((cardNumber, i) => (
         <Card
           key={i}
           variant="outlined"
           sx={[
             {
-              minWidth: 160,
-              minHeight: 250,
+              minWidth: {md: 160, xs: 80},
+              minHeight: {md: 250, xs:125},
               m: 1,
               border: "1px solid #67A3EE",
               cursor: "pointer",
