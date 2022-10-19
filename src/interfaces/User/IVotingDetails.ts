@@ -1,5 +1,5 @@
 export interface IVotingDetails {
-  vote: string
+  vote: number
   userId: string;
   userName?: string;
   roomId: string;

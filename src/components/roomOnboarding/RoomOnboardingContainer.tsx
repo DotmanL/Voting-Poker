@@ -29,10 +29,6 @@ function RoomOnboardingContainer() {
     navigate(`/room/${formData.roomId}`);
   };
 
-  if (isRoomsLoading) {
-    return <Spinner />;
-  }
-
   if (error) {
     return <p>{(error as Error)?.message}</p>;
   }
@@ -40,13 +36,21 @@ function RoomOnboardingContainer() {
   return (
     <Grid>
       <NavBar appName="Dot Voting" />
-      {allRooms && (
-        <RoomCreate
-          isSubmitting={isLoading}
-          onFormSubmitted={handleCreateRoom}
-          allRooms={allRooms}
-        />
-      )}
+      <Grid>
+        {isRoomsLoading ? (
+          <Spinner />
+        ) : (
+          <Grid>
+            {allRooms && (
+              <RoomCreate
+                isSubmitting={isLoading}
+                onFormSubmitted={handleCreateRoom}
+                allRooms={allRooms}
+              />
+            )}
+          </Grid>
+        )}
+      </Grid>
     </Grid>
   );
 }

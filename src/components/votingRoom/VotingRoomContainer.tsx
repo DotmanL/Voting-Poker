@@ -64,7 +64,7 @@ function VotingRoomContainer(props: Props) {
       {isLoading ? (
         <Spinner />
       ) : (
-        <Grid sx={{ mt: 8 }}>
+        <Grid>
           {roomDetails && (
             <VotingRoom
               room={roomDetails}

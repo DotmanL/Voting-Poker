@@ -7,10 +7,11 @@ import { VotingTypes } from "../../interfaces/Room/VotingTypes";
 
 type Props = {
   votingSystem: number;
+  handleClickCard: (value: number) => void;
 };
 
 function VotingCard(props: Props) {
-  const { votingSystem } = props;
+  const { votingSystem, handleClickCard } = props;
 
   const cardType = (votingType: VotingTypes): number[] => {
     switch (votingType) {
@@ -24,34 +25,47 @@ function VotingCard(props: Props) {
   const cardValues = cardType(votingSystem);
 
   return (
-    <Grid sx={{ display: "flex", flexDirection: "row", mx: 2, overflowX: {xs: "scroll" }, width: {xs: "100vw"} }}>
+    <Grid
+      sx={{
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+        height: "100%",
+        overflowX: { md: "hidden", xs: "scroll" },
+        width: { md: "100%", xs: "100vw" }
+      }}
+    >
       {cardValues.map((cardNumber, i) => (
         <Card
           key={i}
           variant="outlined"
           sx={[
             {
-              minWidth: {md: 160, xs: 80},
-              minHeight: {md: 250, xs:125},
-              m: 1,
+              minWidth: { md: 80, xs: 70 },
+              minHeight: { md: 120, xs: 100 },
+              mx: { md: 2, xs: 1 },
               border: "1px solid #67A3EE",
               cursor: "pointer",
-              borderRadius: "8px",
+              borderRadius: { md: "8px", xs: "4px" },
               display: "flex",
               flexDirection: "row",
               justifyContent: "center",
               alignItems: "center",
-              boxShadow: 20
+              boxShadow: 10,
+              transition: "transform ease 300ms"
             },
             {
               "&:hover": {
-                opacity: "0.6"
+                borderRadius: "8px",
+                opacity: "0.9",
+                transform: "translate(0, -15px)"
               }
             }
           ]}
+          onClick={() => handleClickCard(cardNumber)}
         >
           <CardContent>
-            <Typography>{cardNumber} </Typography>
+            <Typography variant="h4">{cardNumber} </Typography>
           </CardContent>
         </Card>
       ))}
