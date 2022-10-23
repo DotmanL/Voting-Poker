@@ -36,7 +36,7 @@ function VotingRoom(props: Props) {
   const getRoomId = useParams();
 
   useEffect(() => {
-    if (room.roomId) {
+    if (socket) {
       socket.emit("user", {
         name: user?.name,
         userId: user?.userId,
@@ -79,9 +79,10 @@ function VotingRoom(props: Props) {
     return () => {
       user!.votedState = false;
       localStorage.setItem("user", JSON.stringify(user));
-      if (socket) {
-        socket.disconnect(true);
-      }
+      // if (socket) {
+      //   socket.disconnect(true);
+      // }
+      window.location.reload();
       setRoomUsers([]);
       console.log("cleanup run");
     };
