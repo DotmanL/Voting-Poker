@@ -36,14 +36,15 @@ function VotingRoom(props: Props) {
   const getRoomId = useParams();
 
   useEffect(() => {
-    socket.emit("user", {
-      name: user?.name,
-      userId: user?.userId,
-      socketId: socket.id,
-      roomId: room.roomId,
-      votedState: user?.votedState
-    });
-
+    if (socket) {
+      socket.emit("user", {
+        name: user?.name,
+        userId: user?.userId,
+        socketId: socket.id,
+        roomId: room.roomId,
+        votedState: user?.votedState
+      });
+    }
     socket.on("userResponse", (data: IUserDetails[]) => {
       const userResponse = () => {
         for (let i = 0; i < data.length; i++) {
