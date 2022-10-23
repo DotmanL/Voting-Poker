@@ -9,7 +9,6 @@ import { userContext } from "../../App";
 import VotingRoom from "./VotingRoom";
 import RoomService from "../../api/RoomService";
 import Spinner from "components/shared/component/Spinner";
-import { IVotingDetails } from "interfaces/User/IVotingDetails";
 
 type Props = {
   socket: any;
@@ -29,7 +28,7 @@ function VotingRoomContainer(props: Props) {
   );
 
   const [roomDetails, setRoomDetails] = useState<IRoom>(roomData!);
-  const [votes, setVotes] = useState<any>([]);
+  const [votes, setVotes] = useState<any[]>([]);
   const user = useContext(userContext);
   const [currentUser, setCurrentUser] = useState<IUser | null>(user);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(!!user);
@@ -39,7 +38,9 @@ function VotingRoomContainer(props: Props) {
     const user = localStorage.getItem("user");
     const userData = JSON.parse(user!);
     setCurrentUser(userData);
+    socket.emit("user", { userData });
     setIsModalOpen(false);
+    window.location.reload();
   };
 
   useEffect(() => {
@@ -48,11 +49,14 @@ function VotingRoomContainer(props: Props) {
     } else {
       setIsModalOpen(true);
     }
-    socket.on("votesResponse", (userVotingDetails: IVotingDetails) => {
-      setVotes(userVotingDetails);
+    socket.on("votesResponse", (userVotingDetails: any) => {
+      console.log(userVotingDetails);
+
+      setVotes([userVotingDetails]);
+      console.log(votes);
     });
     setRoomDetails(roomData!);
-  }, [socket, user, roomData]);
+  }, [socket, user, roomData, votes]);
 
   if (error) {
     return <p>{(error as Error)?.message}</p>;
@@ -72,7 +76,6 @@ function VotingRoomContainer(props: Props) {
               votesCasted={votes}
               handleCreateUser={handleCreateUser}
               isModalOpen={isModalOpen}
-              currentUser={currentUser!}
             />
           )}
         </Grid>

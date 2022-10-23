@@ -31,6 +31,7 @@ function VotingCard(props: Props) {
         flexDirection: "row",
         alignItems: "center",
         height: "100%",
+        px: { xs: 2 },
         overflowX: { md: "hidden", xs: "scroll" },
         width: { md: "100%", xs: "100vw" }
       }}
@@ -58,7 +59,8 @@ function VotingCard(props: Props) {
               "&:hover": {
                 borderRadius: "8px",
                 opacity: "0.9",
-                transform: "translate(0, -15px)"
+                transform: "translate(0, -15px)",
+                backgroundColor: "#67A3EE"
               }
             }
           ]}

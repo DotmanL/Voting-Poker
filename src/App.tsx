@@ -33,6 +33,8 @@ const getBaseUrl = () => {
 
 const socket = io(getBaseUrl());
 
+// setAlll USers here and pass as global state from socket emit
+
 function App() {
   useEffect(() => {
     const getCurrentUser = localStorage.getItem("user");

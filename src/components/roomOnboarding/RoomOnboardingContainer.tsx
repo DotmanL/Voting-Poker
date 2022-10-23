@@ -24,7 +24,6 @@ function RoomOnboardingContainer() {
     localStorage.setItem("room", JSON.stringify(formData));
     setIsLoading(true);
     await RoomService.createRoom(formData);
-
     setIsLoading(false);
     navigate(`/room/${formData.roomId}`);
   };

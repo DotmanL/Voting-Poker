@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import { userContext } from "App";
@@ -10,12 +10,13 @@ import { IVotingDetails } from "interfaces/User/IVotingDetails";
 import VotingCard from "./VotingCard";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
+import { useParams } from "react-router-dom";
+import { IUserDetails } from "interfaces/User/IUserDetails";
 
 type Props = {
   room: IRoom;
   socket: any;
-  votesCasted: IVotingDetails;
-  currentUser: IUser;
+  votesCasted?: IVotingDetails[];
   handleCreateUser: (user: IUser) => void;
   isModalOpen: boolean;
 };
@@ -24,27 +25,85 @@ function VotingRoom(props: Props) {
   const {
     room,
     socket,
-    votesCasted,
+    // votesCasted,
     handleCreateUser,
-    isModalOpen,
-    currentUser
+    isModalOpen
   } = props;
   const user = useContext(userContext);
+  const [roomUsers, setRoomUsers] = useState<IUserDetails[]>([]);
+  const [userVote, setUserVote] = useState<number>();
+  const [isVoted, setIsVoted] = useState<boolean>();
+  const getRoomId = useParams();
 
-  const handleSendVotes = (vote: number) => {
-    const getRoomId = localStorage.getItem("room");
-    const roomDetails = JSON.parse(getRoomId!);
-    if (vote && user) {
+  useEffect(() => {
+    if (room.roomId) {
+      socket.emit("user", {
+        name: user?.name,
+        userId: user?.userId,
+        socketId: socket.id,
+        roomId: room.roomId,
+        votedState: user?.votedState
+      });
+    }
+
+    socket.on("userResponse", (data: IUserDetails[]) => {
+      for (let i = 0; i < data.length; i++) {
+        if (data[i].userId === user?.userId) {
+          data[i].votedState = user?.votedState;
+        }
+      }
+      setRoomUsers(data);
+    });
+
+    socket.on("isUserVotedResponse", (data: IUserDetails[]) => {
+      const filteredData = data.filter(
+        (d: any) => d.roomId === user?.currentRoomId
+      );
+      setRoomUsers(filteredData);
+    });
+
+    socket.on("isVotedResponse", (data: IUser) => {
+      if (data.userId === user?.userId) {
+        setIsVoted(data.votedState!);
+        user!.votedState = data.votedState;
+        localStorage.setItem("user", JSON.stringify(user));
+      }
+    });
+
+    return () => {
+      user!.votedState = false;
+      localStorage.setItem("user", JSON.stringify(user));
+      socket.disconnect();
+    };
+  }, [room, socket, user]);
+
+  //TODO: JUST CHeck isVoted state here as validation
+  // const handleRevealVotes = (vote: number) => {
+  //     socket.emit("votes", userVote);
+  // };
+
+  const handleAddVote = (voteValue: number) => {
+    if (voteValue >= 0 && user) {
       const userVotingDetails: IVotingDetails = {
-        vote: vote,
-        userId: user.userId,
-        userName: user.name,
-        roomId: roomDetails.id,
+        vote: voteValue,
+        roomId: getRoomId.roomId!,
         sessionId: `${socket.id}${Math.random()}`,
         socketId: socket.id
       };
-      socket.emit("votes", userVotingDetails);
-      localStorage.setItem("userVotes", JSON.stringify(userVotingDetails));
+
+      user.currentVote = userVotingDetails.vote;
+      user.currentRoomId = userVotingDetails.roomId;
+
+      socket.emit("isVotedState", {
+        roomId: user.currentRoomId,
+        userId: user.userId,
+        votedState:
+          (voteValue === userVote && !isVoted) ||
+          (voteValue !== userVote && true)
+      });
+
+      localStorage.setItem("user", JSON.stringify(user));
+      setUserVote(user.currentVote);
     }
   };
 
@@ -57,9 +116,9 @@ function VotingRoom(props: Props) {
         height: "100vh"
       }}
     >
-      <Grid sx={{ mt: 2, display: "none" }}>
+      {/* <Grid sx={{ mt: 2, display: "none" }}>
         <Typography>{room.name}</Typography>
-      </Grid>
+      </Grid> */}
       <Grid
         sx={{
           position: "relative",
@@ -100,68 +159,92 @@ function VotingRoom(props: Props) {
               Pick Your Cards
             </Typography>
           </Grid>
-          <Grid sx={{ mt: 4 }}>
-            <Typography>
-              {currentUser ? currentUser.name : user?.name}
-            </Typography>
-          </Grid>
-          <Grid>
-            {votesCasted && (
-              <Card
-                key={votesCasted.sessionId}
-                variant="outlined"
-                sx={[
-                  {
-                    minWidth: { md: 80, xs: 70 },
-                    minHeight: { md: 120, xs: 100 },
-                    mx: { md: 2, xs: 1 },
-                    border: "1px solid #67A3EE",
-                    cursor: "pointer",
-                    borderRadius: "8px",
-                    display: "flex",
-                    flexDirection: "row",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    boxShadow: 5,
-                    transition: "transform ease 300ms"
-                  },
-                  {
-                    "&:hover": {
-                      borderRadius: "8px"
-                      // opacity: "0.9",
-                      // transform: "translate(0, -20px)"
+
+          <Grid
+            sx={{
+              // background: "green",
+              width: "90vw",
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "center",
+              alignItems: "center",
+              mt: 2
+            }}
+          >
+            {roomUsers?.map((roomUser: IUserDetails, i: number) => (
+              <Grid key={i}>
+                <Card
+                  variant="outlined"
+                  sx={[
+                    {
+                      width: { md: 80, xs: 70 },
+                      height: { md: 120, xs: 100 },
+                      mx: { md: 2, xs: 1 },
+                      border: "1px solid #67A3EE",
+                      cursor: "pointer",
+                      borderRadius: "8px",
+                      display: "flex",
+                      flexDirection: "row",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      boxShadow: 5,
+                      transition: "transform ease 300ms",
+                      background:
+                        roomUser.roomId === user?.currentRoomId &&
+                        roomUser?.votedState!
+                          ? "#67A3EE"
+                          : "white"
+                    },
+                    {
+                      "&:hover": {
+                        borderRadius: "8px"
+                      }
                     }
-                  }
-                ]}
-              >
-                <CardContent>
-                  <Typography variant="h4">{votesCasted.vote}</Typography>
-                </CardContent>
-              </Card>
-            )}
+                  ]}
+                >
+                  {/* TODO: remove user vote value from screen */}
+                  <CardContent key={i}>
+                    <Typography variant="h4">
+                      {roomUser.userId === user?.userId && userVote}
+                    </Typography>
+                  </CardContent>
+                </Card>
+                <Grid sx={{ mt: 1 }}>
+                  <Typography variant="h4">
+                    {roomUser && roomUser.name}
+                  </Typography>
+                </Grid>
+              </Grid>
+            ))}
           </Grid>
         </Grid>
       </Grid>
       <Grid
         sx={{
-          position: "absolute",
+          position: "absolute" as "absolute",
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
-          backgroundColor: "#67A3EE",
-          border: "1px dashed #67A3EE",
+          borderTop: "2px solid #67A3EE",
           width: { md: "100%", xs: "100vw" },
           height: { md: "200px", xs: "150px" },
           left: 0,
           right: 0,
-          bottom: 0
+          bottom: { md: 0, xs: 4 }
         }}
       >
-        <Grid sx={{ height: "100%" }}>
+        <Grid
+          sx={{
+            height: "100%",
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "center"
+          }}
+        >
           <VotingCard
             votingSystem={room.votingSystem}
-            handleClickCard={handleSendVotes}
+            handleClickCard={handleAddVote}
           />
         </Grid>
       </Grid>
