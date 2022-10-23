@@ -36,29 +36,24 @@ function VotingRoom(props: Props) {
   const getRoomId = useParams();
 
   useEffect(() => {
-    if (socket) {
-      socket.emit("user", {
-        name: user?.name,
-        userId: user?.userId,
-        socketId: socket.id,
-        roomId: room.roomId,
-        votedState: user?.votedState
-      });
-    }
+    socket.emit("user", {
+      name: user?.name,
+      userId: user?.userId,
+      socketId: socket.id,
+      roomId: room.roomId,
+      votedState: user?.votedState
+    });
 
     socket.on("userResponse", (data: IUserDetails[]) => {
-      // const userResponse = () => {
-      //   for (let i = 0; i < data.length; i++) {
-      //     if (data[i].userId === user?.userId) {
-      //       data[i].votedState = user?.votedState;
-      //     }
-      //   }
-      //   return data;
-      // };
-      console.log(data, "user response data");
-
-      // setRoomUsers(userResponse());
-      setRoomUsers(data);
+      const userResponse = () => {
+        for (let i = 0; i < data.length; i++) {
+          if (data[i].userId === user?.userId) {
+            data[i].votedState = user?.votedState;
+          }
+        }
+        return data;
+      };
+      setRoomUsers(userResponse());
     });
 
     socket.on("isUserVotedResponse", (data: IUserDetails[]) => {
@@ -75,16 +70,11 @@ function VotingRoom(props: Props) {
         localStorage.setItem("user", JSON.stringify(user));
       }
     });
-    console.log("main useEffect run");
 
     return () => {
       user!.votedState = false;
       localStorage.setItem("user", JSON.stringify(user));
-      // if (socket) {
-      socket.disconnect(true);
-      // }
-      // window.location.reload();
-      setRoomUsers([]);
+      socket.disconnect();
       console.log("cleanup run");
     };
   }, [room, socket, user]);
