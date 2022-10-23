@@ -47,12 +47,17 @@ function VotingRoom(props: Props) {
     }
 
     socket.on("userResponse", (data: IUserDetails[]) => {
-      for (let i = 0; i < data.length; i++) {
-        if (data[i].userId === user?.userId) {
-          data[i].votedState = user?.votedState;
+      const userResponse = () => {
+        for (let i = 0; i < data.length; i++) {
+          if (data[i].userId === user?.userId) {
+            data[i].votedState = user?.votedState;
+          }
         }
-      }
-      setRoomUsers(data);
+        return data;
+      };
+      console.log(data, "user response data");
+
+      setRoomUsers(userResponse());
     });
 
     socket.on("isUserVotedResponse", (data: IUserDetails[]) => {
@@ -69,15 +74,19 @@ function VotingRoom(props: Props) {
         localStorage.setItem("user", JSON.stringify(user));
       }
     });
+    console.log("main useEffect run");
 
     return () => {
       user!.votedState = false;
       localStorage.setItem("user", JSON.stringify(user));
       console.log("cleanup run");
-
-      socket.disconnect(true);
+      if (socket) {
+        socket.disconnect(true);
+      }
     };
   }, [room, socket, user]);
+
+  console.log(roomUsers, "all room users");
 
   //TODO: JUST CHeck isVoted state here as validation
   // const handleRevealVotes = (vote: number) => {
