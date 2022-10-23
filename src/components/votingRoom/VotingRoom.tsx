@@ -79,10 +79,11 @@ function VotingRoom(props: Props) {
     return () => {
       user!.votedState = false;
       localStorage.setItem("user", JSON.stringify(user));
-      console.log("cleanup run");
       if (socket) {
         socket.disconnect(true);
       }
+      setRoomUsers([]);
+      console.log("cleanup run");
     };
   }, [room, socket, user]);
 
