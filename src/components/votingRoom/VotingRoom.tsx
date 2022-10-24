@@ -36,7 +36,7 @@ function VotingRoom(props: Props) {
   const getRoomId = useParams();
 
   useEffect(() => {
-    if (!user?.votedState) {
+    // if (!user?.votedState) {
       socket.emit("user", {
         name: user?.name,
         userId: user?.userId,
@@ -44,7 +44,7 @@ function VotingRoom(props: Props) {
         roomId: room.roomId,
         votedState: user?.votedState
       });
-    }
+  //  }
     socket.on("userResponse", (data: IUserDetails[]) => {
       const userResponse = () => {
         for (let i = 0; i < data.length; i++) {
