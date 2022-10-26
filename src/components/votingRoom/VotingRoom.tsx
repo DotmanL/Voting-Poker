@@ -34,6 +34,7 @@ function VotingRoom(props: Props) {
   const [userVote, setUserVote] = useState<number>();
   const [isVoted, setIsVoted] = useState<boolean>();
   const getRoomId = useParams();
+  console.log(socket.id);
 
   useEffect(() => {
     socket.emit("user", {
