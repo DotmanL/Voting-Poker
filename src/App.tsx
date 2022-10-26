@@ -7,7 +7,6 @@ import ScrollToTop from "components/shared/hooks/ScrollToTop";
 import Layout from "./components/layout/Layout";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { ToastContainer, Zoom } from "react-toastify";
-import { io } from "socket.io-client";
 import HomePageContainer from "components/hompage/HomePageContainer";
 import NotFoundContainer from "components/shared/NotFoundContainer";
 import VotingRoomContainer from "components/votingRoom/VotingRoomContainer";
@@ -16,22 +15,6 @@ import "react-toastify/dist/ReactToastify.css";
 
 const queryClient = new QueryClient();
 export const userContext = createContext<IUser | null>(null);
-
-const getBaseUrl = () => {
-  let url;
-  switch (process.env.NODE_ENV) {
-    case "production":
-      url = "https://votingpokerapi.herokuapp.com/";
-      break;
-    case "development":
-    default:
-      url = "http://localhost:4000";
-  }
-
-  return url;
-};
-
-const socket = io(getBaseUrl());
 
 // setAlll USers here and pass as global state from socket emit
 
@@ -59,10 +42,7 @@ function App() {
               <Route path="/" element={<Layout />}>
                 <Route index element={<HomePageContainer />} />
                 <Route path="new-room" element={<RoomOnboardingContainer />} />
-                <Route
-                  path="room/:roomId"
-                  element={<VotingRoomContainer socket={socket} />}
-                />
+                <Route path="room/:roomId" element={<VotingRoomContainer />} />
 
                 <Route path="*" element={<NotFoundContainer />} />
               </Route>

@@ -36,7 +36,7 @@ function VotingRoom(props: Props) {
   const getRoomId = useParams();
 
   useEffect(() => {
-    // if (!user?.votedState) {
+    if (socket) {
       socket.emit("user", {
         name: user?.name,
         userId: user?.userId,
@@ -44,7 +44,7 @@ function VotingRoom(props: Props) {
         roomId: room.roomId,
         votedState: user?.votedState
       });
-  //  }
+    }
     socket.on("userResponse", (data: IUserDetails[]) => {
       const userResponse = () => {
         for (let i = 0; i < data.length; i++) {
@@ -58,9 +58,11 @@ function VotingRoom(props: Props) {
     });
 
     socket.on("isUserVotedResponse", (data: IUserDetails[]) => {
+      console.log(data);
       const filteredData = data.filter(
-        (d: any) => d.roomId === user?.currentRoomId
+        (d: any) => d.roomId === user!.currentRoomId
       );
+
       setRoomUsers(filteredData);
     });
 
