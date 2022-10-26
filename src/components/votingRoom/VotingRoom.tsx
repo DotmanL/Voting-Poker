@@ -37,12 +37,17 @@ function VotingRoom(props: Props) {
   console.log(socket.id);
 
   useEffect(() => {
-    socket.emit("user", {
+    const userDetails: IUserDetails = {
       name: user!.name,
       userId: user!.userId,
       socketId: socket.id && socket.id,
       roomId: room.roomId,
       votedState: user?.votedState
+    };
+    console.log(userDetails, "udddddddd");
+
+    socket.emit("user", {
+      userDetails
     });
     socket.on("userResponse", (data: IUserDetails[]) => {
       const userResponse = () => {
