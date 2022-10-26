@@ -39,7 +39,7 @@ function VotingRoom(props: Props) {
     socket.emit("user", {
       name: user?.name,
       userId: user?.userId,
-      socketId: socket.id,
+      socketId: socket.id && socket.id,
       roomId: room.roomId,
       votedState: user?.votedState
     });
