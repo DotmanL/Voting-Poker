@@ -29,7 +29,7 @@ function VotingRoom(props: Props) {
     handleCreateUser,
     isModalOpen
   } = props;
-  const user = useContext(userContext!);
+  const user = useContext(userContext);
   const [roomUsers, setRoomUsers] = useState<IUserDetails[]>([]);
   const [userVote, setUserVote] = useState<number>();
   const [isVoted, setIsVoted] = useState<boolean>();
@@ -38,8 +38,8 @@ function VotingRoom(props: Props) {
 
   useEffect(() => {
     socket.emit("user", {
-      name: user && user.name,
-      userId: user && user.userId,
+      name: user?.name,
+      userId: user?.userId,
       socketId: socket.id && socket.id,
       roomId: room.roomId,
       votedState: user?.votedState
