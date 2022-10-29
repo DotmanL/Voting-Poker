@@ -30,11 +30,10 @@ function VotingRoom(props: Props) {
     isModalOpen
   } = props;
   const user = useContext(userContext);
-  const [roomUsers, setRoomUsers] = useState<IUserDetails[]>([]);
+  const [roomUsers, setRoomUsers] = useState<IUserDetails[]>();
   const [userVote, setUserVote] = useState<number>();
   const [isVoted, setIsVoted] = useState<boolean>();
   const getRoomId = useParams();
-  console.log(socket.id);
 
   useEffect(() => {
     socket.emit("user", {
@@ -47,7 +46,7 @@ function VotingRoom(props: Props) {
     socket.on("userResponse", (data: IUserDetails[]) => {
       const userResponse = () => {
         for (let i = 0; i < data.length; i++) {
-          if (data[i].userId === user?.userId) {
+          if (data[i].roomId === user?.userId) {
             data[i].votedState = user?.votedState;
           }
         }
@@ -57,12 +56,13 @@ function VotingRoom(props: Props) {
     });
 
     socket.on("isUserVotedResponse", (data: IUserDetails[]) => {
-      console.log(data);
-      const filteredData = data.filter(
-        (d: any) => d.roomId === user!.currentRoomId
+      const getRoomOnlyData = data.find(
+        (d) => d.roomId === room.roomId && d.userId === user?.userId
       );
-
-      setRoomUsers(filteredData);
+      //Checks if our data contains any user in the room where a vote update was done
+      if (!!getRoomOnlyData) {
+        setRoomUsers(data);
+      }
     });
 
     socket.on("isVotedResponse", (data: IUser) => {
@@ -77,11 +77,8 @@ function VotingRoom(props: Props) {
       user!.votedState = false;
       localStorage.setItem("user", JSON.stringify(user));
       socket.disconnect();
-      console.log("cleanup run");
     };
   }, [room, socket, user]);
-
-  console.log(roomUsers, "all room users");
 
   //TODO: JUST CHeck isVoted state here as validation
   // const handleRevealVotes = (vote: number) => {
@@ -110,6 +107,13 @@ function VotingRoom(props: Props) {
 
       localStorage.setItem("user", JSON.stringify(user));
       setUserVote(user.currentVote);
+      const roomUserIndex = roomUsers!.findIndex(
+        (r) => r.userId === user.userId
+      );
+      roomUsers![roomUserIndex].votedState =
+        (voteValue === userVote && !isVoted) ||
+        (voteValue !== userVote && true);
+      socket.emit("isUserVoted", roomUsers);
     }
   };
 
@@ -177,51 +181,50 @@ function VotingRoom(props: Props) {
               mt: 2
             }}
           >
-            {roomUsers?.map((roomUser: IUserDetails, i: number) => (
-              <Grid key={i}>
-                <Card
-                  variant="outlined"
-                  sx={[
-                    {
-                      width: { md: 80, xs: 70 },
-                      height: { md: 120, xs: 100 },
-                      mx: { md: 2, xs: 1 },
-                      border: "1px solid #67A3EE",
-                      cursor: "pointer",
-                      borderRadius: "8px",
-                      display: "flex",
-                      flexDirection: "row",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      boxShadow: 5,
-                      transition: "transform ease 300ms",
-                      background:
-                        roomUser.roomId === user?.currentRoomId &&
-                        roomUser?.votedState!
-                          ? "#67A3EE"
-                          : "white"
-                    },
-                    {
-                      "&:hover": {
-                        borderRadius: "8px"
+            {roomUsers &&
+              roomUsers.map((roomUser: IUserDetails, i: number) => (
+                <Grid key={roomUser.userId}>
+                  <Card
+                    variant="outlined"
+                    sx={[
+                      {
+                        width: { md: 80, xs: 70 },
+                        height: { md: 120, xs: 100 },
+                        mx: { md: 2, xs: 1 },
+                        border: "1px solid #67A3EE",
+                        cursor: "pointer",
+                        borderRadius: "8px",
+                        display: "flex",
+                        flexDirection: "row",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        boxShadow: 5,
+                        transition: "transform ease 300ms",
+                        background:
+                          // roomUser.roomId === user!.currentRoomId &&
+                          roomUser!.votedState! ? "#67A3EE" : "white"
+                      },
+                      {
+                        "&:hover": {
+                          borderRadius: "8px"
+                        }
                       }
-                    }
-                  ]}
-                >
-                  {/* TODO: remove user vote value from screen */}
-                  <CardContent key={i}>
+                    ]}
+                  >
+                    {/* TODO: remove user vote value from screen */}
+                    <CardContent key={i}>
+                      <Typography variant="h4">
+                        {roomUser.userId === user?.userId && userVote}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                  <Grid sx={{ mt: 1 }}>
                     <Typography variant="h4">
-                      {roomUser.userId === user?.userId && userVote}
+                      {roomUser && roomUser.name}
                     </Typography>
-                  </CardContent>
-                </Card>
-                <Grid sx={{ mt: 1 }}>
-                  <Typography variant="h4">
-                    {roomUser && roomUser.name}
-                  </Typography>
+                  </Grid>
                 </Grid>
-              </Grid>
-            ))}
+              ))}
           </Grid>
         </Grid>
       </Grid>

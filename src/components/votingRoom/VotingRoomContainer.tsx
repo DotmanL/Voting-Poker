@@ -4,30 +4,18 @@ import { IUser } from "interfaces/User/IUser";
 import { Grid } from "@mui/material";
 import { IRoom } from "interfaces/Room/IRoom";
 import { useParams } from "react-router-dom";
-import { io } from "socket.io-client";
 import { NavBar } from "components/shared/component/NavBar";
 import { userContext } from "../../App";
 import VotingRoom from "./VotingRoom";
 import RoomService from "../../api/RoomService";
 import Spinner from "components/shared/component/Spinner";
 
-const getBaseUrl = () => {
-  let url;
-  switch (process.env.NODE_ENV) {
-    case "production":
-      url = "https://votingpokerapi.herokuapp.com/";
-      break;
-    case "development":
-    default:
-      url = "http://localhost:4000";
-  }
-
-  return url;
+type Props = {
+  socket: any;
 };
 
-const socket = io(getBaseUrl());
-
-function VotingRoomContainer() {
+function VotingRoomContainer(props: Props) {
+  const { socket } = props;
   // const navigate = useNavigate();
   const getRoomId = useParams();
   const roomId = Object.values(getRoomId)[0];
@@ -68,7 +56,7 @@ function VotingRoomContainer() {
       console.log(votes);
     });
     setRoomDetails(roomData!);
-  }, [user, roomData, votes]);
+  }, [user, roomData, votes, socket]);
 
   if (error) {
     return <p>{(error as Error)?.message}</p>;
