@@ -6,7 +6,8 @@ const getBaseUrl = () => {
   let url;
   switch (process.env.NODE_ENV) {
     case 'production':
-      url = 'https://votingpokerapi.herokuapp.com/api/room/';
+      url = 'https://dotvoting.onrender.com/api/room/';
+      // url = 'https://votingpokerapi.herokuapp.com/api/room/';
       break;
     case 'development':
     default:
