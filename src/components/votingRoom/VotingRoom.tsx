@@ -45,14 +45,16 @@ function VotingRoom(props: Props) {
     });
     socket.on("userResponse", (data: IUserDetails[]) => {
       const userResponse = () => {
+        const getRoomOnlyData = data.filter((d) => d.roomId === room.roomId);
         for (let i = 0; i < data.length; i++) {
-          if (data[i].roomId === user?.userId) {
-            data[i].votedState = user?.votedState;
+          if (getRoomOnlyData[i].roomId === room.roomId) {
+            getRoomOnlyData[i].votedState = user?.votedState;
           }
         }
-        return data;
+        return getRoomOnlyData;
       };
-      setRoomUsers(userResponse());
+      const roomData = userResponse();
+      setRoomUsers(roomData);
     });
 
     socket.on("isUserVotedResponse", (data: IUserDetails[]) => {
