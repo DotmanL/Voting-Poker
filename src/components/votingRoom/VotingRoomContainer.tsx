@@ -10,6 +10,7 @@ import { userContext } from "../../App";
 import VotingRoom from "./VotingRoom";
 import RoomService from "../../api/RoomService";
 import Spinner from "components/shared/component/Spinner";
+import { IUserDetails } from "interfaces/User/IUserDetails";
 
 const getBaseUrl = () => {
   let url;
@@ -41,7 +42,7 @@ function VotingRoomContainer() {
   );
 
   const [roomDetails, setRoomDetails] = useState<IRoom>(roomData!);
-  const [votes, setVotes] = useState<any[]>([]);
+  const [votes, setVotes] = useState<IUserDetails[] | undefined>();
   const user = useContext(userContext);
   const [currentUser, setCurrentUser] = useState<IUser | null>(user);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(!!user);
@@ -63,10 +64,7 @@ function VotingRoomContainer() {
       setIsModalOpen(true);
     }
     socket.on("votesResponse", (userVotingDetails: any) => {
-      console.log(userVotingDetails);
-
-      setVotes([userVotingDetails]);
-      console.log(votes);
+      setVotes(userVotingDetails);
     });
     setRoomDetails(roomData!);
   }, [user, roomData, votes]);

@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import { userContext } from "App";
+import VotingResult from "./VotingResult";
 import CustomModal from "components/shared/component/CustomModal";
 import { IRoom } from "interfaces/Room/IRoom";
 import { IUser } from "interfaces/User/IUser";
@@ -12,28 +13,36 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import { useParams } from "react-router-dom";
 import { IUserDetails } from "interfaces/User/IUserDetails";
+import { toast } from "react-toastify";
+import { Button } from "@mui/material";
 
 type Props = {
   room: IRoom;
   socket: any;
-  votesCasted?: IVotingDetails[];
+  votesCasted?: IUserDetails[];
   handleCreateUser: (user: IUser) => void;
   isModalOpen: boolean;
 };
 
 function VotingRoom(props: Props) {
-  const {
-    room,
-    socket,
-    // votesCasted,
-    handleCreateUser,
-    isModalOpen
-  } = props;
+  const { room, socket, votesCasted, handleCreateUser, isModalOpen } = props;
   const user = useContext(userContext);
   const [roomUsers, setRoomUsers] = useState<IUserDetails[]>();
   const [userVote, setUserVote] = useState<number>();
-  const [isVoted, setIsVoted] = useState<boolean>();
+  const [isVoted, setIsVoted] = useState<boolean>(false);
   const getRoomId = useParams();
+
+  // const filterVotesCasted = () => {
+  //   if (!!votesCasted) {
+  //     votesCasted?.filter((vc) => vc.roomId === room.roomId);
+  //     return votesCasted;
+  //   } else {
+  //     return;
+  //   }
+  // };
+
+  // const filteredVotes = filterVotesCasted();
+  // console.log(filteredVotes);
 
   useEffect(() => {
     socket.emit("user", {
@@ -46,15 +55,19 @@ function VotingRoom(props: Props) {
     socket.on("userResponse", (data: IUserDetails[]) => {
       const userResponse = () => {
         const getRoomOnlyData = data.filter((d) => d.roomId === room.roomId);
-        for (let i = 0; i < data.length; i++) {
-          if (getRoomOnlyData[i].roomId === room.roomId) {
-            getRoomOnlyData[i].votedState = user?.votedState;
-          }
-        }
         return getRoomOnlyData;
       };
       const roomData = userResponse();
       setRoomUsers(roomData);
+    });
+
+    socket.on("welcome", (data: any) => {
+      const welcomeMessage = ` Hi ${user && user.name}, welcome to ${
+        room.name
+      } room`;
+      if (data.userId === user!.userId) {
+        toast.success(welcomeMessage, { autoClose: 2500, pauseOnHover: true });
+      }
     });
 
     socket.on("isUserVotedResponse", (data: IUserDetails[]) => {
@@ -82,10 +95,25 @@ function VotingRoom(props: Props) {
     };
   }, [room, socket, user]);
 
-  //TODO: JUST CHeck isVoted state here as validation
-  // const handleRevealVotes = (vote: number) => {
-  //     socket.emit("votes", userVote);
-  // };
+  const handleRevealVotes = () => {
+    const roomUsersVotes = roomUsers;
+    socket.emit("votes", roomUsersVotes);
+  };
+
+  const handleNewVotingSession = () => {
+    const resetVotedState = () => {
+      user!.votedState = false;
+      localStorage.setItem("user", JSON.stringify(user));
+      roomUsers?.forEach((ru) => {
+        ru.votedState = false;
+      });
+      return false;
+    };
+
+    const res = resetVotedState();
+    socket.emit("votes", res);
+    socket.emit("isUserVoted", roomUsers);
+  };
 
   const handleAddVote = (voteValue: number) => {
     if (voteValue >= 0 && user) {
@@ -115,9 +143,16 @@ function VotingRoom(props: Props) {
       roomUsers![roomUserIndex].votedState =
         (voteValue === userVote && !isVoted) ||
         (voteValue !== userVote && true);
+      roomUsers![roomUserIndex].currentVote = user.currentVote;
       socket.emit("isUserVoted", roomUsers);
     }
   };
+
+  const isDisabled =
+    roomUsers &&
+    roomUsers.filter((ru) => ru.votedState === true).length < roomUsers!.length
+      ? true
+      : false;
 
   return (
     <Grid
@@ -131,6 +166,7 @@ function VotingRoom(props: Props) {
       {/* <Grid sx={{ mt: 2, display: "none" }}>
         <Typography>{room.name}</Typography>
       </Grid> */}
+
       <Grid
         sx={{
           position: "relative",
@@ -164,12 +200,81 @@ function VotingRoom(props: Props) {
               height: { md: "200px", xs: "100px" }
             }}
           >
-            <Typography
-              variant="h3"
-              sx={{ fontSize: { md: "32px", xs: "16px" } }}
-            >
-              Pick Your Cards
-            </Typography>
+            {!votesCasted ? (
+              <Grid
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center"
+                }}
+              >
+                {isDisabled ? (
+                  <Grid>
+                    <Typography
+                      variant="h3"
+                      sx={{ fontSize: { md: "32px", xs: "16px" } }}
+                    >
+                      Pick Your Cards
+                    </Typography>
+                  </Grid>
+                ) : (
+                  <Grid sx={{ mt: 2 }}>
+                    <Button
+                      disabled={isDisabled}
+                      onClick={handleRevealVotes}
+                      sx={[
+                        {
+                          mt: 1,
+                          background: "#67A3EE",
+                          borderRadius: "5px",
+                          color: "white",
+                          px: { md: 3, xs: 2 },
+                          py: { md: 0.5 },
+                          fontSize: "16px"
+                        },
+                        {
+                          "&:hover": {
+                            background: "secondary.main",
+                            color: "#67A3EE"
+                          }
+                        }
+                      ]}
+                      variant="outlined"
+                    >
+                      {" "}
+                      Reveal Votes
+                    </Button>
+                  </Grid>
+                )}
+              </Grid>
+            ) : (
+              <Grid>
+                <Button
+                  onClick={handleNewVotingSession}
+                  sx={[
+                    {
+                      mt: 1,
+                      background: "#67A3EE",
+                      borderRadius: "5px",
+                      color: "white",
+                      px: { md: 3, xs: 2 },
+                      py: { md: 0.5 },
+                      fontSize: "16px"
+                    },
+                    {
+                      "&:hover": {
+                        background: "secondary.main",
+                        color: "#67A3EE"
+                      }
+                    }
+                  ]}
+                  variant="outlined"
+                >
+                  {" "}
+                  Start New Voting Session
+                </Button>
+              </Grid>
+            )}
           </Grid>
 
           <Grid
@@ -213,12 +318,13 @@ function VotingRoom(props: Props) {
                       }
                     ]}
                   >
-                    {/* TODO: remove user vote value from screen */}
-                    <CardContent key={i}>
-                      <Typography variant="h4">
-                        {roomUser.userId === user?.userId && userVote}
-                      </Typography>
-                    </CardContent>
+                    {!!votesCasted && (
+                      <CardContent>
+                        <Typography variant="h4">
+                          {votesCasted[i].currentVote}
+                        </Typography>
+                      </CardContent>
+                    )}
                   </Card>
                   <Grid sx={{ mt: 1 }}>
                     <Typography variant="h4">
@@ -230,36 +336,58 @@ function VotingRoom(props: Props) {
           </Grid>
         </Grid>
       </Grid>
-      <Grid
-        sx={{
-          position: "absolute" as "absolute",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          borderTop: "2px solid #67A3EE",
-          width: { md: "100%", xs: "100vw" },
-          height: { md: "200px", xs: "150px" },
-          left: 0,
-          right: 0,
-          bottom: { md: 0, xs: 4 }
-        }}
-      >
+
+      {!votesCasted && (
         <Grid
           sx={{
-            height: "100%",
+            position: "absolute" as "absolute",
             display: "flex",
-            flexDirection: "row",
-            justifyContent: "center"
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            borderTop: "2px solid #67A3EE",
+            width: { md: "100%", xs: "100vw" },
+            height: { md: "200px", xs: "150px" },
+            left: 0,
+            right: 0,
+            bottom: { md: 0, xs: 4 }
           }}
         >
-          <VotingCard
-            votingSystem={room.votingSystem}
-            handleClickCard={handleAddVote}
-          />
+          <Grid
+            sx={{
+              height: "100%",
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "center"
+            }}
+          >
+            <VotingCard
+              votingSystem={room.votingSystem}
+              handleClickCard={handleAddVote}
+            />
+          </Grid>
         </Grid>
-      </Grid>
+      )}
 
+      {!!votesCasted && (
+        <Grid
+          sx={{
+            position: "absolute" as "absolute",
+            left: 0,
+            right: 0,
+            bottom: { md: 0, xs: 4 },
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "center",
+            background: "#67A3EE",
+            // mt: "100px",
+            width: "100%",
+            height: "100px"
+          }}
+        >
+          <VotingResult votesCasted={votesCasted} room={room} />
+        </Grid>
+      )}
       <CustomModal isOpen={isModalOpen}>
         <Grid>
           <CreateUser isSubmitting={false} onFormSubmitted={handleCreateUser} />
