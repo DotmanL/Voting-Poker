@@ -32,18 +32,6 @@ function VotingRoom(props: Props) {
   const [isVoted, setIsVoted] = useState<boolean>(false);
   const getRoomId = useParams();
 
-  // const filterVotesCasted = () => {
-  //   if (!!votesCasted) {
-  //     votesCasted?.filter((vc) => vc.roomId === room.roomId);
-  //     return votesCasted;
-  //   } else {
-  //     return;
-  //   }
-  // };
-
-  // const filteredVotes = filterVotesCasted();
-  // console.log(filteredVotes);
-
   useEffect(() => {
     socket.emit("user", {
       name: user?.name,
@@ -62,9 +50,8 @@ function VotingRoom(props: Props) {
     });
 
     socket.on("welcome", (data: any) => {
-      const welcomeMessage = ` Hi ${user && user.name}, welcome to ${
-        room.name
-      } room`;
+      const welcomeMessage = ` Hi ${user && user.name}, welcome to ${room.name
+        } room`;
       if (data.userId === user!.userId) {
         toast.success(welcomeMessage, { autoClose: 2500, pauseOnHover: true });
       }
@@ -97,7 +84,7 @@ function VotingRoom(props: Props) {
 
   const handleRevealVotes = () => {
     const roomUsersVotes = roomUsers;
-    socket.emit("votes", roomUsersVotes);
+    socket.emit("votes", { allVote: roomUsersVotes, roomId: room.roomId });
   };
 
   const handleNewVotingSession = () => {
@@ -110,8 +97,7 @@ function VotingRoom(props: Props) {
       return false;
     };
 
-    const res = resetVotedState();
-    socket.emit("votes", res);
+    socket.emit("votes", { allVote: false, roomId: room.roomId });
     socket.emit("isUserVoted", roomUsers);
   };
 
@@ -150,7 +136,7 @@ function VotingRoom(props: Props) {
 
   const isDisabled =
     roomUsers &&
-    roomUsers.filter((ru) => ru.votedState === true).length < roomUsers!.length
+      roomUsers.filter((ru) => ru.votedState === true).length < roomUsers!.length
       ? true
       : false;
 
