@@ -38,7 +38,8 @@ function VotingRoom(props: Props) {
       userId: user?.userId,
       socketId: socket.id && socket.id,
       roomId: room.roomId,
-      votedState: user?.votedState
+      votedState: user?.votedState,
+      currentVote: user?.currentVote,
     });
     socket.on("userResponse", (data: IUserDetails[]) => {
       const userResponse = () => {
@@ -84,20 +85,16 @@ function VotingRoom(props: Props) {
 
   const handleRevealVotes = () => {
     const roomUsersVotes = roomUsers;
-    socket.emit("votes", { allVote: roomUsersVotes, roomId: room.roomId });
+    socket.emit("votes", { allVotes: roomUsersVotes, roomId: room.roomId });
   };
 
   const handleNewVotingSession = () => {
-    // const resetVotedState = () => {
-    //   user!.votedState = false;
-    //   localStorage.setItem("user", JSON.stringify(user));
+    user!.votedState = false;
+    localStorage.setItem("user", JSON.stringify(user));
     roomUsers?.forEach((ru) => {
       ru.votedState = false;
     });
-    // return false;
-    // };
-
-    socket.emit("votes", { allVote: false, roomId: room.roomId });
+    socket.emit("votes", { allVotes: false, roomId: room.roomId });
     socket.emit("isUserVoted", roomUsers);
   };
 
@@ -149,10 +146,6 @@ function VotingRoom(props: Props) {
         height: "100vh"
       }}
     >
-      {/* <Grid sx={{ mt: 2, display: "none" }}>
-        <Typography>{room.name}</Typography>
-      </Grid> */}
-
       <Grid
         sx={{
           position: "relative",
@@ -182,8 +175,8 @@ function VotingRoom(props: Props) {
               mt: "30vh",
               borderRadius: "20px",
               border: "2px solid #67A3EE",
-              width: { md: "400px", xs: "200px" },
-              height: { md: "200px", xs: "100px" }
+              width: { md: "400px", xs: "300px" },
+              height: { md: "200px", xs: "150px" }
             }}
           >
             {!votesCasted ? (
@@ -240,12 +233,13 @@ function VotingRoom(props: Props) {
                   sx={[
                     {
                       mt: 1,
+                      width: { md: "250px", xs: "200px" },
                       background: "#67A3EE",
                       borderRadius: "5px",
                       color: "white",
                       px: { md: 3, xs: 2 },
                       py: { md: 0.5 },
-                      fontSize: "16px"
+                      fontSize: { md: "16px", xs: "12px" }
                     },
                     {
                       "&:hover": {
@@ -265,7 +259,7 @@ function VotingRoom(props: Props) {
 
           <Grid
             sx={{
-              // background: "green",
+              // background: "red",
               width: "90vw",
               display: "flex",
               flexDirection: "row",
@@ -312,7 +306,14 @@ function VotingRoom(props: Props) {
                       </CardContent>
                     )}
                   </Card>
-                  <Grid sx={{ mt: 1 }}>
+                  <Grid
+                    sx={{
+                      mt: 1,
+                      display: "flex",
+                      flexDirection: "row",
+                      justifyContent: "center"
+                    }}
+                  >
                     <Typography variant="h4">
                       {roomUser && roomUser.name}
                     </Typography>
