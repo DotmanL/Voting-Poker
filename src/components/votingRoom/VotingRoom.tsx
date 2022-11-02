@@ -88,6 +88,15 @@ function VotingRoom(props: Props) {
   };
 
   const handleNewVotingSession = () => {
+    // const resetVotedState = () => {
+    //   user!.votedState = false;
+    //   localStorage.setItem("user", JSON.stringify(user));
+    roomUsers?.forEach((ru) => {
+      ru.votedState = false;
+    });
+    // return false;
+    // };
+
     socket.emit("votes", { allVote: false, roomId: room.roomId });
     socket.emit("isUserVoted", roomUsers);
   };
