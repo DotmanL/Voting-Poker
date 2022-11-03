@@ -39,7 +39,7 @@ export const NavBar = (props: Props) => {
 
   const handleSignOut = () => {
     // localStorage.removeItem('user');
-    localStorage.clear();
+    window.localStorage.clear()
     navigate('/new-room')
     toast.info('Kindly join a room')
   }
