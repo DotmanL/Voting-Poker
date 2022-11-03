@@ -4,13 +4,15 @@ import Toolbar from "@mui/material/Toolbar";
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
 import { Typography } from "@mui/material";
-import IconButton from "@mui/material/IconButton";
+// import IconButton from "@mui/material/IconButton";
+import { useNavigate } from "react-router-dom";
 import { Link } from "./Link";
-import { AccountCircle } from "@mui/icons-material";
-import MenuItem from "@mui/material/MenuItem";
-import Menu from "@mui/material/Menu";
+// import { AccountCircle } from "@mui/icons-material";
+// import MenuItem from "@mui/material/MenuItem";
+// import Menu from "@mui/material/Menu";
 import { userContext } from "../../../App";
 import { IUser } from "interfaces/User/IUser";
+import { toast } from "react-toastify";
 
 type Props = {
   appName: string;
@@ -19,20 +21,27 @@ type Props = {
 
 export const NavBar = (props: Props) => {
   const { appName, currentUser } = props;
+  const navigate = useNavigate();
   const userData = useContext(userContext);
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  // const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [scrolledDownEnough, setScrolledDownEnough] = useState(false);
   const [user, setUser] = useState<IUser>(
     currentUser ? currentUser : userData!
   );
 
-  const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
+  // const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
+  //   setAnchorEl(event.currentTarget);
+  // };
 
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
+  // const handleClose = () => {
+  //   setAnchorEl(null);
+  // };
+
+  const handleSignOut = () => {
+    localStorage.removeItem('user');
+    navigate('/new-room')
+    toast.info('Kindly join a room')
+  }
 
   useEffect(() => {
     if (currentUser) {
@@ -119,7 +128,7 @@ export const NavBar = (props: Props) => {
                   >
                     Welcome {user?.name}
                   </Typography>
-                  <IconButton
+                  {/* <IconButton
                     size="large"
                     aria-label="account of current user"
                     aria-controls="menu-appbar"
@@ -147,7 +156,7 @@ export const NavBar = (props: Props) => {
                   >
                     <MenuItem onClick={handleClose}>Profile</MenuItem>
                     <MenuItem onClick={handleClose}>My account</MenuItem>
-                  </Menu>
+                  </Menu> */}
                 </Grid>
               )}
             </Grid>
@@ -155,10 +164,11 @@ export const NavBar = (props: Props) => {
               <Button
                 sx={[
                   {
+                    display: { md: 'none', xs: 'none' },
                     background: "#67A3EE",
                     color: "secondary.main",
-                    px: { md: 3, xs: 1.5 },
-                    py: { md: 1, xs: 0.5 },
+                    px: { md: 2, xs: 1.5 },
+                    py: { md: 0.5, xs: 0.5 },
                     fontSize: { md: "20px", xs: "13px" }
                   },
                   {
@@ -172,6 +182,29 @@ export const NavBar = (props: Props) => {
                 {/* <Link to="/signup"> */}
                 Sign Up
                 {/* </Link> */}
+              </Button>
+            </Grid>
+            <Grid>
+              <Button
+                onClick={handleSignOut}
+                sx={[
+                  {
+                    background: "#67A3EE",
+                    color: "secondary.main",
+                    px: { md: 2, xs: 1.5 },
+                    py: { md: 0.5, xs: 0.5 },
+                    fontSize: { md: "20px", xs: "13px" },
+                    mx: { md: 2, xs: 1 }
+                  },
+                  {
+                    "&:hover": {
+                      color: "white",
+                      backgroundColor: "green"
+                    }
+                  }
+                ]}
+              >
+                Sign Out
               </Button>
             </Grid>
           </Grid>

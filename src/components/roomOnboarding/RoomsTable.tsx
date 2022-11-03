@@ -3,6 +3,7 @@ import { IRoom } from "interfaces/Room/IRoom";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import { useNavigate } from "react-router-dom";
+import Grid from "@mui/material/Grid";
 import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
@@ -26,7 +27,37 @@ function RoomsTable(props: Props) {
   };
 
   return (
-    <TableContainer component={Paper}>
+    <TableContainer sx={{
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "center",
+      alignItems: 'center'
+    }} component={Paper}>
+      <Grid>
+        <Button
+          variant="contained"
+          disabled={true}
+          sx={[
+            {
+              mt: 4,
+              ml: { md: 5, xs: 0 },
+              background: "primary.main",
+              color: "white",
+              px: { md: 4, xs: 2 },
+              py: { md: 0.7, xs: 0.5 },
+              fontSize: "20px"
+            },
+            {
+              "&:hover": {
+                color: "white",
+                opacity: "0.6"
+              }
+            }
+          ]}
+        >
+          Join Room
+        </Button>
+      </Grid>
       <Table aria-label="simple table">
         <TableHead>
           <TableRow>

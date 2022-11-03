@@ -89,7 +89,7 @@ function LandingPage() {
                     background: "primary.main",
                     color: "white",
                     px: { md: 4, xs: 2 },
-                    py: { md: 1, xs: 0.5 },
+                    py: { md: 0.7, xs: 0.5 },
                     fontSize: "20px"
                   },
                   {
@@ -100,7 +100,7 @@ function LandingPage() {
                   }
                 ]}
               >
-                Start New Room
+                Start/Join Room
               </Button>
             </Link>
           </Grid>

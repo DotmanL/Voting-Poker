@@ -220,7 +220,6 @@ function VotingRoom(props: Props) {
                       ]}
                       variant="outlined"
                     >
-                      {" "}
                       Reveal Votes
                     </Button>
                   </Grid>
