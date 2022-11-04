@@ -16,7 +16,7 @@ function VotingCard(props: Props) {
   const cardType = (votingType: VotingTypes): number[] => {
     switch (votingType) {
       case VotingTypes.Fibonnacci:
-        return [0, 1, 2, 3, 5, 8, 13, 21];
+        return [0, 0.5, 1, 2, 3, 5, 8, 13, 21];
       case VotingTypes.Random:
         return [0, 4];
     }
