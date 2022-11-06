@@ -28,7 +28,7 @@ function VotingRoom(props: Props) {
   const { room, socket, votesCasted, handleCreateUser, isModalOpen } = props;
   const user = useContext(userContext);
   const [roomUsers, setRoomUsers] = useState<IUserDetails[]>();
-  const [userVote, setUserVote] = useState<number>();
+  const [userVote, setUserVote] = useState<number | undefined>();
   const [isVoted, setIsVoted] = useState<boolean>(false);
   const getRoomId = useParams();
 
@@ -62,6 +62,7 @@ function VotingRoom(props: Props) {
       const getRoomOnlyData = data.find(
         (d) => d.roomId === room.roomId && d.userId === user?.userId
       );
+
       //Checks if our data contains any user in the room where a vote update was done
       if (!!getRoomOnlyData) {
         setRoomUsers(data);
@@ -69,15 +70,17 @@ function VotingRoom(props: Props) {
     });
 
     socket.on("isVotedResponse", (data: IUser) => {
+
       if (data.userId === user?.userId) {
         setIsVoted(data.votedState!);
         user!.votedState = data.votedState;
-        localStorage.setItem("user", JSON.stringify(user));
+        // localStorage.setItem("user", JSON.stringify(user));
       }
     });
 
     return () => {
       user!.votedState = false;
+      user!.currentVote = undefined;
       localStorage.setItem("user", JSON.stringify(user));
       socket.disconnect();
     };
@@ -89,11 +92,14 @@ function VotingRoom(props: Props) {
   };
 
   const handleNewVotingSession = () => {
-    user!.votedState = false;
-    localStorage.setItem("user", JSON.stringify(user));
     roomUsers?.forEach((ru) => {
       ru.votedState = false;
+      ru.currentVote = undefined;
     });
+    user!.votedState = false;
+    user!.currentVote = undefined;
+    localStorage.setItem("user", JSON.stringify(user));
+    setUserVote(undefined)
     socket.emit("votes", { allVotes: false, roomId: room.roomId });
     socket.emit("isUserVoted", roomUsers);
   };
@@ -109,6 +115,8 @@ function VotingRoom(props: Props) {
 
       user.currentVote = userVotingDetails.vote;
       user.currentRoomId = userVotingDetails.roomId;
+      user.votedState = (voteValue === userVote && !isVoted) ||
+        (voteValue !== userVote && true)
 
       socket.emit("isVotedState", {
         roomId: user.currentRoomId,
@@ -119,14 +127,14 @@ function VotingRoom(props: Props) {
       });
 
       localStorage.setItem("user", JSON.stringify(user));
-      setUserVote(user.currentVote);
+      setUserVote(voteValue);
       const roomUserIndex = roomUsers!.findIndex(
         (r) => r.userId === user.userId
       );
       roomUsers![roomUserIndex].votedState =
         (voteValue === userVote && !isVoted) ||
         (voteValue !== userVote && true);
-      roomUsers![roomUserIndex].currentVote = user.currentVote;
+      roomUsers![roomUserIndex].currentVote = voteValue;
       socket.emit("isUserVoted", roomUsers);
     }
   };
@@ -297,13 +305,17 @@ function VotingRoom(props: Props) {
                       }
                     ]}
                   >
-                    {!!votesCasted && (
+                    {!!votesCasted ? (
                       <CardContent>
                         <Typography variant="h4">
                           {votesCasted[i].currentVote}
                         </Typography>
                       </CardContent>
-                    )}
+                    ) : (<Grid>
+                      <Typography variant="h4">
+                        {roomUser.votedState ? (roomUser.userId === user?.userId && roomUser.currentVote) : undefined}
+                      </Typography>
+                    </Grid>)}
                   </Card>
                   <Grid
                     sx={{
