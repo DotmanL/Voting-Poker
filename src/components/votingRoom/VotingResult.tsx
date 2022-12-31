@@ -3,6 +3,7 @@ import Grid from "@mui/material/Grid";
 import { userContext } from "App";
 import { IUserDetails } from "interfaces/User/IUserDetails";
 import { IRoom } from "interfaces/Room/IRoom";
+import Typography from "@mui/material/Typography";
 
 type Props = {
   votesCasted?: IUserDetails[];
@@ -20,13 +21,20 @@ function VotingResult(props: Props) {
           sx={{
             display: "flex",
             flexDirection: "row",
-            justifyContent: "center"
+            justifyContent: "center",
+            mt: 2
           }}
           key={i}
         >
-          <Grid> {room.roomId === user!.currentRoomId && v.name}</Grid>
+          <Grid>
+            <Typography sx={{ fontSize: '25px' }}>
+              {room.roomId === user!.currentRoomId && v.name}
+            </Typography>
+          </Grid>
           <Grid sx={{ mx: 2 }} key={i}>
-            {v.currentVote}
+            <Typography sx={{ fontSize: '25px' }}>
+              {v.currentVote}
+            </Typography>
           </Grid>
         </Grid>
       ))}

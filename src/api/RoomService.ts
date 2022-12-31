@@ -1,54 +1,40 @@
-import axios from 'axios';
+import axios from "axios";
 import { toast } from "react-toastify";
-import { IRoom } from '../interfaces/Room/IRoom';
+import { IRoom } from "../interfaces/Room/IRoom";
+import { getBaseUrl } from "api";
 
-const getBaseUrl = () => {
-  let url;
-  switch (process.env.NODE_ENV) {
-    case 'production':
-      // url = 'https://dotvoting.onrender.com/api/room/';
-      url = 'https://votingpokerapi.herokuapp.com/api/room/';
-      break;
-    case 'development':
-    default:
-      url = 'http://localhost:4000/api/room/';
-  }
-
-  return url;
-}
-
+const route: string = "room";
 const apiClient = axios.create({
-  baseURL: getBaseUrl(),
+  baseURL: getBaseUrl(route),
   headers: {
-    'Content-Type': 'application/json',
-  },
+    "Content-Type": "application/json"
+  }
 });
 
 const getRooms = async () => {
-  const response = await apiClient.get<IRoom[]>('getRooms')
-  return response.data
-}
+  const response = await apiClient.get<IRoom[]>("getRooms");
+  return response.data;
+};
 
 const createRoom = async (formData: IRoom) => {
   try {
-    const body = JSON.stringify(formData)
-    const response = await apiClient.post<IRoom>('createRoom', body);
-    toast.success('Room created successfully')
-    return response.status
+    const body = JSON.stringify(formData);
+    const response = await apiClient.post<IRoom>("createRoom", body);
+    toast.success("Room created successfully");
+    return response.status;
   } catch (err: any) {
-    console.error(err.message)
+    console.error(err.message);
   }
 };
 
 const getRoomDetails = async (id: string) => {
   try {
     const response = await apiClient.get<IRoom>(`getRoomDetails/${id}`);
-    return response.data
+    return response.data;
   } catch (err: any) {
-    console.error(err.message)
+    console.error(err.message);
   }
 };
-
 
 export const RoomService = {
   createRoom,
@@ -56,4 +42,4 @@ export const RoomService = {
   getRoomDetails
 };
 
-export default RoomService
+export default RoomService;

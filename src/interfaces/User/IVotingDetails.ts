@@ -1,9 +1,9 @@
-export interface IVotingDetails {
-  vote: number
-  userId?: string;
+import { IBase } from "interfaces/IBase";
+
+export interface IVotingDetails extends IBase {
+  vote: number;
   userName?: string;
   roomId: string;
   sessionId: string;
-  socketId: string,
+  socketId: string;
 }
-

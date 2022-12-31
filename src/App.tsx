@@ -11,18 +11,24 @@ import HomePageContainer from "components/hompage/HomePageContainer";
 import NotFoundContainer from "components/shared/NotFoundContainer";
 import VotingRoomContainer from "components/votingRoom/VotingRoomContainer";
 import RoomOnboardingContainer from "components/roomOnboarding/RoomOnboardingContainer";
+import UserService from "api/UserService";
 import "react-toastify/dist/ReactToastify.css";
 
 const queryClient = new QueryClient();
 export const userContext = createContext<IUser | null>(null);
 
-// setAlll USers here and pass as global state from socket emit
-
 function App() {
   useEffect(() => {
-    const getCurrentUser = localStorage.getItem("user");
-    const user = JSON.parse(getCurrentUser!);
-    setCurrentUser(user);
+    const getCurrentUser = async () => {
+      const getUserId = localStorage.getItem("userId");
+      const userId = JSON.parse(getUserId!);
+      if (!userId) {
+        return;
+      }
+      const user = await UserService.loadUser(userId);
+      setCurrentUser(user);
+    };
+    getCurrentUser();
   }, []);
 
   const [currentUser, setCurrentUser] = useState<IUser>();

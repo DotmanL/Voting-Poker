@@ -19,7 +19,7 @@ function RoomsTable(props: Props) {
   const navigate = useNavigate();
   const { allRooms } = props;
 
-  const handleJoinRoom = (roomDetails: IRoom) => {
+  const handleJoinRoom = async (roomDetails: IRoom) => {
     localStorage.setItem("room", JSON.stringify(roomDetails));
     navigate(`/room/${roomDetails.roomId}`);
     //HACK: used to reconnect user on joining room
@@ -27,12 +27,15 @@ function RoomsTable(props: Props) {
   };
 
   return (
-    <TableContainer sx={{
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "center",
-      alignItems: 'center'
-    }} component={Paper}>
+    <TableContainer
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center"
+      }}
+      component={Paper}
+    >
       <Grid>
         <Button
           variant="contained"

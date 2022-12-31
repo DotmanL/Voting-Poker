@@ -13,8 +13,54 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import { useParams } from "react-router-dom";
 import { IUserDetails } from "interfaces/User/IUserDetails";
+import Slide from "@mui/material/Slide";
 import { toast } from "react-toastify";
+import { makeStyles } from "@mui/styles";
 import { Button } from "@mui/material";
+import UserService from "api/UserService";
+
+const useStyles = makeStyles((theme) => ({
+  "@keyframes glowing": {
+    from: {
+      boxShadow: "0px 0px 10px 3px #67a3ee"
+    },
+    to: {
+      boxShadow: "0px 0px 20px 5px #67a3ee"
+    }
+  },
+
+  pickCard: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: "30vh",
+    borderRadius: "20px",
+    border: "2px solid #67A3EE",
+    width: "400px",
+    height: "200px",
+    [theme.breakpoints.down("md")]: {
+      width: "300px",
+      height: "150px"
+    }
+  },
+
+  glowingCard: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: "30vh",
+    borderRadius: "20px",
+    animation: `$glowing 0.5s infinite alternate`,
+    width: "400px",
+    height: "200px",
+    [theme.breakpoints.down("md")]: {
+      width: "300px",
+      height: "150px"
+    }
+  }
+}));
 
 type Props = {
   room: IRoom;
@@ -26,6 +72,7 @@ type Props = {
 
 function VotingRoom(props: Props) {
   const { room, socket, votesCasted, handleCreateUser, isModalOpen } = props;
+  const classes = useStyles();
   const user = useContext(userContext);
   const [roomUsers, setRoomUsers] = useState<IUserDetails[]>();
   const [userVote, setUserVote] = useState<number | undefined>();
@@ -35,32 +82,37 @@ function VotingRoom(props: Props) {
   useEffect(() => {
     socket.emit("user", {
       name: user?.name,
-      userId: user?.userId,
+      _id: user?._id,
       socketId: socket.id && socket.id,
       roomId: room.roomId,
       votedState: user?.votedState,
-      currentVote: user?.currentVote,
+      currentVote: user?.currentVote
     });
-    socket.on("userResponse", (data: IUserDetails[]) => {
+
+    socket.on("userResponse", async (data: IUserDetails[]) => {
       const userResponse = () => {
         const getRoomOnlyData = data.filter((d) => d.roomId === room.roomId);
         return getRoomOnlyData;
       };
+      if (!user) {
+        return;
+      }
       const roomData = userResponse();
       setRoomUsers(roomData);
     });
 
     socket.on("welcome", (data: any) => {
-      const welcomeMessage = ` Hi ${user && user.name}, welcome to ${room.name
-        } room`;
-      if (data.userId === user!.userId) {
+      const welcomeMessage = ` Hi ${user && user.name}, welcome to ${
+        room.name
+      } room`;
+      if (data.userId === user!._id) {
         toast.success(welcomeMessage, { autoClose: 2500, pauseOnHover: true });
       }
     });
 
     socket.on("isUserVotedResponse", (data: IUserDetails[]) => {
       const getRoomOnlyData = data.find(
-        (d) => d.roomId === room.roomId && d.userId === user?.userId
+        (d) => d.roomId === room.roomId && d._id === user?._id
       );
 
       //Checks if our data contains any user in the room where a vote update was done
@@ -70,18 +122,19 @@ function VotingRoom(props: Props) {
     });
 
     socket.on("isVotedResponse", (data: IUser) => {
-
-      if (data.userId === user?.userId) {
+      if (data._id === user?._id) {
         setIsVoted(data.votedState!);
         user!.votedState = data.votedState;
-        // localStorage.setItem("user", JSON.stringify(user));
       }
     });
 
     return () => {
-      user!.votedState = false;
-      user!.currentVote = undefined;
-      localStorage.setItem("user", JSON.stringify(user));
+      // too many queries on DB, ignore isConnected boolean now as it of no use currently
+      // const disconnectUser = async () => {
+      //   user!.isConnected = false;
+      //   await UserService.updateUser(user!._id!, user!);
+      // };
+      // disconnectUser();
       socket.disconnect();
     };
   }, [room, socket, user]);
@@ -91,20 +144,27 @@ function VotingRoom(props: Props) {
     socket.emit("votes", { allVotes: roomUsersVotes, roomId: room.roomId });
   };
 
-  const handleNewVotingSession = () => {
+  const handleNewVotingSession = async () => {
     roomUsers?.forEach((ru) => {
       ru.votedState = false;
       ru.currentVote = undefined;
     });
     user!.votedState = false;
     user!.currentVote = undefined;
-    localStorage.setItem("user", JSON.stringify(user));
-    setUserVote(undefined)
+    const currentRoomUsers = await UserService.getRoomUsers(room.roomId);
+    for (const currentRoomUser of currentRoomUsers!) {
+      currentRoomUser.votedState = false;
+      currentRoomUser.currentVote = undefined;
+      await UserService.resetVote(currentRoomUser!._id!);
+    }
+    setUserVote(undefined);
+    const updatedCurrentRoomUsers = await UserService.getRoomUsers(room.roomId);
+    setRoomUsers(updatedCurrentRoomUsers!);
     socket.emit("votes", { allVotes: false, roomId: room.roomId });
     socket.emit("isUserVoted", roomUsers);
   };
 
-  const handleAddVote = (voteValue: number) => {
+  const handleAddVote = async (voteValue: number) => {
     if (voteValue >= 0 && user) {
       const userVotingDetails: IVotingDetails = {
         vote: voteValue,
@@ -112,25 +172,28 @@ function VotingRoom(props: Props) {
         sessionId: `${socket.id}${Math.random()}`,
         socketId: socket.id
       };
+      setIsVoted(
+        (voteValue === userVote && !isVoted) || (voteValue !== userVote && true)
+      );
 
       user.currentVote = userVotingDetails.vote;
       user.currentRoomId = userVotingDetails.roomId;
-      user.votedState = (voteValue === userVote && !isVoted) ||
-        (voteValue !== userVote && true)
+      user.votedState =
+        (voteValue === userVote && !isVoted) ||
+        (voteValue !== userVote && true);
 
       socket.emit("isVotedState", {
         roomId: user.currentRoomId,
-        userId: user.userId,
+        userId: user._id,
         votedState:
           (voteValue === userVote && !isVoted) ||
           (voteValue !== userVote && true)
       });
 
-      localStorage.setItem("user", JSON.stringify(user));
+      user!.currentVote = voteValue;
+      await UserService.updateUser(user!._id!, user!);
       setUserVote(voteValue);
-      const roomUserIndex = roomUsers!.findIndex(
-        (r) => r.userId === user.userId
-      );
+      const roomUserIndex = roomUsers!.findIndex((r) => r._id === user._id);
       roomUsers![roomUserIndex].votedState =
         (voteValue === userVote && !isVoted) ||
         (voteValue !== userVote && true);
@@ -141,7 +204,7 @@ function VotingRoom(props: Props) {
 
   const isDisabled =
     roomUsers &&
-      roomUsers.filter((ru) => ru.votedState === true).length < roomUsers!.length
+    roomUsers.filter((ru) => ru.votedState === true).length < roomUsers!.length
       ? true
       : false;
 
@@ -175,17 +238,7 @@ function VotingRoom(props: Props) {
           }}
         >
           <Grid
-            sx={{
-              display: "flex",
-              flexDirection: "row",
-              justifyContent: "center",
-              alignItems: "center",
-              mt: "30vh",
-              borderRadius: "20px",
-              border: "2px solid #67A3EE",
-              width: { md: "400px", xs: "300px" },
-              height: { md: "200px", xs: "150px" }
-            }}
+            className={!isDisabled ? classes.glowingCard : classes.pickCard}
           >
             {!votesCasted ? (
               <Grid
@@ -277,7 +330,7 @@ function VotingRoom(props: Props) {
           >
             {roomUsers &&
               roomUsers.map((roomUser: IUserDetails, i: number) => (
-                <Grid key={roomUser.userId}>
+                <Grid key={roomUser._id}>
                   <Card
                     variant="outlined"
                     sx={[
@@ -287,16 +340,14 @@ function VotingRoom(props: Props) {
                         mx: { md: 2, xs: 1 },
                         border: "1px solid #67A3EE",
                         cursor: "pointer",
-                        borderRadius: "8px",
+                        borderRadius: { md: "8px", xs: "4px" },
                         display: "flex",
                         flexDirection: "row",
                         justifyContent: "center",
                         alignItems: "center",
                         boxShadow: 5,
                         transition: "transform ease 300ms",
-                        background:
-                          // roomUser.roomId === user!.currentRoomId &&
-                          roomUser!.votedState! ? "#67A3EE" : "white"
+                        background: roomUser!.votedState! ? "#67A3EE" : "white"
                       },
                       {
                         "&:hover": {
@@ -311,11 +362,16 @@ function VotingRoom(props: Props) {
                           {votesCasted[i].currentVote}
                         </Typography>
                       </CardContent>
-                    ) : (<Grid>
-                      <Typography variant="h4">
-                        {roomUser.votedState ? (roomUser.userId === user?.userId && roomUser.currentVote) : undefined}
-                      </Typography>
-                    </Grid>)}
+                    ) : (
+                      <Grid>
+                        <Typography variant="h3" sx={{ color: "white" }}>
+                          {roomUser.votedState
+                            ? roomUser._id === roomUser?._id &&
+                              roomUser?.currentVote
+                            : undefined}
+                        </Typography>
+                      </Grid>
+                    )}
                   </Card>
                   <Grid
                     sx={{
@@ -368,23 +424,26 @@ function VotingRoom(props: Props) {
       )}
 
       {!!votesCasted && (
-        <Grid
-          sx={{
-            position: "absolute" as "absolute",
-            left: 0,
-            right: 0,
-            bottom: { md: 0, xs: 4 },
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "center",
-            background: "#67A3EE",
-            // mt: "100px",
-            width: "100%",
-            height: "100px"
-          }}
-        >
-          <VotingResult votesCasted={votesCasted} room={room} />
-        </Grid>
+        <Slide direction="up" in={!!votesCasted} mountOnEnter unmountOnExit>
+          <Grid
+            sx={{
+              position: "absolute" as "absolute",
+              left: 0,
+              right: 0,
+              bottom: { md: 0, xs: 4 },
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "center",
+              background: "#67A3EE",
+              transition: "width 2s ease-in 1s",
+              // mt: "100px",
+              width: "100%",
+              height: "200px"
+            }}
+          >
+            <VotingResult votesCasted={votesCasted} room={room} />
+          </Grid>
+        </Slide>
       )}
       <CustomModal isOpen={isModalOpen}>
         <Grid>

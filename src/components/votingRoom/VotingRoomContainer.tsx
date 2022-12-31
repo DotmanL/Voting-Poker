@@ -9,6 +9,7 @@ import { NavBar } from "components/shared/component/NavBar";
 import { userContext } from "../../App";
 import VotingRoom from "./VotingRoom";
 import RoomService from "../../api/RoomService";
+import UserService from "../../api/UserService";
 import Spinner from "components/shared/component/Spinner";
 import { IUserDetails } from "interfaces/User/IUserDetails";
 
@@ -21,7 +22,7 @@ const getBaseUrl = () => {
       break;
     case "development":
     default:
-      url = "http://localhost:4000";
+      url = "http://localhost:4001";
   }
 
   return url;
@@ -47,12 +48,12 @@ function VotingRoomContainer() {
   const [currentUser, setCurrentUser] = useState<IUser | null>(user);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(!!user);
 
-  const handleCreateUser = (formData: IUser) => {
-    localStorage.setItem("user", JSON.stringify(formData));
-    const user = localStorage.getItem("user");
-    const userData = JSON.parse(user!);
-    setCurrentUser(userData);
-    socket.emit("user", { userData });
+  const handleCreateUser = async (formData: IUser) => {
+    await UserService.createUser(formData);
+    const userByName = await UserService.getCurrentUserByName(formData.name);
+    localStorage.setItem("userId", JSON.stringify(userByName?._id));
+    setCurrentUser(userByName!);
+    socket.emit("user", { userByName });
     setIsModalOpen(false);
     window.location.reload();
   };

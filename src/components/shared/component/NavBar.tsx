@@ -1,18 +1,19 @@
-import React, { useEffect, useState, useContext } from "react";
-import AppBar from "@mui/material/AppBar";
-import Toolbar from "@mui/material/Toolbar";
-import Grid from "@mui/material/Grid";
-import Button from "@mui/material/Button";
 import { Typography } from "@mui/material";
+import AppBar from "@mui/material/AppBar";
+import Button from "@mui/material/Button";
+import Grid from "@mui/material/Grid";
+import Toolbar from "@mui/material/Toolbar";
+import { useContext, useEffect, useState } from "react";
 // import IconButton from "@mui/material/IconButton";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Link } from "./Link";
 // import { AccountCircle } from "@mui/icons-material";
 // import MenuItem from "@mui/material/MenuItem";
 // import Menu from "@mui/material/Menu";
-import { userContext } from "../../../App";
+import UserService from "api/UserService";
 import { IUser } from "interfaces/User/IUser";
 import { toast } from "react-toastify";
+import { userContext } from "../../../App";
 
 type Props = {
   appName: string;
@@ -23,6 +24,8 @@ export const NavBar = (props: Props) => {
   const { appName, currentUser } = props;
   const navigate = useNavigate();
   const userData = useContext(userContext);
+  const location = useLocation();
+  const urlPath = location.pathname;
   // const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [scrolledDownEnough, setScrolledDownEnough] = useState(false);
   const [user, setUser] = useState<IUser>(
@@ -37,12 +40,22 @@ export const NavBar = (props: Props) => {
   //   setAnchorEl(null);
   // };
 
-  const handleSignOut = () => {
-    localStorage.removeItem('user');
-    window.localStorage.clear()
-    navigate('/new-room')
-    toast.info('Kindly join a room')
-  }
+  const handleLeaveRoom = async () => {
+    navigate("/new-room");
+    toast.info("Kindly join a room");
+  };
+
+  const handleSignOut = async () => {
+    localStorage.removeItem("userId");
+    await UserService.deleteUser(user._id);
+    navigate("/");
+    window.location.reload();
+    toast.success("Sign Out Succesful and Account Deleted");
+  };
+
+  const handleSignUp = async () => {
+    navigate("/new-room");
+  };
 
   useEffect(() => {
     if (currentUser) {
@@ -165,7 +178,7 @@ export const NavBar = (props: Props) => {
               <Button
                 sx={[
                   {
-                    display: { md: 'none', xs: 'none' },
+                    display: { md: "none", xs: "none" },
                     background: "#67A3EE",
                     color: "secondary.main",
                     px: { md: 2, xs: 1.5 },
@@ -185,9 +198,13 @@ export const NavBar = (props: Props) => {
                 {/* </Link> */}
               </Button>
             </Grid>
-            <Grid>
+            <Grid
+              sx={{
+                display: urlPath.indexOf("/room") >= 0 ? "flex" : "none"
+              }}
+            >
               <Button
-                onClick={handleSignOut}
+                onClick={handleLeaveRoom}
                 sx={[
                   {
                     background: "#67A3EE",
@@ -205,7 +222,32 @@ export const NavBar = (props: Props) => {
                   }
                 ]}
               >
-                Sign Out
+                Leave Room
+              </Button>
+            </Grid>
+            <Grid>
+              <Button
+                title={!user ? "Sign Up By Joining a room below" : ""}
+                onClick={!user ? handleSignUp : handleSignOut}
+                // disabled={!user}
+                sx={[
+                  {
+                    background: "#67A3EE",
+                    color: "secondary.main",
+                    px: { md: 2, xs: 1.5 },
+                    py: { md: 0.5, xs: 0.5 },
+                    fontSize: { md: "20px", xs: "13px" },
+                    mx: { md: 2, xs: 1 }
+                  },
+                  {
+                    "&:hover": {
+                      color: "white",
+                      backgroundColor: "green"
+                    }
+                  }
+                ]}
+              >
+                {!user ? "Sign Up" : "Sign Out"}
               </Button>
             </Grid>
           </Grid>
