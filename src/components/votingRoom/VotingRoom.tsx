@@ -139,6 +139,12 @@ function VotingRoom(props: Props) {
     };
   }, [room, socket, user]);
 
+  const isDisabled =
+    roomUsers &&
+    roomUsers.filter((ru) => ru.votedState === true).length < roomUsers!.length
+      ? true
+      : false;
+
   const handleRevealVotes = () => {
     const roomUsersVotes = roomUsers;
     socket.emit("votes", { allVotes: roomUsersVotes, roomId: room.roomId });
@@ -201,12 +207,6 @@ function VotingRoom(props: Props) {
       socket.emit("isUserVoted", roomUsers);
     }
   };
-
-  const isDisabled =
-    roomUsers &&
-    roomUsers.filter((ru) => ru.votedState === true).length < roomUsers!.length
-      ? true
-      : false;
 
   return (
     <Grid
