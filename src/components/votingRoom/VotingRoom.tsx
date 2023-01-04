@@ -359,7 +359,7 @@ function VotingRoom(props: Props) {
                     {!!votesCasted ? (
                       <CardContent>
                         <Typography variant="h4">
-                          {votesCasted[i].currentVote}
+                          {votesCasted[i]?.currentVote}
                         </Typography>
                       </CardContent>
                     ) : (
