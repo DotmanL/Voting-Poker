@@ -24,6 +24,7 @@ function RoomsTable(props: Props) {
     navigate(`/room/${roomDetails.roomId}`);
     //HACK: used to reconnect user on joining room
     window.location.reload();
+    window.location.reload();
   };
 
   return (

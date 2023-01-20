@@ -56,6 +56,7 @@ function VotingRoomContainer() {
     socket.emit("user", { userByName });
     setIsModalOpen(false);
     window.location.reload();
+    window.location.reload();
   };
 
   useEffect(() => {
