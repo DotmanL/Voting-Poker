@@ -76,8 +76,11 @@ function VotingRoom(props: Props) {
   const user = useContext(userContext);
   const [roomUsers, setRoomUsers] = useState<IUserDetails[]>();
   const [userVote, setUserVote] = useState<number | undefined>();
+  // const [isDisabled, setIsDisabled]= useState<boolean>()
   const [isVoted, setIsVoted] = useState<boolean>(false);
   const getRoomId = useParams();
+  const getUserId = localStorage.getItem("userId");
+  const userId = JSON.parse(getUserId!);
 
   useEffect(() => {
     socket.emit("user", {
@@ -139,11 +142,15 @@ function VotingRoom(props: Props) {
     };
   }, [room, socket, user]);
 
-  const isDisabled =
-    roomUsers &&
-    roomUsers.filter((ru) => ru.votedState === true).length < roomUsers!.length
+  const isDisabled = () => {
+    if (!roomUsers) {
+      return true;
+    }
+    return roomUsers.filter((ru) => ru.votedState === true).length <
+      roomUsers!.length
       ? true
       : false;
+  };
 
   const handleRevealVotes = () => {
     const roomUsersVotes = roomUsers;
@@ -238,7 +245,7 @@ function VotingRoom(props: Props) {
           }}
         >
           <Grid
-            className={!isDisabled ? classes.glowingCard : classes.pickCard}
+            className={isDisabled() ? classes.pickCard : classes.glowingCard}
           >
             {!votesCasted ? (
               <Grid
@@ -248,7 +255,7 @@ function VotingRoom(props: Props) {
                   alignItems: "center"
                 }}
               >
-                {isDisabled ? (
+                {isDisabled() ? (
                   <Grid>
                     <Typography
                       variant="h3"
@@ -260,7 +267,7 @@ function VotingRoom(props: Props) {
                 ) : (
                   <Grid sx={{ mt: 2 }}>
                     <Button
-                      disabled={isDisabled}
+                      disabled={isDisabled()}
                       onClick={handleRevealVotes}
                       sx={[
                         {
@@ -366,8 +373,7 @@ function VotingRoom(props: Props) {
                       <Grid>
                         <Typography variant="h3" sx={{ color: "white" }}>
                           {roomUser.votedState
-                            ? roomUser._id === roomUser?._id &&
-                              roomUser?.currentVote
+                            ? roomUser._id === userId && roomUser?.currentVote
                             : undefined}
                         </Typography>
                       </Grid>
