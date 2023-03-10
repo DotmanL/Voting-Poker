@@ -49,7 +49,7 @@ export const NavBar = (props: Props) => {
     localStorage.removeItem("userId");
     await UserService.deleteUser(user._id);
     navigate("/");
-    window.location.reload();
+    // window.location.reload();
     toast.success("Sign Out Succesful and Account Deleted");
   };
 

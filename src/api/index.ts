@@ -11,3 +11,17 @@ export const getBaseUrl = (route: string) => {
 
   return url;
 };
+
+export const getBaseUrlWithoutRoute = () => {
+  let url;
+  switch (process.env.NODE_ENV) {
+    case "production":
+      url = "https://votingpokerapi.herokuapp.com/";
+      break;
+    case "development":
+    default:
+      url = "http://localhost:4001";
+  }
+
+  return url;
+};

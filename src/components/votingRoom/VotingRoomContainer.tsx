@@ -11,7 +11,6 @@ import VotingRoom from "./VotingRoom";
 import RoomService from "../../api/RoomService";
 import UserService from "../../api/UserService";
 import Spinner from "components/shared/component/Spinner";
-import { IUserDetails } from "interfaces/User/IUserDetails";
 
 const getBaseUrl = () => {
   let url;
@@ -31,7 +30,6 @@ const getBaseUrl = () => {
 const socket = io(getBaseUrl());
 
 function VotingRoomContainer() {
-  // const navigate = useNavigate();
   const getRoomId = useParams();
   const roomId = Object.values(getRoomId)[0];
   const {
@@ -43,7 +41,6 @@ function VotingRoomContainer() {
   );
 
   const [roomDetails, setRoomDetails] = useState<IRoom>(roomData!);
-  const [votes, setVotes] = useState<IUserDetails[] | undefined>();
   const user = useContext(userContext);
   const [currentUser, setCurrentUser] = useState<IUser | null>(user);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(!!user);
@@ -56,7 +53,6 @@ function VotingRoomContainer() {
     socket.emit("user", { userByName });
     setIsModalOpen(false);
     window.location.reload();
-    window.location.reload();
   };
 
   useEffect(() => {
@@ -65,11 +61,8 @@ function VotingRoomContainer() {
     } else {
       setIsModalOpen(true);
     }
-    socket.on("votesResponse", (userVotingDetails: any) => {
-      setVotes(userVotingDetails);
-    });
     setRoomDetails(roomData!);
-  }, [user, roomData, votes]);
+  }, [user, roomData]);
 
   if (error) {
     return <p>{(error as Error)?.message}</p>;
@@ -86,7 +79,6 @@ function VotingRoomContainer() {
             <VotingRoom
               room={roomDetails}
               socket={socket}
-              votesCasted={votes}
               handleCreateUser={handleCreateUser}
               isModalOpen={isModalOpen}
             />

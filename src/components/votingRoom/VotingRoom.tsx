@@ -11,6 +11,7 @@ import { IVotingDetails } from "interfaces/User/IVotingDetails";
 import VotingCard from "./VotingCard";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
+import { io } from "socket.io-client";
 import { useParams } from "react-router-dom";
 import { IUserDetails } from "interfaces/User/IUserDetails";
 import Slide from "@mui/material/Slide";
@@ -18,6 +19,7 @@ import { toast } from "react-toastify";
 import { makeStyles } from "@mui/styles";
 import { Button } from "@mui/material";
 import UserService from "api/UserService";
+import { getBaseUrlWithoutRoute } from "api";
 
 const useStyles = makeStyles((theme) => ({
   "@keyframes glowing": {
@@ -65,17 +67,18 @@ const useStyles = makeStyles((theme) => ({
 type Props = {
   room: IRoom;
   socket: any;
-  votesCasted?: IUserDetails[];
   handleCreateUser: (user: IUser) => void;
   isModalOpen: boolean;
 };
 
 function VotingRoom(props: Props) {
-  const { room, socket, votesCasted, handleCreateUser, isModalOpen } = props;
+  const { room, handleCreateUser, isModalOpen } = props;
   const classes = useStyles();
   const user = useContext(userContext);
+  const [socket, setSocket] = useState<any>(null);
   const [roomUsers, setRoomUsers] = useState<IUserDetails[]>();
   const [userVote, setUserVote] = useState<number | undefined>();
+  const [votesCasted, setVotesCasted] = useState<IUserDetails[] | undefined>();
   // const [isDisabled, setIsDisabled]= useState<boolean>()
   const [isVoted, setIsVoted] = useState<boolean>(false);
   const getRoomId = useParams();
@@ -83,11 +86,27 @@ function VotingRoom(props: Props) {
   const userId = JSON.parse(getUserId!);
 
   useEffect(() => {
+    const newSocket = io(getBaseUrlWithoutRoute());
+    setSocket(newSocket);
+
+    return () => {
+      // TODO: can't reset vote on leaving room, only do when vote session is completed.
+      // TODO: implement many to many relationship between each room and userId and userVote.
+      // user!.votedState = false;
+      // user!.currentVote = undefined;
+      const userName = user!.name;
+      newSocket.emit("leaveRoom", { userId, userName });
+      newSocket.disconnect();
+    };
+  }, [user, userId]);
+
+  useEffect(() => {
+    if (!socket) return;
     socket.emit("user", {
       name: user?.name,
       _id: user?._id,
       socketId: socket.id && socket.id,
-      roomId: room.roomId,
+      roomId: getRoomId.roomId,
       votedState: user?.votedState,
       currentVote: user?.currentVote
     });
@@ -124,6 +143,18 @@ function VotingRoom(props: Props) {
       }
     });
 
+    socket.on("votesResponse", (userVotingDetails: IUserDetails[]) => {
+      setVotesCasted(userVotingDetails);
+    });
+
+    // socket.on("leaveRoomResponse", (data: IUser) => {
+    //   console.log(data);
+    //   console.log(!data.votedState);
+
+    //   user!.votedState = data.votedState;
+    //   user!.currentVote = !data.votedState ? undefined : user?.currentVote;
+    // });
+
     socket.on("isVotedResponse", (data: IUser) => {
       if (data._id === user?._id) {
         setIsVoted(data.votedState!);
@@ -132,15 +163,9 @@ function VotingRoom(props: Props) {
     });
 
     return () => {
-      // too many queries on DB, ignore isConnected boolean now as it of no use currently
-      // const disconnectUser = async () => {
-      //   user!.isConnected = false;
-      //   await UserService.updateUser(user!._id!, user!);
-      // };
-      // disconnectUser();
-      socket.disconnect();
+      socket.off("user");
     };
-  }, [room, socket, user]);
+  }, [room, socket, user, getRoomId.roomId]);
 
   const isDisabled = () => {
     if (!roomUsers) {
@@ -154,6 +179,9 @@ function VotingRoom(props: Props) {
 
   const handleRevealVotes = () => {
     const roomUsersVotes = roomUsers;
+    console.log(roomUsersVotes);
+    console.log(room.roomId);
+
     socket.emit("votes", { allVotes: roomUsersVotes, roomId: room.roomId });
   };
 
@@ -442,7 +470,6 @@ function VotingRoom(props: Props) {
               justifyContent: "center",
               background: "#67A3EE",
               transition: "width 2s ease-in 1s",
-              // mt: "100px",
               width: "100%",
               height: "200px"
             }}

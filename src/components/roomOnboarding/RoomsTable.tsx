@@ -23,8 +23,8 @@ function RoomsTable(props: Props) {
     localStorage.setItem("room", JSON.stringify(roomDetails));
     navigate(`/room/${roomDetails.roomId}`);
     //HACK: used to reconnect user on joining room
-    window.location.reload();
-    window.location.reload();
+    // window.location.reload();
+    // window.location.reload();
   };
 
   return (
