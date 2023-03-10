@@ -94,8 +94,7 @@ function VotingRoom(props: Props) {
       // TODO: implement many to many relationship between each room and userId and userVote.
       // user!.votedState = false;
       // user!.currentVote = undefined;
-      const userName = user!.name;
-      newSocket.emit("leaveRoom", { userId, userName });
+      // newSocket.emit("leaveRoom", { userId });
       newSocket.disconnect();
     };
   }, [user, userId]);
