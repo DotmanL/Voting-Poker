@@ -83,7 +83,7 @@ function VotingRoom(props: Props) {
   const [isVoted, setIsVoted] = useState<boolean>(false);
   const getRoomId = useParams();
   const getUserId = localStorage.getItem("userId");
-  const userId = JSON.parse(getUserId!);
+  const userId = getUserId ? JSON.parse(getUserId) : null;
 
   useEffect(() => {
     const newSocket = io(getBaseUrlWithoutRoute());

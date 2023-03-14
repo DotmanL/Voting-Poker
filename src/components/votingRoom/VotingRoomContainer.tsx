@@ -48,6 +48,9 @@ function VotingRoomContainer() {
   const handleCreateUser = async (formData: IUser) => {
     await UserService.createUser(formData);
     const userByName = await UserService.getCurrentUserByName(formData.name);
+    if (!userByName) {
+      return;
+    }
     localStorage.setItem("userId", JSON.stringify(userByName?._id));
     setCurrentUser(userByName!);
     socket.emit("user", { userByName });
