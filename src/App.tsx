@@ -13,6 +13,7 @@ import VotingRoomContainer from "components/votingRoom/VotingRoomContainer";
 import RoomOnboardingContainer from "components/roomOnboarding/RoomOnboardingContainer";
 import UserService from "api/UserService";
 import "react-toastify/dist/ReactToastify.css";
+import PlayGround from "components/votingRoom/PlayGround";
 
 const queryClient = new QueryClient();
 export const userContext = createContext<IUser | null>(null);
@@ -49,6 +50,7 @@ function App() {
                 <Route index element={<HomePageContainer />} />
                 <Route path="new-room" element={<RoomOnboardingContainer />} />
                 <Route path="room/:roomId" element={<VotingRoomContainer />} />
+                <Route path="play" element={<PlayGround />} />
 
                 <Route path="*" element={<NotFoundContainer />} />
               </Route>
