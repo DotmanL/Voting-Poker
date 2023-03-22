@@ -2,24 +2,22 @@ import React, { useContext, useEffect, useState } from "react";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import { userContext } from "App";
-import VotingResult from "./VotingResult";
 import CustomModal from "components/shared/component/CustomModal";
 import { IRoom } from "interfaces/Room/IRoom";
 import { IUser } from "interfaces/User/IUser";
 import CreateUser from "./CreateUser";
 import { IVotingDetails } from "interfaces/User/IVotingDetails";
-import VotingCard from "./VotingCard";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import { io } from "socket.io-client";
 import { useParams } from "react-router-dom";
 import { IUserDetails } from "interfaces/User/IUserDetails";
-import Slide from "@mui/material/Slide";
 import { toast } from "react-toastify";
 import { makeStyles } from "@mui/styles";
 import { Button } from "@mui/material";
 import UserService from "api/UserService";
 import { getBaseUrlWithoutRoute } from "api";
+import VotingResultsContainer from "./VotingResultsContainer";
 
 const useStyles = makeStyles((theme) => ({
   "@keyframes glowing": {
@@ -424,59 +422,13 @@ function VotingRoom(props: Props) {
         </Grid>
       </Grid>
 
-      {!votesCasted && (
-        <Grid
-          sx={{
-            position: "absolute" as "absolute",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-            borderTop: "2px solid #67A3EE",
-            width: { md: "100%", xs: "100vw" },
-            height: { md: "200px", xs: "150px" },
-            left: 0,
-            right: 0,
-            bottom: { md: 0, xs: 4 }
-          }}
-        >
-          <Grid
-            sx={{
-              height: "100%",
-              display: "flex",
-              flexDirection: "row",
-              justifyContent: "center"
-            }}
-          >
-            <VotingCard
-              votingSystem={room.votingSystem}
-              handleClickCard={handleAddVote}
-            />
-          </Grid>
-        </Grid>
-      )}
-
-      {!!votesCasted && (
-        <Slide direction="up" in={!!votesCasted} mountOnEnter unmountOnExit>
-          <Grid
-            sx={{
-              position: "absolute" as "absolute",
-              left: 0,
-              right: 0,
-              bottom: { md: 0, xs: 4 },
-              display: "flex",
-              flexDirection: "row",
-              justifyContent: "center",
-              background: "#67A3EE",
-              transition: "width 2s ease-in 1s",
-              width: "100%",
-              height: "200px"
-            }}
-          >
-            <VotingResult votesCasted={votesCasted} room={room} />
-          </Grid>
-        </Slide>
-      )}
+      <Grid>
+        <VotingResultsContainer
+          room={room}
+          votesCasted={votesCasted}
+          handleAddVote={handleAddVote}
+        />
+      </Grid>
       <CustomModal isOpen={isModalOpen}>
         <Grid>
           <CreateUser isSubmitting={false} onFormSubmitted={handleCreateUser} />
