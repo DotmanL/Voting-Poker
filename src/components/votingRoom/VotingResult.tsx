@@ -4,7 +4,7 @@ import { userContext } from "App";
 import { IUserDetails } from "interfaces/User/IUserDetails";
 import { IRoom } from "interfaces/Room/IRoom";
 import Typography from "@mui/material/Typography";
-import { getRandomColor } from "utility/RandomColors";
+// import { getRandomColor } from "utility/RandomColors";
 import { useSpring, animated } from "react-spring";
 import PartyPopper from "./assets/partyPopper.gif";
 import popSound from "./assets/cheers.mp3";
@@ -18,7 +18,7 @@ type Props = {
 function VotingResult(props: Props) {
   const user = useContext(userContext);
   const { votesCasted, room } = props;
-  const [showCelebration, setShowCelebration] = useState<boolean>(true);
+  const [showCelebration, setShowCelebration] = useState<boolean>(false);
   const [playPop] = useSound(popSound);
 
   const animationProps = useSpring({
@@ -101,7 +101,7 @@ function VotingResult(props: Props) {
               justifyContent: "center",
               borderRadius: "8px",
               px: 1,
-              background: getRandomColor(),
+              background: "white",
               m: 1
             }}
             key={i}
