@@ -34,7 +34,7 @@ function RoomOnboardingContainer() {
 
   return (
     <Grid>
-      <NavBar appName="Dot Voting" />
+      <NavBar appName="Dot Voting" isBorderBottom />
       <Grid>
         {isRoomsLoading ? (
           <Spinner />

@@ -5,7 +5,7 @@ import { NavBar } from "components/shared/component/NavBar";
 function HomePageContainer() {
   return (
     <Grid>
-      <NavBar appName="Dot Voting" />
+      <NavBar appName="Dot Voting" isBorderBottom />
       <LandingPage />
     </Grid>
   );

@@ -73,7 +73,11 @@ function VotingRoomContainer() {
 
   return (
     <Grid>
-      <NavBar appName={roomDetails?.name} currentUser={currentUser!} />
+      <NavBar
+        appName={roomDetails?.name}
+        isBorderBottom={false}
+        currentUser={currentUser!}
+      />
       {isLoading ? (
         <Spinner />
       ) : (

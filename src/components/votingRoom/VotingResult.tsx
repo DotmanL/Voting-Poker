@@ -54,6 +54,7 @@ function VotingResult(props: Props) {
       sx={{
         display: "flex",
         flexDirection: "row",
+        width: "100vw",
         justifyContent: "center",
         alignItems: "center",
         position: "relative"
@@ -64,7 +65,8 @@ function VotingResult(props: Props) {
           display: "flex",
           flexDirection: "row",
           position: "absolute" as "absolute",
-          left: 5,
+          marginLeft: "100px",
+          left: 10,
           top: 0
         }}
       >

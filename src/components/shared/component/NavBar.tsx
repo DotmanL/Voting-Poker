@@ -18,10 +18,11 @@ import { userContext } from "../../../App";
 type Props = {
   appName: string;
   currentUser?: IUser;
+  isBorderBottom?: boolean;
 };
 
 export const NavBar = (props: Props) => {
-  const { appName, currentUser } = props;
+  const { appName, currentUser, isBorderBottom } = props;
   const navigate = useNavigate();
   const userData = useContext(userContext);
   const location = useLocation();
@@ -85,7 +86,7 @@ export const NavBar = (props: Props) => {
             ? "none"
             : "0 5px 5px -2px rgba(0, 0, 0, 0.2)",
           height: { md: "90px", xs: "80px" },
-          borderBottom: "2px solid #67A3EE",
+          borderBottom: isBorderBottom ? "2px solid #67A3EE" : "",
           p: 2,
           justifyContent: { md: "space-between", xs: "flex-start" }
         }}

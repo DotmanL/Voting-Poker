@@ -1,5 +1,4 @@
 import * as React from "react";
-import Backdrop from "@mui/material/Backdrop";
 import Box from "@mui/material/Box";
 import Modal from "@mui/material/Modal";
 import Fade from "@mui/material/Fade";
@@ -19,10 +18,6 @@ function CustomModal(props: Props) {
           aria-describedby="transition-modal-description"
           open={isOpen}
           closeAfterTransition
-          BackdropComponent={Backdrop}
-          BackdropProps={{
-            timeout: 500
-          }}
         >
           <Fade in={isOpen}>
             <Box

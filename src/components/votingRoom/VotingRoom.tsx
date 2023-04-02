@@ -18,6 +18,7 @@ import { Button } from "@mui/material";
 import UserService from "api/UserService";
 import { getBaseUrlWithoutRoute } from "api";
 import VotingResultsContainer from "./VotingResultsContainer";
+import RightSidebar from "./RightSidebar";
 
 const useStyles = makeStyles((theme) => ({
   "@keyframes glowing": {
@@ -34,7 +35,7 @@ const useStyles = makeStyles((theme) => ({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    marginTop: "30vh",
+    marginTop: "25vh",
     borderRadius: "20px",
     border: "2px solid #67A3EE",
     width: "400px",
@@ -50,7 +51,7 @@ const useStyles = makeStyles((theme) => ({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    marginTop: "30vh",
+    marginTop: "25vh",
     borderRadius: "20px",
     animation: `$glowing 0.5s infinite alternate`,
     width: "400px",
@@ -125,7 +126,7 @@ function VotingRoom(props: Props) {
         room.name
       } room`;
       if (data.userId === user!._id) {
-        toast.success(welcomeMessage, { autoClose: 2500, pauseOnHover: true });
+        toast.success(welcomeMessage, { autoClose: 200, pauseOnHover: true });
       }
     });
 
@@ -182,24 +183,40 @@ function VotingRoom(props: Props) {
     socket.emit("votes", { allVotes: roomUsersVotes, roomId: room.roomId });
   };
 
+  // const handleNewVotingSession = async () => {
+  //   roomUsers?.forEach((ru) => {
+  //     ru.votedState = false;
+  //     ru.currentVote = undefined;
+  //   });
+  //   user!.votedState = false;
+  //   user!.currentVote = undefined;
+  //   const currentRoomUsers = await UserService.getRoomUsers(room.roomId);
+  //   for (const currentRoomUser of currentRoomUsers!) {
+  //     currentRoomUser.votedState = false;
+  //     currentRoomUser.currentVote = undefined;
+  //     await UserService.resetVote(currentRoomUser!._id!);
+  //   }
+  //   setUserVote(undefined);
+  //   const updatedCurrentRoomUsers = await UserService.getRoomUsers(room.roomId);
+  //   setRoomUsers(updatedCurrentRoomUsers!);
+  //   socket.emit("votes", { allVotes: false, roomId: room.roomId });
+  //   socket.emit("isUserVoted", roomUsers);
+  // };
+
   const handleNewVotingSession = async () => {
-    roomUsers?.forEach((ru) => {
-      ru.votedState = false;
-      ru.currentVote = undefined;
-    });
-    user!.votedState = false;
-    user!.currentVote = undefined;
-    const currentRoomUsers = await UserService.getRoomUsers(room.roomId);
-    for (const currentRoomUser of currentRoomUsers!) {
-      currentRoomUser.votedState = false;
-      currentRoomUser.currentVote = undefined;
-      await UserService.resetVote(currentRoomUser!._id!);
-    }
+    const updatedRoomUsers = roomUsers?.map((ru) => ({
+      ...ru,
+      votedState: false,
+      currentVote: undefined
+    }));
     setUserVote(undefined);
-    const updatedCurrentRoomUsers = await UserService.getRoomUsers(room.roomId);
-    setRoomUsers(updatedCurrentRoomUsers!);
+    setRoomUsers(updatedRoomUsers);
+    const currentRoomUsers = await UserService.getRoomUsers(room.roomId);
+    const promises =
+      currentRoomUsers?.map((ru) => UserService.resetVote(ru?._id!)) ?? [];
+    await Promise.all(promises);
     socket.emit("votes", { allVotes: false, roomId: room.roomId });
-    socket.emit("isUserVoted", roomUsers);
+    socket.emit("isUserVoted", updatedRoomUsers ?? []);
   };
 
   const handleAddVote = async (voteValue: number) => {
@@ -241,184 +258,180 @@ function VotingRoom(props: Props) {
   };
 
   return (
-    <Grid
-      sx={{
-        position: "relative",
-        display: "flex",
-        flexDirection: "row",
-        height: "100vh"
-      }}
-    >
+    <Grid>
       <Grid
         sx={{
           position: "relative",
           display: "flex",
           flexDirection: "column",
           justifyContent: "flex-start",
-          alignItems: "center",
-          mr: "auto",
-          ml: "auto"
+          alignItems: "center"
         }}
       >
         <Grid
           sx={{
-            position: "relative",
+            position: "absolute",
+            top: 90,
+            left: 0,
+            width: "100vw",
+            height: "70px",
             display: "flex",
-            flexDirection: "column",
-            justifyContent: "flex-start",
-            alignItems: "center"
+            flexDirection: "row",
+            cursor: "pointer",
+            justifyContent: "flex-end",
+            alignItems: "center",
+            paddingX: "100px"
           }}
         >
-          <Grid
-            className={isDisabled() ? classes.pickCard : classes.glowingCard}
-          >
-            {!votesCasted ? (
-              <Grid
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center"
-                }}
-              >
-                {isDisabled() ? (
-                  <Grid>
-                    <Typography
-                      variant="h3"
-                      sx={{ fontSize: { md: "32px", xs: "16px" } }}
-                    >
-                      Pick Your Cards
-                    </Typography>
-                  </Grid>
-                ) : (
-                  <Grid sx={{ mt: 2 }}>
-                    <Button
-                      disabled={isDisabled()}
-                      onClick={handleRevealVotes}
-                      sx={[
-                        {
-                          mt: 1,
-                          background: "#67A3EE",
-                          borderRadius: "5px",
-                          color: "white",
-                          px: { md: 3, xs: 2 },
-                          py: { md: 0.5 },
-                          fontSize: "16px"
-                        },
-                        {
-                          "&:hover": {
-                            background: "secondary.main",
-                            color: "#67A3EE"
-                          }
-                        }
-                      ]}
-                      variant="outlined"
-                    >
-                      Reveal Votes
-                    </Button>
-                  </Grid>
-                )}
-              </Grid>
-            ) : (
-              <Grid>
-                <Button
-                  onClick={handleNewVotingSession}
-                  sx={[
-                    {
-                      mt: 1,
-                      width: { md: "250px", xs: "200px" },
-                      background: "#67A3EE",
-                      borderRadius: "5px",
-                      color: "white",
-                      px: { md: 3, xs: 2 },
-                      py: { md: 0.5 },
-                      fontSize: { md: "16px", xs: "12px" }
-                    },
-                    {
-                      "&:hover": {
-                        background: "secondary.main",
-                        color: "#67A3EE"
-                      }
-                    }
-                  ]}
-                  variant="outlined"
-                >
-                  {" "}
-                  Start New Voting Session
-                </Button>
-              </Grid>
-            )}
+          <Grid>
+            <RightSidebar />
           </Grid>
-
-          <Grid
-            sx={{
-              // background: "red",
-              width: "90vw",
-              display: "flex",
-              flexDirection: "row",
-              justifyContent: "center",
-              alignItems: "center",
-              mt: 2
-            }}
-          >
-            {roomUsers &&
-              roomUsers.map((roomUser: IUserDetails, i: number) => (
-                <Grid key={roomUser._id}>
-                  <Card
-                    variant="outlined"
+        </Grid>
+        <Grid className={isDisabled() ? classes.pickCard : classes.glowingCard}>
+          {!votesCasted ? (
+            <Grid
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center"
+              }}
+            >
+              {isDisabled() ? (
+                <Grid>
+                  <Typography
+                    variant="h3"
+                    sx={{ fontSize: { md: "32px", xs: "16px" } }}
+                  >
+                    Pick Your Cards
+                  </Typography>
+                </Grid>
+              ) : (
+                <Grid sx={{ mt: 2 }}>
+                  <Button
+                    disabled={isDisabled()}
+                    onClick={handleRevealVotes}
                     sx={[
                       {
-                        width: { md: 80, xs: 70 },
-                        height: { md: 120, xs: 100 },
-                        mx: { md: 2, xs: 1 },
-                        border: "1px solid #67A3EE",
-                        cursor: "pointer",
-                        borderRadius: { md: "8px", xs: "4px" },
-                        display: "flex",
-                        flexDirection: "row",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        boxShadow: 5,
-                        transition: "transform ease 300ms",
-                        background: roomUser!.votedState! ? "#67A3EE" : "white"
+                        mt: 1,
+                        background: "#67A3EE",
+                        borderRadius: "5px",
+                        color: "white",
+                        px: { md: 3, xs: 2 },
+                        py: { md: 0.5 },
+                        fontSize: "16px"
                       },
                       {
                         "&:hover": {
-                          borderRadius: "8px"
+                          background: "secondary.main",
+                          color: "#67A3EE"
                         }
                       }
                     ]}
+                    variant="outlined"
                   >
-                    {!!votesCasted ? (
-                      <CardContent>
-                        <Typography variant="h4">
-                          {votesCasted[i]?.currentVote}
-                        </Typography>
-                      </CardContent>
-                    ) : (
-                      <Grid>
-                        <Typography variant="h3" sx={{ color: "white" }}>
-                          {roomUser.votedState
-                            ? roomUser._id === userId && roomUser?.currentVote
-                            : undefined}
-                        </Typography>
-                      </Grid>
-                    )}
-                  </Card>
-                  <Grid
-                    sx={{
-                      mt: 1,
+                    Reveal Votes
+                  </Button>
+                </Grid>
+              )}
+            </Grid>
+          ) : (
+            <Grid>
+              <Button
+                onClick={handleNewVotingSession}
+                sx={[
+                  {
+                    mt: 1,
+                    width: { md: "250px", xs: "200px" },
+                    background: "#67A3EE",
+                    borderRadius: "5px",
+                    color: "white",
+                    px: { md: 3, xs: 2 },
+                    py: { md: 0.5 },
+                    fontSize: { md: "16px", xs: "12px" }
+                  },
+                  {
+                    "&:hover": {
+                      background: "secondary.main",
+                      color: "#67A3EE"
+                    }
+                  }
+                ]}
+                variant="outlined"
+              >
+                Start New Voting Session
+              </Button>
+            </Grid>
+          )}
+        </Grid>
+
+        <Grid
+          sx={{
+            width: "100vw",
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "center",
+            alignItems: "center",
+            mt: 2
+          }}
+        >
+          {roomUsers &&
+            roomUsers.map((roomUser: IUserDetails, i: number) => (
+              <Grid key={roomUser._id}>
+                <Card
+                  variant="outlined"
+                  sx={[
+                    {
+                      width: { md: 80, xs: 70 },
+                      height: { md: 120, xs: 100 },
+                      mx: { md: 2, xs: 1 },
+                      border: "1px solid #67A3EE",
+                      cursor: "pointer",
+                      borderRadius: { md: "8px", xs: "4px" },
                       display: "flex",
                       flexDirection: "row",
-                      justifyContent: "center"
-                    }}
-                  >
-                    <Typography variant="h4">
-                      {roomUser && roomUser.name}
-                    </Typography>
-                  </Grid>
+                      justifyContent: "center",
+                      alignItems: "center",
+                      boxShadow: 5,
+                      transition: "transform ease 300ms",
+                      background: roomUser!.votedState! ? "#67A3EE" : "white"
+                    },
+                    {
+                      "&:hover": {
+                        borderRadius: "8px"
+                      }
+                    }
+                  ]}
+                >
+                  {!!votesCasted ? (
+                    <CardContent>
+                      <Typography variant="h4">
+                        {votesCasted[i]?.currentVote}
+                      </Typography>
+                    </CardContent>
+                  ) : (
+                    <Grid>
+                      <Typography variant="h3" sx={{ color: "white" }}>
+                        {roomUser.votedState
+                          ? roomUser._id === userId && roomUser?.currentVote
+                          : undefined}
+                      </Typography>
+                    </Grid>
+                  )}
+                </Card>
+                <Grid
+                  sx={{
+                    mt: 1,
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "center"
+                  }}
+                >
+                  <Typography variant="h4">
+                    {roomUser && roomUser.name}
+                  </Typography>
                 </Grid>
-              ))}
-          </Grid>
+              </Grid>
+            ))}
         </Grid>
       </Grid>
 
