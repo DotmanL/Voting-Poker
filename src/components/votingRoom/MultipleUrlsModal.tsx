@@ -7,57 +7,30 @@ import { useFormik } from "formik";
 import TextField from "@mui/material/TextField";
 import { Button, CircularProgress } from "@mui/material";
 import { AiOutlineClose } from "react-icons/ai";
+import { IIssue } from "interfaces/Issues";
+import { handleKeyDown } from "utility/Keydown";
 
 type Props = {
   isAddMultipleModalOpen: boolean;
   setIsAddMultipleModalOpen: (isAddMultipleModalOpen: boolean) => void;
 };
 
-interface IIssueUrl {
-  links: string[];
-}
-
 function MultipleUrlsModal(props: Props) {
   const { isAddMultipleModalOpen, setIsAddMultipleModalOpen } = props;
   const validationSchema = yup.object().shape({
-    links: yup.array().of(yup.string().url("Invalid URL format"))
+    issues: yup.array().of(yup.string().url("Invalid URL format"))
   });
 
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (
-      event &&
-      event.type === "keydown" &&
-      ((event as React.KeyboardEvent).key === "Enter" ||
-        ((event as React.KeyboardEvent).key === "Shift" &&
-          (event as React.KeyboardEvent).key === "Enter"))
-    ) {
-      event.preventDefault();
-      const inputEl = event.target as HTMLInputElement;
-      const start = inputEl.selectionStart as number;
-      const end = inputEl.selectionEnd as number;
-      const value = inputEl.value as string;
-
-      inputEl.value = value.slice(0, start) + "\n" + value.slice(end);
-      inputEl.setSelectionRange(start + 1, start + 1);
-    } else if (event.key === "Backspace") {
-      const inputEl = event.target as HTMLInputElement;
-      const start = inputEl.selectionStart as number;
-      const end = inputEl.selectionEnd as number;
-      const value = inputEl.value as string;
-
-      if (start === end && start !== 0 && value[start - 1] === "\n") {
-        event.preventDefault();
-        inputEl.setSelectionRange(start - 1, start - 1);
-      }
-    }
-  };
-
   const handleSubmit = useCallback(
-    (values: IIssueUrl, setSubmitting: (isSubmitting: boolean) => void) => {
-      console.log(values.links);
+    (values: string[], setSubmitting: (isSubmitting: boolean) => void) => {
+      const objects: IIssue[] = values.map((url: string, index) => ({
+        name: `Name ${index + 1}`,
+        link: url
+      }));
+
+      console.log(objects);
 
       //   onFormSubmitted(values);
-      console.log(values);
       setSubmitting(false);
     },
     // [onFormSubmitted]
@@ -66,17 +39,18 @@ function MultipleUrlsModal(props: Props) {
 
   const formik = useFormik({
     initialValues: {
-      links: []
+      issues: []
     },
 
     validationSchema: validationSchema,
-    onSubmit: (values, { setSubmitting }) => handleSubmit(values, setSubmitting)
+    onSubmit: (values, { setSubmitting }) =>
+      handleSubmit(values.issues, setSubmitting)
   });
 
   const clearField = () => {
-    formik.setFieldValue("links", []);
+    formik.setFieldValue("issues", []);
   };
-  const linksLength = formik.values.links.length;
+  const issuesLength = formik.values.issues.length;
   return (
     <Grid>
       <CustomModal isOpen={isAddMultipleModalOpen} size="md" modalWidth="800px">
@@ -132,23 +106,23 @@ function MultipleUrlsModal(props: Props) {
                 mx: 5,
                 mt: 5
               }}
-              id="links"
-              name="links"
-              label="Issues urls"
+              id="issues"
+              name="issues"
+              label="Issue url"
               multiline
               rows={15}
-              value={formik.values.links.join("\n")}
+              value={formik.values.issues.join("\n")}
               onChange={(event) => {
                 formik.setFieldValue(
-                  "links",
+                  "issues",
                   event.target.value.trim().split("\n")
                 );
               }}
+              error={formik.touched.issues && Boolean(formik.errors.issues)}
+              helperText={formik.touched.issues && formik.errors.issues}
               onKeyDown={(e) => {
                 handleKeyDown(e);
               }}
-              error={formik.touched.links && Boolean(formik.errors.links)}
-              helperText={formik.touched.links && formik.errors.links}
             />
             <Grid
               sx={{
@@ -161,7 +135,7 @@ function MultipleUrlsModal(props: Props) {
             >
               <Button
                 variant="outlined"
-                sx={{ mt: 6, fontSize: "20px" }}
+                sx={{ mt: 6, px: 4, fontSize: "20px" }}
                 onClick={() => {
                   setIsAddMultipleModalOpen(false);
                   clearField();
@@ -174,13 +148,13 @@ function MultipleUrlsModal(props: Props) {
                 color="primary"
                 variant="contained"
                 type="submit"
-                sx={{ mt: 6, ml: 5, fontSize: "20px" }}
+                sx={{ mt: 6, ml: 5, px: 4, fontSize: "20px" }}
               >
                 {formik.isSubmitting ? (
                   <CircularProgress size={24} />
                 ) : (
-                  `Submit ${linksLength > 0 ? linksLength : ""} ${
-                    linksLength > 1 ? "links" : "link"
+                  `Submit ${issuesLength > 0 ? issuesLength : ""} ${
+                    issuesLength > 1 ? "links" : "link"
                   } `
                 )}
               </Button>

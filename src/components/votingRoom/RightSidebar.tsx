@@ -2,14 +2,17 @@ import React, { useState } from "react";
 import Box from "@mui/material/Box";
 import SwipeableDrawer from "@mui/material/SwipeableDrawer";
 import Button from "@mui/material/Button";
-import List from "@mui/material/List";
 import { RiArrowRightSLine } from "react-icons/ri";
+import { BsThreeDotsVertical } from "react-icons/bs";
 import { BiImport } from "react-icons/bi";
 import { AiOutlineClose } from "react-icons/ai";
 import { GrAdd } from "react-icons/gr";
 import { Divider, Grid, Tooltip, Typography } from "@mui/material";
 import Dropdown from "components/shared/component/DropDown";
 import MultipleUrlsModal from "./MultipleUrlsModal";
+import SingleIssueTextbox from "./SingleIssueTextbox";
+import { IIssue } from "interfaces/Issues";
+import IssuesView from "./IssuesView";
 
 const options = [
   {
@@ -32,9 +35,16 @@ const options = [
   }
 ];
 
-function RightSidebar() {
+type Props = {
+  issues: IIssue[];
+};
+
+function RightSidebar(props: Props) {
+  const { issues } = props;
   const [isSideBarOpen, setIsSideBarOpen] = useState<boolean>(false);
   const [isDropDownOpen, setIsDropDownOpen] = useState<boolean>(false);
+  const [isSingleIssueTextBoxOpen, setIsSingleIssueTextBoxOpen] =
+    useState<boolean>(false);
   const [isAddMultipleModalOpen, setIsAddMultipleModalOpen] =
     useState<boolean>(false);
 
@@ -108,7 +118,10 @@ function RightSidebar() {
                     boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.2)"
                   }
                 }}
-                onClick={() => setIsDropDownOpen(!isDropDownOpen)}
+                onClick={() => {
+                  setIsDropDownOpen(!isDropDownOpen);
+                  setIsSingleIssueTextBoxOpen(false);
+                }}
               >
                 <BiImport size={36} />
               </Grid>
@@ -155,8 +168,10 @@ function RightSidebar() {
               setIsAddMultipleModalOpen={setIsAddMultipleModalOpen}
             />
           </Grid>
-
-          <Divider orientation="vertical" flexItem />
+          <Grid sx={{ cursor: "pointer" }}>
+            {!!issues && <BsThreeDotsVertical size={20} />}
+          </Grid>
+          <Divider sx={{ borderWidth: 2 }} orientation="vertical" flexItem />
           <Tooltip title="Close Sidebar">
             <Grid
               sx={{
@@ -165,38 +180,66 @@ function RightSidebar() {
                   color: "red"
                 }
               }}
-              onClick={toggleDrawer(false)}
+              onClick={() => {
+                setIsSideBarOpen(false);
+                setIsDropDownOpen(false);
+              }}
             >
               <AiOutlineClose size={32} />
             </Grid>
           </Tooltip>
         </Grid>
       </Grid>
+      {issues.length <= 0 ? (
+        <Grid>
+          {!isSingleIssueTextBoxOpen && (
+            <Grid
+              sx={{
+                height: "auto",
+                marginTop: "30px",
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                padding: "5px",
+                cursor: "pointer",
+                p: 0.5,
+                borderRadius: "10px",
+                "&:hover": {
+                  color: "primary.main",
+                  transition: "box-shadow 0.3s ease-in-out",
+                  boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.2)"
+                }
+              }}
+              onClick={() => setIsSingleIssueTextBoxOpen(true)}
+            >
+              <GrAdd style={{ marginLeft: "15px" }} size={28} />
+              <Typography variant="h6" sx={{ ml: 1 }}>
+                Add Issue(s)
+              </Typography>
+            </Grid>
+          )}
+          {isSingleIssueTextBoxOpen && (
+            <Grid>
+              <SingleIssueTextbox
+                isSingleIssueTextBoxOpen={isSingleIssueTextBoxOpen}
+                setIsSingleIssueTextBoxOpen={setIsSingleIssueTextBoxOpen}
+              />
+            </Grid>
+          )}
+        </Grid>
+      ) : (
+        <Grid></Grid>
+      )}
       <Grid
         sx={{
-          height: "auto",
-          marginTop: "30px",
+          mt: 2,
           display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
-          padding: "5px",
-          cursor: "pointer",
-          p: 0.5,
-          borderRadius: "10px",
-          "&:hover": {
-            transition: "box-shadow 0.3s ease-in-out",
-            boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.2)"
-          }
+          flexDirection: "column",
+          alignItems: "center"
         }}
       >
-        <GrAdd style={{ marginLeft: "15px" }} size={28} />
-        <Typography variant="h6" sx={{ ml: 1 }}>
-          Add Issue(s)
-        </Typography>
+        <Grid>{!!issues && <IssuesView issues={issues} />}</Grid>
       </Grid>
-      <List sx={{ mt: 4, ml: 5 }}>
-        <div>OLA</div>
-      </List>
     </Box>
   );
 

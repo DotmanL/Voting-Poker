@@ -19,6 +19,7 @@ import UserService from "api/UserService";
 import { getBaseUrlWithoutRoute } from "api";
 import VotingResultsContainer from "./VotingResultsContainer";
 import RightSidebar from "./RightSidebar";
+import { IIssue } from "interfaces/Issues";
 
 const useStyles = makeStyles((theme) => ({
   "@keyframes glowing": {
@@ -62,6 +63,25 @@ const useStyles = makeStyles((theme) => ({
     }
   }
 }));
+
+const issues: IIssue[] = [
+  {
+    name: "Name 1",
+    link: "https://react-icons.github.io/react-icons/search?q=add"
+  },
+  {
+    name: "Name 2",
+    link: "https://mui.com/material-ui/react-text-field/#basic-textfield"
+  },
+  {
+    name: "Name 3",
+    link: "https://jsonviewer.stack.hu/"
+  },
+  {
+    name: "Name 4",
+    link: "https://mui.com/material-ui/react-select/"
+  }
+];
 
 type Props = {
   room: IRoom;
@@ -284,7 +304,7 @@ function VotingRoom(props: Props) {
           }}
         >
           <Grid>
-            <RightSidebar />
+            <RightSidebar issues={issues} />
           </Grid>
         </Grid>
         <Grid className={isDisabled() ? classes.pickCard : classes.glowingCard}>
