@@ -442,7 +442,7 @@ function VotingRoom(props: Props) {
           handleAddVote={handleAddVote}
         />
       </Grid>
-      <CustomModal isOpen={isModalOpen}>
+      <CustomModal isOpen={isModalOpen} modalWidth="600px">
         <Grid>
           <CreateUser isSubmitting={false} onFormSubmitted={handleCreateUser} />
         </Grid>
