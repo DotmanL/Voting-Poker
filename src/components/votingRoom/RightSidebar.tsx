@@ -56,7 +56,6 @@ function RightSidebar() {
     if (label === "addMultipleUrls") {
       setIsDropDownOpen(false);
       setIsAddMultipleModalOpen(true);
-      console.log("mad");
     }
   }
 
@@ -166,8 +165,9 @@ function RightSidebar() {
                   color: "red"
                 }
               }}
+              onClick={toggleDrawer(false)}
             >
-              <AiOutlineClose onClick={toggleDrawer(false)} size={32} />
+              <AiOutlineClose size={32} />
             </Grid>
           </Tooltip>
         </Grid>
