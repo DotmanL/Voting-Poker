@@ -13,6 +13,8 @@ import VotingRoomContainer from "components/votingRoom/VotingRoomContainer";
 import RoomOnboardingContainer from "components/roomOnboarding/RoomOnboardingContainer";
 import UserService from "api/UserService";
 import "react-toastify/dist/ReactToastify.css";
+import { HTML5Backend } from "react-dnd-html5-backend";
+import { DndProvider } from "react-dnd";
 
 const queryClient = new QueryClient();
 export const userContext = createContext<IUser | null>(null);
@@ -37,23 +39,31 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <userContext.Provider value={currentUser!}>
         <Grid>
-          <ToastContainer
-            style={{ marginTop: "80px" }}
-            closeOnClick
-            draggable
-            transition={Zoom}
-          />
-          <ScrollToTop>
-            <Routes>
-              <Route path="/" element={<Layout />}>
-                <Route index element={<HomePageContainer />} />
-                <Route path="new-room" element={<RoomOnboardingContainer />} />
-                <Route path="room/:roomId" element={<VotingRoomContainer />} />
+          <DndProvider backend={HTML5Backend}>
+            <ToastContainer
+              style={{ marginTop: "80px" }}
+              closeOnClick
+              draggable
+              transition={Zoom}
+            />
+            <ScrollToTop>
+              <Routes>
+                <Route path="/" element={<Layout />}>
+                  <Route index element={<HomePageContainer />} />
+                  <Route
+                    path="new-room"
+                    element={<RoomOnboardingContainer />}
+                  />
+                  <Route
+                    path="room/:roomId"
+                    element={<VotingRoomContainer />}
+                  />
 
-                <Route path="*" element={<NotFoundContainer />} />
-              </Route>
-            </Routes>
-          </ScrollToTop>
+                  <Route path="*" element={<NotFoundContainer />} />
+                </Route>
+              </Routes>
+            </ScrollToTop>
+          </DndProvider>
         </Grid>
       </userContext.Provider>
     </QueryClientProvider>

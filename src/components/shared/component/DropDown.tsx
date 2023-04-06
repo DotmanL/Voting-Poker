@@ -9,7 +9,7 @@ interface Option {
 
 type Props = {
   isDropDownOpen: boolean;
-  options: Option[];
+  options?: Option[];
   sx?: SxProps<Theme> | undefined;
   children?: React.ReactNode;
 };
@@ -44,7 +44,7 @@ function DropDown(props: Props) {
             <>{children}</>
           ) : (
             <>
-              {options.map((option, i) => (
+              {options?.map((option, i) => (
                 <>
                   <Grid
                     sx={{

@@ -43,10 +43,12 @@ function RightSidebar(props: Props) {
   const { issues } = props;
   const [isSideBarOpen, setIsSideBarOpen] = useState<boolean>(false);
   const [isDropDownOpen, setIsDropDownOpen] = useState<boolean>(false);
+  const [isMiniDropDownOpen, setIsMiniDropDownOpen] = useState<boolean>(false);
   const [isSingleIssueTextBoxOpen, setIsSingleIssueTextBoxOpen] =
     useState<boolean>(false);
   const [isAddMultipleModalOpen, setIsAddMultipleModalOpen] =
     useState<boolean>(false);
+  const [cards, setCards] = useState(issues);
 
   const toggleDrawer =
     (isSideBarOpen: boolean) =>
@@ -66,7 +68,13 @@ function RightSidebar(props: Props) {
     if (label === "addMultipleUrls") {
       setIsDropDownOpen(false);
       setIsAddMultipleModalOpen(true);
+      setIsMiniDropDownOpen(false);
     }
+  }
+
+  function handleDeleteAllIssues() {
+    setCards([]);
+    setIsMiniDropDownOpen(false);
   }
 
   const list = (
@@ -121,55 +129,95 @@ function RightSidebar(props: Props) {
                 onClick={() => {
                   setIsDropDownOpen(!isDropDownOpen);
                   setIsSingleIssueTextBoxOpen(false);
+                  setIsMiniDropDownOpen(false);
                 }}
               >
                 <BiImport size={36} />
               </Grid>
             </Tooltip>
 
-            <Dropdown
-              isDropDownOpen={isDropDownOpen}
-              options={options}
-              children={
-                <>
-                  {options.map((option, i) => (
-                    <Grid key={i}>
-                      <Grid
-                        sx={{
-                          py: 1,
-                          width: "100%",
-                          height: "100%",
-                          pl: "25px",
-                          pr: "50px",
-                          cursor: "pointer",
-                          background: "#FFFFFF",
-                          "&:hover": {
-                            background: "#67A3EE",
-                            color: "#FFFFFF",
-                            transition: "box-shadow 0.3s ease-in-out",
-                            boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.2)"
-                          }
-                        }}
-                        key={i}
-                      >
-                        <Tooltip title={option.toolTip} leaveDelay={10}>
-                          <Grid onClick={() => handleOptionClick(option.value)}>
-                            {option.label}
-                          </Grid>
-                        </Tooltip>
-                      </Grid>
+            <Dropdown isDropDownOpen={isDropDownOpen}>
+              <>
+                {options.map((option, i) => (
+                  <Grid key={i}>
+                    <Grid
+                      sx={{
+                        py: 1,
+                        width: "100%",
+                        height: "100%",
+                        pl: "25px",
+                        pr: "50px",
+                        cursor: "pointer",
+                        background: "#FFFFFF",
+                        "&:hover": {
+                          background: "#67A3EE",
+                          color: "#FFFFFF",
+                          transition: "box-shadow 0.3s ease-in-out",
+                          boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.2)"
+                        }
+                      }}
+                      key={i}
+                    >
+                      <Tooltip title={option.toolTip} leaveDelay={10}>
+                        <Grid onClick={() => handleOptionClick(option.value)}>
+                          {option.label}
+                        </Grid>
+                      </Tooltip>
                     </Grid>
-                  ))}
-                </>
-              }
-            />
+                  </Grid>
+                ))}
+              </>
+            </Dropdown>
             <MultipleUrlsModal
               isAddMultipleModalOpen={isAddMultipleModalOpen}
               setIsAddMultipleModalOpen={setIsAddMultipleModalOpen}
             />
           </Grid>
           <Grid sx={{ cursor: "pointer" }}>
-            {!!issues && <BsThreeDotsVertical size={20} />}
+            {!!issues && (
+              <BsThreeDotsVertical
+                onClick={() => {
+                  setIsMiniDropDownOpen(!isMiniDropDownOpen);
+                  setIsDropDownOpen(false);
+                }}
+                size={20}
+              />
+            )}
+            {isMiniDropDownOpen && (
+              <Dropdown isDropDownOpen={isMiniDropDownOpen}>
+                <Grid
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "flex-start",
+                    width: "200px",
+                    height: "auto",
+                    borderRadius: "10px",
+                    zIndex: 100,
+                    py: 2,
+                    px: 1,
+                    cursor: "pointer",
+                    background: "#FFFFFF"
+                  }}
+                >
+                  <Grid
+                    sx={{
+                      width: "100%",
+                      background: "secondary.main",
+                      "&:hover": {
+                        background: "#67A3EE",
+                        color: "#FFFFFF",
+                        transition: "box-shadow 0.3s ease-in-out",
+                        boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.2)"
+                      }
+                    }}
+                    onClick={() => handleDeleteAllIssues()}
+                  >
+                    Delete Issues
+                  </Grid>
+                </Grid>
+              </Dropdown>
+            )}
           </Grid>
           <Divider sx={{ borderWidth: 2 }} orientation="vertical" flexItem />
           <Tooltip title="Close Sidebar">
@@ -190,7 +238,7 @@ function RightSidebar(props: Props) {
           </Tooltip>
         </Grid>
       </Grid>
-      {issues.length <= 0 ? (
+      {cards.length <= 0 ? (
         <Grid>
           {!isSingleIssueTextBoxOpen && (
             <Grid
@@ -238,7 +286,11 @@ function RightSidebar(props: Props) {
           alignItems: "center"
         }}
       >
-        <Grid>{!!issues && <IssuesView issues={issues} />}</Grid>
+        <Grid>
+          {cards && (
+            <IssuesView issues={issues} cards={cards} setCards={setCards} />
+          )}
+        </Grid>
       </Grid>
     </Box>
   );
