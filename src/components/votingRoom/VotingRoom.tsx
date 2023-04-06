@@ -183,23 +183,19 @@ function VotingRoom(props: Props) {
   };
 
   const handleNewVotingSession = async () => {
-    roomUsers?.forEach((ru) => {
-      ru.votedState = false;
-      ru.currentVote = undefined;
-    });
-    user!.votedState = false;
-    user!.currentVote = undefined;
-    const currentRoomUsers = await UserService.getRoomUsers(room.roomId);
-    for (const currentRoomUser of currentRoomUsers!) {
-      currentRoomUser.votedState = false;
-      currentRoomUser.currentVote = undefined;
-      await UserService.resetVote(currentRoomUser!._id!);
-    }
+    const updatedRoomUsers = roomUsers?.map((ru) => ({
+      ...ru,
+      votedState: false,
+      currentVote: undefined
+    }));
     setUserVote(undefined);
-    const updatedCurrentRoomUsers = await UserService.getRoomUsers(room.roomId);
-    setRoomUsers(updatedCurrentRoomUsers!);
+    setRoomUsers(updatedRoomUsers);
+    const currentRoomUsers = await UserService.getRoomUsers(room.roomId);
+    const promises =
+      currentRoomUsers?.map((ru) => UserService.resetVote(ru?._id!)) ?? [];
+    await Promise.all(promises);
     socket.emit("votes", { allVotes: false, roomId: room.roomId });
-    socket.emit("isUserVoted", roomUsers);
+    socket.emit("isUserVoted", updatedRoomUsers ?? []);
   };
 
   const handleAddVote = async (voteValue: number) => {
