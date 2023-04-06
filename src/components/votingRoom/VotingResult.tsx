@@ -4,7 +4,6 @@ import { userContext } from "App";
 import { IUserDetails } from "interfaces/User/IUserDetails";
 import { IRoom } from "interfaces/Room/IRoom";
 import Typography from "@mui/material/Typography";
-// import { getRandomColor } from "utility/RandomColors";
 import { useSpring, animated } from "react-spring";
 import PartyPopper from "./assets/partyPopper.gif";
 import popSound from "./assets/cheers.mp3";
@@ -54,6 +53,7 @@ function VotingResult(props: Props) {
       sx={{
         display: "flex",
         flexDirection: "row",
+        width: "100vw",
         justifyContent: "center",
         alignItems: "center",
         position: "relative"
@@ -64,7 +64,8 @@ function VotingResult(props: Props) {
           display: "flex",
           flexDirection: "row",
           position: "absolute" as "absolute",
-          left: 5,
+          marginLeft: "100px",
+          left: 10,
           top: 0
         }}
       >
