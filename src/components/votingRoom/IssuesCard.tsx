@@ -9,10 +9,13 @@ import { useDrag, useDrop } from "react-dnd";
 import Typography from "@mui/material/Typography";
 
 type Props = {
+  id: string;
   index: number;
   link: string;
   name: string;
   moveCard: (dragIndex: number, hoverIndex: number) => void;
+  activeCardId: string;
+  setActiveCardId: React.Dispatch<React.SetStateAction<string | undefined>>;
 };
 
 const ItemTypes = {
@@ -26,7 +29,8 @@ interface DragItem {
 }
 
 function IssuesCard(props: Props) {
-  const { index, link, name, moveCard } = props;
+  const { index, link, name, moveCard, id, setActiveCardId, activeCardId } =
+    props;
   const ref = useRef<HTMLDivElement>(null);
 
   const [{ handlerId, canDrop }, drop] = useDrop<
@@ -89,6 +93,7 @@ function IssuesCard(props: Props) {
   return (
     <Grid
       ref={ref}
+      key={id}
       data-handler-id={handlerId}
       sx={{
         display: "flex",
@@ -136,8 +141,14 @@ function IssuesCard(props: Props) {
           mt: 2
         }}
       >
-        <Grid>
-          <Button variant="contained">Vote this Issue</Button>
+        <Grid
+          onClick={() => {
+            activeCardId === id ? setActiveCardId("") : setActiveCardId(id);
+          }}
+        >
+          <Button variant="contained">
+            {activeCardId === id ? "Voting...." : "Vote this Issue"}{" "}
+          </Button>
         </Grid>
         <Grid>
           <BiLinkExternal style={{ marginRight: "10px" }} size={24} />

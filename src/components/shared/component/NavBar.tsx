@@ -14,6 +14,7 @@ import UserService from "api/UserService";
 import { IUser } from "interfaces/User/IUser";
 import { toast } from "react-toastify";
 import { userContext } from "../../../App";
+import { SidebarContext } from "components/providers/SideBarProvider";
 
 type Props = {
   appName: string;
@@ -28,6 +29,7 @@ export const NavBar = (props: Props) => {
   const location = useLocation();
   const urlPath = location.pathname;
   // const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const { isSidebarOpen } = useContext(SidebarContext);
   const [scrolledDownEnough, setScrolledDownEnough] = useState(false);
   const [user, setUser] = useState<IUser>(
     currentUser ? currentUser : userData!
@@ -97,7 +99,8 @@ export const NavBar = (props: Props) => {
             display: "flex",
             flexDirection: "row",
             alignItems: "center",
-            justifyContent: { md: "space-between", xs: "flex-start" }
+            justifyContent: { md: "space-between", xs: "flex-start" },
+            marginRight: isSidebarOpen ? "410px" : "0"
           }}
         >
           <Link to="/">

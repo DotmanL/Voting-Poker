@@ -2,9 +2,10 @@ import Grid from "@mui/material/Grid";
 import Slide from "@mui/material/Slide";
 import { IRoom } from "interfaces/Room/IRoom";
 import { IUserDetails } from "interfaces/User/IUserDetails";
-import React from "react";
+import React, { useContext } from "react";
 import VotingCard from "./VotingCard";
 import VotingResult from "./VotingResult";
+import { SidebarContext } from "components/providers/SideBarProvider";
 type Props = {
   room: IRoom;
   votesCasted: IUserDetails[] | undefined;
@@ -13,10 +14,11 @@ type Props = {
 
 function VotingResultsContainer(props: Props) {
   const { room, votesCasted, handleAddVote } = props;
+  const { isSidebarOpen } = useContext(SidebarContext);
+
   return (
     <Grid>
       <Grid>
-        {" "}
         {!votesCasted && (
           <Grid
             sx={{
@@ -38,7 +40,8 @@ function VotingResultsContainer(props: Props) {
                 height: "100%",
                 display: "flex",
                 flexDirection: "row",
-                justifyContent: "center"
+                justifyContent: "center",
+                marginRight: isSidebarOpen ? "200px" : ""
               }}
             >
               <VotingCard

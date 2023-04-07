@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import Grid from "@mui/material/Grid";
 import { IIssue } from "interfaces/Issues";
 import IssuesCard from "./IssuesCard";
@@ -12,6 +12,7 @@ type Props = {
 
 function IssuesView(props: Props) {
   const { cards, setCards } = props;
+  const [activeCardId, setActiveCardId] = useState<string>();
 
   const moveCard = useCallback(
     (dragIndex: number, hoverIndex: number) => {
@@ -30,17 +31,21 @@ function IssuesView(props: Props) {
   );
 
   const renderCard = useCallback(
-    (card: { name: string; link: string }, index: number) => {
+    (card: IIssue, index: number) => {
       return (
         <IssuesCard
+          key={card._id}
+          id={card._id!}
           index={index}
           name={card.name}
           link={card.link}
           moveCard={moveCard}
+          activeCardId={activeCardId!}
+          setActiveCardId={setActiveCardId}
         />
       );
     },
-    [moveCard]
+    [moveCard, activeCardId]
   );
 
   return (

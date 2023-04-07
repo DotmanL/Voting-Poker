@@ -20,6 +20,7 @@ import { getBaseUrlWithoutRoute } from "api";
 import VotingResultsContainer from "./VotingResultsContainer";
 import RightSidebar from "./RightSidebar";
 import { IIssue } from "interfaces/Issues";
+import { SidebarContext } from "components/providers/SideBarProvider";
 
 const useStyles = makeStyles((theme) => ({
   "@keyframes glowing": {
@@ -66,19 +67,33 @@ const useStyles = makeStyles((theme) => ({
 
 const issues: IIssue[] = [
   {
+    _id: "1",
     name: "Name 1",
     link: "https://react-icons.github.io/react-icons/search?q=add"
   },
   {
+    _id: "2",
     name: "Name 2",
     link: "https://mui.com/material-ui/react-text-field/#basic-textfield"
   },
   {
+    _id: "3",
     name: "Name 3",
     link: "https://jsonviewer.stack.hu/"
   },
   {
+    _id: "4",
     name: "Name 4",
+    link: "https://mui.com/material-ui/react-select/"
+  },
+  {
+    _id: "5",
+    name: "Name 5",
+    link: "https://mui.com/material-ui/react-select/"
+  },
+  {
+    _id: "6",
+    name: "Name 6",
     link: "https://mui.com/material-ui/react-select/"
   }
 ];
@@ -94,6 +109,7 @@ function VotingRoom(props: Props) {
   const { room, handleCreateUser, isModalOpen } = props;
   const classes = useStyles();
   const user = useContext(userContext);
+  const { isSidebarOpen } = useContext(SidebarContext);
   const [socket, setSocket] = useState<any>(null);
   const [roomUsers, setRoomUsers] = useState<IUserDetails[]>();
   const [userVote, setUserVote] = useState<number | undefined>();
@@ -278,7 +294,7 @@ function VotingRoom(props: Props) {
   };
 
   return (
-    <Grid>
+    <Grid style={{ marginRight: isSidebarOpen ? "200px" : "0" }}>
       <Grid
         sx={{
           position: "relative",

@@ -15,6 +15,7 @@ import UserService from "api/UserService";
 import "react-toastify/dist/ReactToastify.css";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { DndProvider } from "react-dnd";
+import SidebarProvider from "components/providers/SideBarProvider";
 
 const queryClient = new QueryClient();
 export const userContext = createContext<IUser | null>(null);
@@ -38,33 +39,35 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <userContext.Provider value={currentUser!}>
-        <Grid>
-          <DndProvider backend={HTML5Backend}>
-            <ToastContainer
-              style={{ marginTop: "80px" }}
-              closeOnClick
-              draggable
-              transition={Zoom}
-            />
-            <ScrollToTop>
-              <Routes>
-                <Route path="/" element={<Layout />}>
-                  <Route index element={<HomePageContainer />} />
-                  <Route
-                    path="new-room"
-                    element={<RoomOnboardingContainer />}
-                  />
-                  <Route
-                    path="room/:roomId"
-                    element={<VotingRoomContainer />}
-                  />
+        <SidebarProvider>
+          <Grid>
+            <DndProvider backend={HTML5Backend}>
+              <ToastContainer
+                style={{ marginTop: "80px" }}
+                closeOnClick
+                draggable
+                transition={Zoom}
+              />
+              <ScrollToTop>
+                <Routes>
+                  <Route path="/" element={<Layout />}>
+                    <Route index element={<HomePageContainer />} />
+                    <Route
+                      path="new-room"
+                      element={<RoomOnboardingContainer />}
+                    />
+                    <Route
+                      path="room/:roomId"
+                      element={<VotingRoomContainer />}
+                    />
 
-                  <Route path="*" element={<NotFoundContainer />} />
-                </Route>
-              </Routes>
-            </ScrollToTop>
-          </DndProvider>
-        </Grid>
+                    <Route path="*" element={<NotFoundContainer />} />
+                  </Route>
+                </Routes>
+              </ScrollToTop>
+            </DndProvider>
+          </Grid>
+        </SidebarProvider>
       </userContext.Provider>
     </QueryClientProvider>
   );

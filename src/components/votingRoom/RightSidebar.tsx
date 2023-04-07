@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import Box from "@mui/material/Box";
 import SwipeableDrawer from "@mui/material/SwipeableDrawer";
 import Button from "@mui/material/Button";
@@ -13,6 +13,7 @@ import MultipleUrlsModal from "./MultipleUrlsModal";
 import SingleIssueTextbox from "./SingleIssueTextbox";
 import { IIssue } from "interfaces/Issues";
 import IssuesView from "./IssuesView";
+import { SidebarContext } from "components/providers/SideBarProvider";
 
 const options = [
   {
@@ -41,7 +42,7 @@ type Props = {
 
 function RightSidebar(props: Props) {
   const { issues } = props;
-  const [isSideBarOpen, setIsSideBarOpen] = useState<boolean>(false);
+  const { isSidebarOpen, setIsSidebarOpen } = useContext(SidebarContext);
   const [isDropDownOpen, setIsDropDownOpen] = useState<boolean>(false);
   const [isMiniDropDownOpen, setIsMiniDropDownOpen] = useState<boolean>(false);
   const [isSingleIssueTextBoxOpen, setIsSingleIssueTextBoxOpen] =
@@ -61,7 +62,7 @@ function RightSidebar(props: Props) {
       ) {
         return;
       }
-      setIsSideBarOpen(isSideBarOpen);
+      setIsSidebarOpen(isSideBarOpen);
     };
 
   function handleOptionClick(label: string) {
@@ -229,7 +230,7 @@ function RightSidebar(props: Props) {
                 }
               }}
               onClick={() => {
-                setIsSideBarOpen(false);
+                setIsSidebarOpen(false);
                 setIsDropDownOpen(false);
               }}
             >
@@ -305,13 +306,13 @@ function RightSidebar(props: Props) {
             justifyContent: "center",
             alignItems: "center",
             background: "#67A3EE",
-            cursor: isSideBarOpen ? "pointer !important" : "pointer",
-            pointerEvents: isSideBarOpen ? "auto" : "initial",
+            cursor: isSidebarOpen ? "pointer !important" : "pointer",
+            pointerEvents: isSidebarOpen ? "auto" : "initial",
             color: "secondary.main",
             px: { md: 2, xs: 1.5 },
             py: { md: 0.5, xs: 0.5 },
             fontSize: "20px",
-            marginLeft: isSideBarOpen ? "-500px" : "0px"
+            marginRight: isSidebarOpen ? "380px" : "0px"
           },
           {
             "&:hover": {
@@ -327,9 +328,10 @@ function RightSidebar(props: Props) {
       </Button>
       <SwipeableDrawer
         anchor={"right"}
-        open={isSideBarOpen}
+        open={isSidebarOpen}
         onClose={toggleDrawer(false)}
         onOpen={toggleDrawer(true)}
+        sx={{ height: "0vh" }}
         ModalProps={{
           BackdropProps: {
             invisible: true,

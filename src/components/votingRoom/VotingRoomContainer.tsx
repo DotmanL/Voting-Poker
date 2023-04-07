@@ -72,7 +72,11 @@ function VotingRoomContainer() {
   }
 
   return (
-    <Grid>
+    <Grid
+      sx={{
+        height: "100%"
+      }}
+    >
       <NavBar
         appName={roomDetails?.name}
         isBorderBottom={false}
@@ -81,7 +85,11 @@ function VotingRoomContainer() {
       {isLoading ? (
         <Spinner />
       ) : (
-        <Grid>
+        <Grid
+          sx={{
+            height: "100%"
+          }}
+        >
           {roomDetails && (
             <VotingRoom
               room={roomDetails}
