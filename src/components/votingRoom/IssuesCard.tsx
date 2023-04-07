@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
 import { BiLinkExternal } from "react-icons/bi";
@@ -16,6 +16,7 @@ type Props = {
   moveCard: (dragIndex: number, hoverIndex: number) => void;
   activeCardId: string;
   setActiveCardId: React.Dispatch<React.SetStateAction<string | undefined>>;
+  handleDeleteIssue(id: string): Promise<void>;
 };
 
 const ItemTypes = {
@@ -29,9 +30,18 @@ interface DragItem {
 }
 
 function IssuesCard(props: Props) {
-  const { index, link, name, moveCard, id, setActiveCardId, activeCardId } =
-    props;
+  const {
+    index,
+    link,
+    name,
+    moveCard,
+    id,
+    setActiveCardId,
+    activeCardId,
+    handleDeleteIssue
+  } = props;
   const ref = useRef<HTMLDivElement>(null);
+  const [isMiniDropDownOpen, setIsMiniDropDownOpen] = useState<boolean>(false);
 
   const [{ handlerId, canDrop }, drop] = useDrop<
     DragItem,
@@ -95,6 +105,7 @@ function IssuesCard(props: Props) {
       ref={ref}
       key={id}
       data-handler-id={handlerId}
+      // onClick={() => setActiveCardId(id)}
       sx={{
         display: "flex",
         flexDirection: "column",
@@ -104,7 +115,7 @@ function IssuesCard(props: Props) {
         height: "auto",
         border: canDrop ? "1px solid green" : "1px solid #67A3EE",
         borderRadius: "12px",
-        cursor: "move",
+        cursor: isDragging ? "grabbing" : "pointer",
         my: "15px",
         opacity: isDragging ? 0 : 1,
         background: "#FFFFFF",
@@ -127,7 +138,47 @@ function IssuesCard(props: Props) {
       >
         <Typography variant="h6">{name}</Typography>
         <Grid>
-          <BiDotsHorizontal />
+          <BiDotsHorizontal
+            onClick={() => {
+              setIsMiniDropDownOpen(!isMiniDropDownOpen);
+            }}
+            size={20}
+          />
+        </Grid>
+        <Grid>
+          {isMiniDropDownOpen && (
+            <Grid
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-start",
+                width: "auto",
+                height: "auto",
+                borderRadius: "10px",
+                zIndex: 100,
+                py: 2,
+                px: 1,
+                cursor: "pointer",
+                background: "red"
+              }}
+            >
+              <Grid
+                sx={{
+                  width: "100%",
+                  background: "secondary.main",
+                  "&:hover": {
+                    background: "#67A3EE",
+                    color: "#FFFFFF",
+                    transition: "box-shadow 0.3s ease-in-out",
+                    boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.2)"
+                  }
+                }}
+                onClick={() => handleDeleteIssue(id)}
+              >
+                Delete Issue
+              </Grid>
+            </Grid>
+          )}
         </Grid>
       </Grid>
       <Grid sx={{ px: 1 }}>{link}</Grid>

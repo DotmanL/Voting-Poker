@@ -3,15 +3,23 @@ import Grid from "@mui/material/Grid";
 import { IIssue } from "interfaces/Issues";
 import IssuesCard from "./IssuesCard";
 import update from "immutability-helper";
+import IssueService from "api/IssueService";
+import {
+  QueryObserverResult,
+  RefetchOptions,
+  RefetchQueryFilters
+} from "react-query/types/core/types";
 
 type Props = {
-  issues: IIssue[];
   setCards: React.Dispatch<React.SetStateAction<IIssue[]>>;
   cards: IIssue[];
+  refetchIssues: <TPageData>(
+    options?: (RefetchOptions & RefetchQueryFilters<TPageData>) | undefined
+  ) => Promise<QueryObserverResult<IIssue[] | undefined, Error>>;
 };
 
 function IssuesView(props: Props) {
-  const { cards, setCards } = props;
+  const { cards, setCards, refetchIssues } = props;
   const [activeCardId, setActiveCardId] = useState<string>();
 
   const moveCard = useCallback(
@@ -30,6 +38,14 @@ function IssuesView(props: Props) {
     [setCards]
   );
 
+  const handleDeleteIssue = useCallback(
+    async (id: string) => {
+      await IssueService.deleteIssue(id);
+      refetchIssues();
+    },
+    [refetchIssues]
+  );
+
   const renderCard = useCallback(
     (card: IIssue, index: number) => {
       return (
@@ -42,10 +58,11 @@ function IssuesView(props: Props) {
           moveCard={moveCard}
           activeCardId={activeCardId!}
           setActiveCardId={setActiveCardId}
+          handleDeleteIssue={handleDeleteIssue}
         />
       );
     },
-    [moveCard, activeCardId]
+    [moveCard, activeCardId, handleDeleteIssue]
   );
 
   return (
@@ -53,6 +70,7 @@ function IssuesView(props: Props) {
       sx={{
         display: "flex",
         flexDirection: "column",
+        width: "100%",
         alignItems: "center"
       }}
     >

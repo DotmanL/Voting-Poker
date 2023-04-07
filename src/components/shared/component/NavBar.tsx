@@ -45,7 +45,7 @@ export const NavBar = (props: Props) => {
 
   const handleLeaveRoom = async () => {
     navigate("/new-room");
-    toast.info("Kindly join a room");
+    // toast.info("Kindly join a room");
   };
 
   const handleSignOut = async () => {

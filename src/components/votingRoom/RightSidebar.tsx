@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import Box from "@mui/material/Box";
 import SwipeableDrawer from "@mui/material/SwipeableDrawer";
 import Button from "@mui/material/Button";
@@ -14,6 +14,12 @@ import SingleIssueTextbox from "./SingleIssueTextbox";
 import { IIssue } from "interfaces/Issues";
 import IssuesView from "./IssuesView";
 import { SidebarContext } from "components/providers/SideBarProvider";
+import IssueService from "api/IssueService";
+import {
+  QueryObserverResult,
+  RefetchOptions,
+  RefetchQueryFilters
+} from "react-query/types/core/types";
 
 const options = [
   {
@@ -38,10 +44,16 @@ const options = [
 
 type Props = {
   issues: IIssue[];
+  error: Error | null;
+  isLoading: boolean;
+  roomId: string;
+  refetchIssues: <TPageData>(
+    options?: (RefetchOptions & RefetchQueryFilters<TPageData>) | undefined
+  ) => Promise<QueryObserverResult<IIssue[] | undefined, Error>>;
 };
 
 function RightSidebar(props: Props) {
-  const { issues } = props;
+  const { issues, isLoading, error, refetchIssues, roomId } = props;
   const { isSidebarOpen, setIsSidebarOpen } = useContext(SidebarContext);
   const [isDropDownOpen, setIsDropDownOpen] = useState<boolean>(false);
   const [isMiniDropDownOpen, setIsMiniDropDownOpen] = useState<boolean>(false);
@@ -50,6 +62,16 @@ function RightSidebar(props: Props) {
   const [isAddMultipleModalOpen, setIsAddMultipleModalOpen] =
     useState<boolean>(false);
   const [cards, setCards] = useState(issues);
+
+  useEffect(() => {
+    if (issues) {
+      setCards(issues);
+    }
+    if (!isSidebarOpen) {
+      setIsMiniDropDownOpen(false);
+      return;
+    }
+  }, [issues, isSidebarOpen]);
 
   const toggleDrawer =
     (isSideBarOpen: boolean) =>
@@ -65,6 +87,12 @@ function RightSidebar(props: Props) {
       setIsSidebarOpen(isSideBarOpen);
     };
 
+  async function handleCreateIssues(formData: IIssue[]) {
+    await IssueService.createIssues(formData);
+    refetchIssues();
+    setIsAddMultipleModalOpen(false);
+  }
+
   function handleOptionClick(label: string) {
     if (label === "addMultipleUrls") {
       setIsDropDownOpen(false);
@@ -73,9 +101,14 @@ function RightSidebar(props: Props) {
     }
   }
 
-  function handleDeleteAllIssues() {
-    setCards([]);
+  async function handleDeleteAllIssues() {
+    await IssueService.deleteAllIssues(roomId);
+    refetchIssues();
     setIsMiniDropDownOpen(false);
+  }
+
+  if (error) {
+    return <p>{(error as Error)?.message}</p>;
   }
 
   const list = (
@@ -170,8 +203,10 @@ function RightSidebar(props: Props) {
               </>
             </Dropdown>
             <MultipleUrlsModal
+              cardsLength={cards.length}
               isAddMultipleModalOpen={isAddMultipleModalOpen}
               setIsAddMultipleModalOpen={setIsAddMultipleModalOpen}
+              onFormSubmitted={handleCreateIssues}
             />
           </Grid>
           <Grid sx={{ cursor: "pointer" }}>
@@ -239,60 +274,65 @@ function RightSidebar(props: Props) {
           </Tooltip>
         </Grid>
       </Grid>
-      {cards.length <= 0 ? (
-        <Grid>
-          {!isSingleIssueTextBoxOpen && (
-            <Grid
-              sx={{
-                height: "auto",
-                marginTop: "30px",
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "center",
-                padding: "5px",
-                cursor: "pointer",
-                p: 0.5,
-                borderRadius: "10px",
-                "&:hover": {
-                  color: "primary.main",
-                  transition: "box-shadow 0.3s ease-in-out",
-                  boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.2)"
-                }
-              }}
-              onClick={() => setIsSingleIssueTextBoxOpen(true)}
-            >
-              <GrAdd style={{ marginLeft: "15px" }} size={28} />
-              <Typography variant="h6" sx={{ ml: 1 }}>
-                Add Issue(s)
-              </Typography>
-            </Grid>
-          )}
-          {isSingleIssueTextBoxOpen && (
-            <Grid>
-              <SingleIssueTextbox
-                isSingleIssueTextBoxOpen={isSingleIssueTextBoxOpen}
-                setIsSingleIssueTextBoxOpen={setIsSingleIssueTextBoxOpen}
-              />
-            </Grid>
-          )}
-        </Grid>
+
+      {isLoading ? (
+        <Grid>Loading Issues</Grid>
       ) : (
-        <Grid></Grid>
-      )}
-      <Grid
-        sx={{
-          mt: 2,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center"
-        }}
-      >
-        <Grid>
+        <Grid
+          sx={{
+            mt: 2,
+            display: "flex",
+            flexDirection: "column"
+          }}
+        >
           {cards && (
-            <IssuesView issues={issues} cards={cards} setCards={setCards} />
+            <IssuesView
+              cards={cards}
+              setCards={setCards}
+              refetchIssues={refetchIssues}
+            />
           )}
+          <Grid sx={{ ml: 2, mb: 2 }}>
+            {!isSingleIssueTextBoxOpen && (
+              <Grid
+                sx={{
+                  height: "auto",
+                  marginTop: "30px",
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  padding: "5px",
+                  cursor: "pointer",
+                  mt: 0.5,
+                  p: 0.5,
+                  borderRadius: "10px",
+                  "&:hover": {
+                    color: "primary.main",
+                    transition: "box-shadow 0.3s ease-in-out",
+                    boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.2)"
+                  }
+                }}
+                onClick={() => setIsSingleIssueTextBoxOpen(true)}
+              >
+                <GrAdd style={{ marginLeft: "15px" }} size={28} />
+                <Typography variant="h6" sx={{ ml: 1 }}>
+                  Add Issue(s)
+                </Typography>
+              </Grid>
+            )}
+            {isSingleIssueTextBoxOpen && (
+              <Grid>
+                <SingleIssueTextbox
+                  onFormSubmitted={handleCreateIssues}
+                  cardsLength={cards.length}
+                  isSingleIssueTextBoxOpen={isSingleIssueTextBoxOpen}
+                  setIsSingleIssueTextBoxOpen={setIsSingleIssueTextBoxOpen}
+                />
+              </Grid>
+            )}
+          </Grid>
         </Grid>
-      </Grid>
+      )}
     </Box>
   );
 

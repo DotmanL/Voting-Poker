@@ -1,38 +1,47 @@
-import React, { useCallback } from "react";
+import React from "react";
 import Grid from "@mui/material/Grid";
 import * as yup from "yup";
 import { useFormik } from "formik";
 import TextField from "@mui/material/TextField";
 import { Button, CircularProgress } from "@mui/material";
 import { IIssue } from "interfaces/Issues";
+import { useParams } from "react-router-dom";
 
 type Props = {
+  onFormSubmitted: (formData: IIssue[]) => void;
+  cardsLength: number;
   isSingleIssueTextBoxOpen?: boolean;
   setIsSingleIssueTextBoxOpen: (isSingleIssueTextBoxOpen: boolean) => void;
 };
 
 function SingleIssueTextbox(props: Props) {
-  const { setIsSingleIssueTextBoxOpen } = props;
+  const { setIsSingleIssueTextBoxOpen, onFormSubmitted, cardsLength } = props;
+  const getRoomId = useParams();
+
   const validationSchema = yup.object().shape({
     issues: yup.array().of(yup.string().url("Invalid URL format"))
   });
 
-  const handleSubmit = useCallback(
-    (values: string[], setSubmitting: (isSubmitting: boolean) => void) => {
-      const firstObject = values.slice(0, 1);
-      const objects: IIssue[] = firstObject.map((url: string, index) => ({
-        name: `Name ${index + 1}`,
-        link: url
-      }));
-
-      console.log(objects);
-
-      //   onFormSubmitted(values);
-      setSubmitting(false);
-    },
-    // [onFormSubmitted]
-    []
-  );
+  const handleSubmit = (
+    values: string[],
+    setSubmitting: (isSubmitting: boolean) => void
+  ) => {
+    let issues: IIssue[] = [];
+    let currentOrder = cardsLength + 1;
+    for (const url of values) {
+      issues.push({
+        name: `Ticket ${currentOrder}`,
+        link: url,
+        order: currentOrder,
+        roomId: getRoomId.roomId!
+      });
+      currentOrder++;
+    }
+    setSubmitting(true);
+    onFormSubmitted(issues);
+    setSubmitting(false);
+    clearField();
+  };
 
   const formik = useFormik({
     initialValues: {
@@ -75,8 +84,7 @@ function SingleIssueTextbox(props: Props) {
             id="issues"
             name="issues"
             label="Issue url"
-            multiline
-            rows={2}
+            rows={1}
             value={formik.values.issues.join("\n")}
             onChange={(event) => {
               formik.setFieldValue(

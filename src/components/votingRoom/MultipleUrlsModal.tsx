@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React from "react";
 import Grid from "@mui/material/Grid";
 import CustomModal from "components/shared/component/CustomModal";
 import * as yup from "yup";
@@ -8,34 +8,28 @@ import TextField from "@mui/material/TextField";
 import { Button, CircularProgress } from "@mui/material";
 import { AiOutlineClose } from "react-icons/ai";
 import { IIssue } from "interfaces/Issues";
+import { useParams } from "react-router-dom";
 import { handleKeyDown } from "utility/Keydown";
 
 type Props = {
+  cardsLength: number;
   isAddMultipleModalOpen: boolean;
   setIsAddMultipleModalOpen: (isAddMultipleModalOpen: boolean) => void;
+  onFormSubmitted: (formData: IIssue[]) => void;
 };
 
 function MultipleUrlsModal(props: Props) {
-  const { isAddMultipleModalOpen, setIsAddMultipleModalOpen } = props;
+  const {
+    isAddMultipleModalOpen,
+    setIsAddMultipleModalOpen,
+    onFormSubmitted,
+    cardsLength
+  } = props;
+  const getRoomId = useParams();
+
   const validationSchema = yup.object().shape({
     issues: yup.array().of(yup.string().url("Invalid URL format"))
   });
-
-  const handleSubmit = useCallback(
-    (values: string[], setSubmitting: (isSubmitting: boolean) => void) => {
-      const objects: IIssue[] = values.map((url: string, index) => ({
-        name: `Name ${index + 1}`,
-        link: url
-      }));
-
-      console.log(objects);
-
-      //   onFormSubmitted(values);
-      setSubmitting(false);
-    },
-    // [onFormSubmitted]
-    []
-  );
 
   const formik = useFormik({
     initialValues: {
@@ -50,7 +44,29 @@ function MultipleUrlsModal(props: Props) {
   const clearField = () => {
     formik.setFieldValue("issues", []);
   };
+
+  const handleSubmit = (
+    values: string[],
+    setSubmitting: (isSubmitting: boolean) => void
+  ) => {
+    let issues: IIssue[] = [];
+    let currentOrder = cardsLength + 1;
+    for (const url of values) {
+      issues.push({
+        name: `Ticket ${currentOrder}`,
+        link: url,
+        order: currentOrder,
+        roomId: getRoomId.roomId!
+      });
+      currentOrder++;
+    }
+    setSubmitting(true);
+    onFormSubmitted(issues);
+    setSubmitting(false);
+    clearField();
+  };
   const issuesLength = formik.values.issues.length;
+
   return (
     <Grid>
       <CustomModal isOpen={isAddMultipleModalOpen} size="md" modalWidth="800px">
@@ -108,7 +124,7 @@ function MultipleUrlsModal(props: Props) {
               }}
               id="issues"
               name="issues"
-              label="Issue url"
+              label="Issues url"
               multiline
               rows={15}
               value={formik.values.issues.join("\n")}

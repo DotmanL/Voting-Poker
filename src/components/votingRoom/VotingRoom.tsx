@@ -21,6 +21,9 @@ import VotingResultsContainer from "./VotingResultsContainer";
 import RightSidebar from "./RightSidebar";
 import { IIssue } from "interfaces/Issues";
 import { SidebarContext } from "components/providers/SideBarProvider";
+import IssueService from "api/IssueService";
+
+import { useQuery } from "react-query";
 
 const useStyles = makeStyles((theme) => ({
   "@keyframes glowing": {
@@ -65,39 +68,6 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-const issues: IIssue[] = [
-  {
-    _id: "1",
-    name: "Name 1",
-    link: "https://react-icons.github.io/react-icons/search?q=add"
-  },
-  {
-    _id: "2",
-    name: "Name 2",
-    link: "https://mui.com/material-ui/react-text-field/#basic-textfield"
-  },
-  {
-    _id: "3",
-    name: "Name 3",
-    link: "https://jsonviewer.stack.hu/"
-  },
-  {
-    _id: "4",
-    name: "Name 4",
-    link: "https://mui.com/material-ui/react-select/"
-  },
-  {
-    _id: "5",
-    name: "Name 5",
-    link: "https://mui.com/material-ui/react-select/"
-  },
-  {
-    _id: "6",
-    name: "Name 6",
-    link: "https://mui.com/material-ui/react-select/"
-  }
-];
-
 type Props = {
   room: IRoom;
   socket: any;
@@ -119,6 +89,7 @@ function VotingRoom(props: Props) {
   const getRoomId = useParams();
   const getUserId = localStorage.getItem("userId");
   const userId = getUserId ? JSON.parse(getUserId) : null;
+  const roomId = Object.values(getRoomId)[0];
 
   useEffect(() => {
     const newSocket = io(getBaseUrlWithoutRoute());
@@ -162,7 +133,7 @@ function VotingRoom(props: Props) {
         room.name
       } room`;
       if (data.userId === user!._id) {
-        toast.success(welcomeMessage, { autoClose: 200, pauseOnHover: true });
+        toast.success(welcomeMessage, { autoClose: 100, pauseOnHover: true });
       }
     });
 
@@ -182,9 +153,6 @@ function VotingRoom(props: Props) {
     });
 
     // socket.on("leaveRoomResponse", (data: IUser) => {
-    //   console.log(data);
-    //   console.log(!data.votedState);
-
     //   user!.votedState = data.votedState;
     //   user!.currentVote = !data.votedState ? undefined : user?.currentVote;
     // });
@@ -201,6 +169,15 @@ function VotingRoom(props: Props) {
     };
   }, [room, socket, user, getRoomId.roomId]);
 
+  const {
+    isLoading,
+    error,
+    data: issues,
+    refetch: refetchIssues
+  } = useQuery<IIssue[] | undefined, Error>("getIssues", async () =>
+    IssueService.getAllIssues(roomId!)
+  );
+
   const isDisabled = () => {
     if (!roomUsers) {
       return true;
@@ -213,9 +190,6 @@ function VotingRoom(props: Props) {
 
   const handleRevealVotes = () => {
     const roomUsersVotes = roomUsers;
-    console.log(roomUsersVotes);
-    console.log(room.roomId);
-
     socket.emit("votes", { allVotes: roomUsersVotes, roomId: room.roomId });
   };
 
@@ -320,7 +294,13 @@ function VotingRoom(props: Props) {
           }}
         >
           <Grid>
-            <RightSidebar issues={issues} />
+            <RightSidebar
+              roomId={roomId!}
+              issues={issues || []}
+              refetchIssues={refetchIssues}
+              isLoading={isLoading}
+              error={error}
+            />
           </Grid>
         </Grid>
         <Grid className={isDisabled() ? classes.pickCard : classes.glowingCard}>
