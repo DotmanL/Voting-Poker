@@ -2,7 +2,7 @@ import { createTheme, Theme } from "@mui/material/styles";
 import { red } from "@mui/material/colors";
 
 declare module "@mui/styles/defaultTheme" {
-  interface DefaultTheme extends Theme { }
+  interface DefaultTheme extends Theme {}
 }
 
 const theme = createTheme({
@@ -10,7 +10,8 @@ const theme = createTheme({
     MuiAppBar: {
       styleOverrides: {
         colorPrimary: {
-          backgroundColor: "#FFFFFF"
+          // backgroundColor: "#FEFAE0",
+          backgroundColor: "#edf2f4"
         }
       }
     }
@@ -20,7 +21,8 @@ const theme = createTheme({
       main: "#67A3EE"
     },
     secondary: {
-      main: "#FFFFFF"
+      // main: "#FEFAE0",
+      main: "#edf2f4"
     },
     error: {
       main: red[500]
@@ -28,7 +30,6 @@ const theme = createTheme({
   },
   spacing: (value: number) => `${value * 10}px`,
   typography: {
-
     fontFamily: [
       "-apple-system",
       "BlinkMacSystemFont",

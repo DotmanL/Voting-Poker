@@ -43,34 +43,28 @@ const updateIssue = async (_id: string, issue: IIssue) => {
   }
 };
 
-const updateIssueOrder = async (issueId: string, issue: IIssue) => {
+const updateIssueOrder = async (issueId: string, newOrder: number) => {
   try {
-    const body = JSON.stringify(issue);
+    const requestBody = { newOrder };
+    const body = JSON.stringify(requestBody);
     const response = await apiClient.put<IIssue[]>(
       `updateIssueOrder/${issueId}`,
       body
     );
-    toast.success("Issue updated successfully");
-    return response.status;
+    return response.data;
   } catch (err: any) {
     console.error(err.message);
   }
 };
 
-const deleteIssue = async (_id: String) => {
+const deleteIssues = async (issueIds: string[]) => {
   try {
-    const response = await apiClient.delete(`deleteIssue/${_id}`);
-    toast.success("Issue deleted successfully");
-    return response.status;
-  } catch (err: any) {
-    console.error(err.message);
-  }
-};
-
-const deleteAllIssues = async (roomId: String) => {
-  try {
-    const response = await apiClient.delete(`deleteIssues/${roomId}`);
-    toast.success("Issues deleted successfully");
+    const requestBody = { issueIds };
+    const body = JSON.stringify(requestBody);
+    const response = await apiClient.delete(`deleteIssues`, { data: body });
+    if (response.status === 200) {
+      toast.success("Issues deleted successfully");
+    }
     return response.status;
   } catch (err: any) {
     console.error(err.message);
@@ -82,8 +76,7 @@ export const IssueService = {
   getAllIssues,
   updateIssue,
   updateIssueOrder,
-  deleteIssue,
-  deleteAllIssues
+  deleteIssues
 };
 
 export default IssueService;

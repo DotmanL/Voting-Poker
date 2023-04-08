@@ -100,7 +100,7 @@ export const NavBar = (props: Props) => {
             flexDirection: "row",
             alignItems: "center",
             justifyContent: { md: "space-between", xs: "flex-start" },
-            marginRight: isSidebarOpen ? "410px" : "0"
+            marginRight: isSidebarOpen ? "420px" : "0"
           }}
         >
           <Link to="/">

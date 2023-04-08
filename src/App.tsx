@@ -45,7 +45,7 @@ function App() {
               <ToastContainer
                 style={{ marginTop: "80px" }}
                 closeOnClick
-                draggable
+                draggable={false}
                 transition={Zoom}
               />
               <ScrollToTop>

@@ -14,6 +14,7 @@ import SingleIssueTextbox from "./SingleIssueTextbox";
 import { IIssue } from "interfaces/Issues";
 import IssuesView from "./IssuesView";
 import { SidebarContext } from "components/providers/SideBarProvider";
+import { toast } from "react-toastify";
 import IssueService from "api/IssueService";
 import {
   QueryObserverResult,
@@ -43,6 +44,7 @@ const options = [
 ];
 
 type Props = {
+  socket: any;
   issues: IIssue[];
   error: Error | null;
   isLoading: boolean;
@@ -53,7 +55,7 @@ type Props = {
 };
 
 function RightSidebar(props: Props) {
-  const { issues, isLoading, error, refetchIssues, roomId } = props;
+  const { issues, isLoading, error, refetchIssues, roomId, socket } = props;
   const { isSidebarOpen, setIsSidebarOpen } = useContext(SidebarContext);
   const [isDropDownOpen, setIsDropDownOpen] = useState<boolean>(false);
   const [isMiniDropDownOpen, setIsMiniDropDownOpen] = useState<boolean>(false);
@@ -69,6 +71,8 @@ function RightSidebar(props: Props) {
     }
     if (!isSidebarOpen) {
       setIsMiniDropDownOpen(false);
+      setIsDropDownOpen(false);
+      setIsSingleIssueTextBoxOpen(false);
       return;
     }
   }, [issues, isSidebarOpen]);
@@ -91,6 +95,7 @@ function RightSidebar(props: Props) {
     await IssueService.createIssues(formData);
     refetchIssues();
     setIsAddMultipleModalOpen(false);
+    setIsSingleIssueTextBoxOpen(false);
   }
 
   function handleOptionClick(label: string) {
@@ -102,7 +107,21 @@ function RightSidebar(props: Props) {
   }
 
   async function handleDeleteAllIssues() {
-    await IssueService.deleteAllIssues(roomId);
+    const roomIssuesIds = await IssueService.getAllIssues(roomId);
+    if (!roomIssuesIds) {
+      return;
+    }
+
+    function getIssuesId(arr: any[]): string[] {
+      return arr.map((obj) => obj._id);
+    }
+
+    const issueIds = getIssuesId(roomIssuesIds);
+    if (issueIds.length <= 0) {
+      toast.warn("No issues to delete");
+      return;
+    }
+    await IssueService.deleteIssues(issueIds);
     refetchIssues();
     setIsMiniDropDownOpen(false);
   }
@@ -231,23 +250,22 @@ function RightSidebar(props: Props) {
                     borderRadius: "10px",
                     zIndex: 100,
                     py: 2,
-                    px: 1,
                     cursor: "pointer",
                     background: "#FFFFFF"
                   }}
                 >
                   <Grid
                     sx={{
+                      px: 2,
                       width: "100%",
                       background: "secondary.main",
                       "&:hover": {
-                        background: "#67A3EE",
-                        color: "#FFFFFF",
-                        transition: "box-shadow 0.3s ease-in-out",
-                        boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.2)"
+                        background: "darkGray",
+                        color: "black",
+                        opacity: 0.8
                       }
                     }}
-                    onClick={() => handleDeleteAllIssues()}
+                    onClick={handleDeleteAllIssues}
                   >
                     Delete Issues
                   </Grid>
@@ -287,6 +305,8 @@ function RightSidebar(props: Props) {
         >
           {cards && (
             <IssuesView
+              roomId={roomId}
+              socket={socket}
               cards={cards}
               setCards={setCards}
               refetchIssues={refetchIssues}

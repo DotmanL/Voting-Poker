@@ -91,6 +91,15 @@ function VotingRoom(props: Props) {
   const userId = getUserId ? JSON.parse(getUserId) : null;
   const roomId = Object.values(getRoomId)[0];
 
+  const {
+    isLoading,
+    error,
+    data: issues,
+    refetch: refetchIssues
+  } = useQuery<IIssue[] | undefined, Error>("getIssues", async () =>
+    IssueService.getAllIssues(roomId!)
+  );
+
   useEffect(() => {
     const newSocket = io(getBaseUrlWithoutRoute());
     setSocket(newSocket);
@@ -103,7 +112,7 @@ function VotingRoom(props: Props) {
       // newSocket.emit("leaveRoom", { userId });
       newSocket.disconnect();
     };
-  }, [user, userId]);
+  }, []);
 
   useEffect(() => {
     if (!socket) return;
@@ -168,15 +177,6 @@ function VotingRoom(props: Props) {
       socket.off("user");
     };
   }, [room, socket, user, getRoomId.roomId]);
-
-  const {
-    isLoading,
-    error,
-    data: issues,
-    refetch: refetchIssues
-  } = useQuery<IIssue[] | undefined, Error>("getIssues", async () =>
-    IssueService.getAllIssues(roomId!)
-  );
 
   const isDisabled = () => {
     if (!roomUsers) {
@@ -268,7 +268,13 @@ function VotingRoom(props: Props) {
   };
 
   return (
-    <Grid style={{ marginRight: isSidebarOpen ? "200px" : "0" }}>
+    <Grid
+      style={{
+        marginRight: isSidebarOpen ? "400px" : "0",
+        backgroundColor: "secondary.main",
+        height: "100vh"
+      }}
+    >
       <Grid
         sx={{
           position: "relative",
@@ -295,6 +301,7 @@ function VotingRoom(props: Props) {
         >
           <Grid>
             <RightSidebar
+              socket={socket}
               roomId={roomId!}
               issues={issues || []}
               refetchIssues={refetchIssues}

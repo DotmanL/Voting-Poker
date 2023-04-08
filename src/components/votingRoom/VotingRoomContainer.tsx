@@ -74,7 +74,8 @@ function VotingRoomContainer() {
   return (
     <Grid
       sx={{
-        height: "100%"
+        height: "100%",
+        backgroundColor: "secondary.main"
       }}
     >
       <NavBar

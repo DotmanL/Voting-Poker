@@ -1,7 +1,7 @@
 import { IBase } from "interfaces/IBase";
 
 export interface IIssue extends IBase {
-  roomId?: string; //update to be required
+  roomId: string; //update to be required
   link: string;
   name: string;
   summary?: string;

@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import Grid from "@mui/material/Grid";
 import { IIssue } from "interfaces/Issues";
 import IssuesCard from "./IssuesCard";
@@ -11,6 +11,8 @@ import {
 } from "react-query/types/core/types";
 
 type Props = {
+  socket: any;
+  roomId: string;
   setCards: React.Dispatch<React.SetStateAction<IIssue[]>>;
   cards: IIssue[];
   refetchIssues: <TPageData>(
@@ -19,11 +21,21 @@ type Props = {
 };
 
 function IssuesView(props: Props) {
-  const { cards, setCards, refetchIssues } = props;
+  const { cards, setCards, refetchIssues, socket, roomId } = props;
   const [activeCardId, setActiveCardId] = useState<string>();
 
+  useEffect(() => {
+    if (cards) {
+      socket.on("orderUpdateResponse", (data: any) => {
+        if (data.isOrderUpdated) {
+          refetchIssues();
+        }
+      });
+    }
+  }, [cards, socket, refetchIssues]);
+
   const moveCard = useCallback(
-    (dragIndex: number, hoverIndex: number) => {
+    async (dragIndex: number, hoverIndex: number) => {
       setCards((prevCards: IIssue[]) =>
         update(prevCards, {
           $splice: [
@@ -33,14 +45,22 @@ function IssuesView(props: Props) {
         })
       );
 
-      ///api request here
+      const updatedIssues = await IssueService.updateIssueOrder(
+        cards[dragIndex]._id!,
+        hoverIndex + 1
+      );
+
+      const orderedIssues = updatedIssues?.sort((a, b) => a.order! - b.order!);
+      setCards(orderedIssues!);
+
+      socket.emit("orderUpdate", { isOrderUpdated: true, roomId: roomId });
     },
-    [setCards]
+    [cards, setCards, socket, roomId]
   );
 
   const handleDeleteIssue = useCallback(
     async (id: string) => {
-      await IssueService.deleteIssue(id);
+      await IssueService.deleteIssues([id]);
       refetchIssues();
     },
     [refetchIssues]
@@ -74,7 +94,9 @@ function IssuesView(props: Props) {
         alignItems: "center"
       }}
     >
-      {cards.map((card, i) => renderCard(card, i))}
+      {cards
+        .sort((a, b) => a.order! - b.order!)
+        .map((card, i) => renderCard(card, i))}
     </Grid>
   );
 }

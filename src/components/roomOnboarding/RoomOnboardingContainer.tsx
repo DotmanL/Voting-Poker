@@ -33,7 +33,11 @@ function RoomOnboardingContainer() {
   }
 
   return (
-    <Grid>
+    <Grid
+      sx={{
+        backgroundColor: "secondary.main"
+      }}
+    >
       <NavBar appName="Dot Voting" isBorderBottom />
       <Grid>
         {isRoomsLoading ? (

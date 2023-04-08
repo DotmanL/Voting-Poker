@@ -33,23 +33,26 @@ function RoomsTable(props: Props) {
         display: "flex",
         flexDirection: "column",
         justifyContent: "center",
-        alignItems: "center"
+        alignItems: "center",
+        backgroundColor: "secondary.main",
+        transition: "box-shadow 0.3s ease-in-out",
+        boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.2)"
       }}
       component={Paper}
     >
       <Grid>
         <Button
-          variant="contained"
+          variant="outlined"
           disabled={true}
           sx={[
             {
               mt: 4,
               ml: { md: 5, xs: 0 },
-              background: "primary.main",
-              color: "white",
+              background: "white",
+              color: "black",
               px: { md: 4, xs: 2 },
               py: { md: 0.7, xs: 0.5 },
-              fontSize: "20px"
+              fontSize: "24px"
             },
             {
               "&:hover": {

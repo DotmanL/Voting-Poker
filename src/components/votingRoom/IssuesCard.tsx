@@ -105,7 +105,6 @@ function IssuesCard(props: Props) {
       ref={ref}
       key={id}
       data-handler-id={handlerId}
-      // onClick={() => setActiveCardId(id)}
       sx={{
         display: "flex",
         flexDirection: "column",
@@ -113,11 +112,16 @@ function IssuesCard(props: Props) {
         py: 2,
         width: "80%",
         height: "auto",
-        border: canDrop ? "1px solid green" : "1px solid #67A3EE",
+        border: canDrop
+          ? "1px solid green"
+          : activeCardId === id
+          ? "2px solid #67A3EE"
+          : "0px solid gray",
         borderRadius: "12px",
         cursor: isDragging ? "grabbing" : "pointer",
         my: "15px",
         opacity: isDragging ? 0 : 1,
+        boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.2)",
         background: "#FFFFFF",
         "&:hover": {
           border: "1px solid #FFFFFF",
@@ -136,7 +140,10 @@ function IssuesCard(props: Props) {
           justifyContent: "space-between"
         }}
       >
-        <Typography variant="h6">{name}</Typography>
+        <Grid>
+          <Typography variant="h6">{name}</Typography>
+        </Grid>
+
         <Grid>
           <BiDotsHorizontal
             onClick={() => {
@@ -145,42 +152,47 @@ function IssuesCard(props: Props) {
             size={20}
           />
         </Grid>
-        <Grid>
-          {isMiniDropDownOpen && (
+      </Grid>
+
+      <Grid
+        sx={{ position: "absolute", right: 55, marginTop: "30px", zIndex: 400 }}
+      >
+        {isMiniDropDownOpen && (
+          <Grid
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-start",
+              width: "200px",
+              height: "100px",
+              borderRadius: "10px",
+              zIndex: 100,
+              py: 2,
+              cursor: "pointer",
+              background: "white",
+              boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.2)",
+              color: "black"
+            }}
+          >
             <Grid
               sx={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "flex-start",
-                width: "auto",
-                height: "auto",
-                borderRadius: "10px",
-                zIndex: 100,
-                py: 2,
-                px: 1,
-                cursor: "pointer",
-                background: "red"
+                px: 2,
+                width: "100%",
+                background: "secondary.main",
+                "&:hover": {
+                  background: "darkGray",
+                  color: "black",
+                  opacity: 0.8
+                }
               }}
+              onClick={() => handleDeleteIssue(id)}
             >
-              <Grid
-                sx={{
-                  width: "100%",
-                  background: "secondary.main",
-                  "&:hover": {
-                    background: "#67A3EE",
-                    color: "#FFFFFF",
-                    transition: "box-shadow 0.3s ease-in-out",
-                    boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.2)"
-                  }
-                }}
-                onClick={() => handleDeleteIssue(id)}
-              >
-                Delete Issue
-              </Grid>
+              Delete Issue
             </Grid>
-          )}
-        </Grid>
+          </Grid>
+        )}
       </Grid>
+
       <Grid sx={{ px: 1 }}>{link}</Grid>
       <Grid
         sx={{

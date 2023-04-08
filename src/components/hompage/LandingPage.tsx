@@ -16,7 +16,8 @@ function LandingPage() {
         p: 0,
         height: "100vh",
         overflowX: "hidden",
-        position: 'relative'
+        position: "relative",
+        backgroundColor: "secondary.main"
       }}
     >
       <Grid sx={{ display: { md: "flex", xs: "none" } }}>
