@@ -4,7 +4,6 @@ import { userContext } from "App";
 import { IUserDetails } from "interfaces/User/IUserDetails";
 import { IRoom } from "interfaces/Room/IRoom";
 import Typography from "@mui/material/Typography";
-// import { getRandomColor } from "utility/RandomColors";
 import { useSpring, animated } from "react-spring";
 import PartyPopper from "./assets/partyPopper.gif";
 import popSound from "./assets/cheers.mp3";
