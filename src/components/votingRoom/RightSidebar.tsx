@@ -76,7 +76,7 @@ function RightSidebar(props: Props) {
     return () => {
       setIsSidebarOpen(false);
     };
-  }, [issues, isSidebarOpen]);
+  }, [issues, isSidebarOpen, setIsSidebarOpen]);
 
   const toggleDrawer =
     (isSideBarOpen: boolean) =>
