@@ -1,32 +1,48 @@
-import { createTheme, Theme } from "@mui/material/styles";
+import { Theme } from "@mui/material/styles";
 import { red } from "@mui/material/colors";
+import { PaletteMode } from "@mui/material";
 
 declare module "@mui/styles/defaultTheme" {
   interface DefaultTheme extends Theme {}
 }
 
-const theme = createTheme({
+export const getDesignTokens = (mode: PaletteMode) => ({
   components: {
     MuiAppBar: {
       styleOverrides: {
         colorPrimary: {
           // backgroundColor: "#FEFAE0",
-          backgroundColor: "#edf2f4"
+          backgroundColor: mode === "light" ? "#edf2f4" : "#151e22"
         }
       }
     }
   },
   palette: {
-    primary: {
-      main: "#67A3EE"
-    },
-    secondary: {
-      // main: "#FEFAE0",
-      main: "#edf2f4"
-    },
-    error: {
-      main: red[500]
-    }
+    mode,
+    ...(mode === "light"
+      ? {
+          primary: {
+            main: "#67A3EE"
+          },
+          secondary: {
+            // main: "#FEFAE0",
+            main: "#edf2f4"
+          },
+          error: {
+            main: red[500]
+          }
+        }
+      : {
+          primary: {
+            main: "#67A3EE"
+          },
+          secondary: {
+            main: "#151e22"
+          },
+          error: {
+            main: red[500]
+          }
+        })
   },
   spacing: (value: number) => `${value * 10}px`,
   typography: {
@@ -50,11 +66,6 @@ const theme = createTheme({
     fontWeightLight: 300,
     fontWeightRegular: 400,
     fontWeightMedium: 600,
-    fontWeightBold: 900,
-    button: {
-      textTransform: "none"
-    }
+    fontWeightBold: 900
   }
 });
-
-export default theme;

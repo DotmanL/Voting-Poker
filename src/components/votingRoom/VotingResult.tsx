@@ -103,7 +103,7 @@ function VotingResult(props: Props) {
               justifyContent: "center",
               borderRadius: "8px",
               px: 1,
-              background: "white",
+              background: (theme) => theme.palette.secondary.main,
               m: 1
             }}
             key={i}
@@ -113,7 +113,13 @@ function VotingResult(props: Props) {
                 {room.roomId === user!.currentRoomId && v.name}
               </Typography>
             </Grid>
-            <Grid sx={{ mx: 2 }} key={i}>
+            <Grid
+              sx={{
+                mx: 2,
+                background: (theme) => theme.palette.secondary.main
+              }}
+              key={i}
+            >
               <Typography sx={{ fontSize: "25px" }}>{v.currentVote}</Typography>
             </Grid>
           </Grid>

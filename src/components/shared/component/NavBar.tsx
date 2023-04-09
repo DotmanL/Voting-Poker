@@ -1,20 +1,21 @@
 import { Typography } from "@mui/material";
 import AppBar from "@mui/material/AppBar";
-import Button from "@mui/material/Button";
 import Grid from "@mui/material/Grid";
 import Toolbar from "@mui/material/Toolbar";
 import { useContext, useEffect, useState } from "react";
-// import IconButton from "@mui/material/IconButton";
+import IconButton from "@mui/material/IconButton";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Link } from "./Link";
-// import { AccountCircle } from "@mui/icons-material";
-// import MenuItem from "@mui/material/MenuItem";
-// import Menu from "@mui/material/Menu";
+import { AccountCircle } from "@mui/icons-material";
+import MenuItem from "@mui/material/MenuItem";
+import Menu from "@mui/material/Menu";
 import UserService from "api/UserService";
 import { IUser } from "interfaces/User/IUser";
 import { toast } from "react-toastify";
 import { userContext } from "../../../App";
-import { SidebarContext } from "components/providers/SideBarProvider";
+import { MdViewSidebar } from "react-icons/md";
+import { SidebarContext } from "utility/providers/SideBarProvider";
+import DarkModeToggle from "./DarkModeToggle";
 
 type Props = {
   appName: string;
@@ -28,23 +29,24 @@ export const NavBar = (props: Props) => {
   const userData = useContext(userContext);
   const location = useLocation();
   const urlPath = location.pathname;
-  // const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const { isSidebarOpen } = useContext(SidebarContext);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const { isSidebarOpen, setIsSidebarOpen } = useContext(SidebarContext);
   const [scrolledDownEnough, setScrolledDownEnough] = useState(false);
   const [user, setUser] = useState<IUser>(
     currentUser ? currentUser : userData!
   );
 
-  // const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
-  //   setAnchorEl(event.currentTarget);
-  // };
+  const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
 
-  // const handleClose = () => {
-  //   setAnchorEl(null);
-  // };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
   const handleLeaveRoom = async () => {
     navigate("/new-room");
+    handleClose();
     // toast.info("Kindly join a room");
   };
 
@@ -100,7 +102,7 @@ export const NavBar = (props: Props) => {
             flexDirection: "row",
             alignItems: "center",
             justifyContent: { md: "space-between", xs: "flex-start" },
-            marginRight: isSidebarOpen ? "420px" : "0"
+            marginRight: isSidebarOpen ? "380px" : "0"
           }}
         >
           <Link to="/">
@@ -123,136 +125,124 @@ export const NavBar = (props: Props) => {
             sx={{
               display: "flex",
               flexDirection: "row",
-              ml: "auto",
+              justifyContent: "center",
               alignItems: "center"
             }}
           >
-            <Grid>
+            <Grid
+              sx={{
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "center",
+                alignItems: "center"
+              }}
+            >
               {user && (
                 <Grid
                   sx={{
                     display: "flex",
                     flexDirection: "row",
                     justifyContent: "center",
-                    alignItems: "center"
+                    alignItems: "center",
+                    width: "auto",
+                    mr: { md: 2, xs: 0 },
+                    ml: { md: 0, xs: 2 }
                   }}
                 >
                   <Typography
                     variant="h5"
                     sx={{
-                      mr: { md: 4, xs: 2 },
-                      display: { md: "flex", xs: "none" }
+                      fontSize: { md: "24px", xs: "14px" },
+                      mt: { xs: 0.5 }
                     }}
                   >
-                    Welcome {user?.name}
+                    Hi {user?.name}
                   </Typography>
-                  {/* <IconButton
-                    size="large"
-                    aria-label="account of current user"
-                    aria-controls="menu-appbar"
-                    aria-haspopup="true"
-                    onClick={handleMenu}
-                    color="inherit"
-                    sx={{ mr: { md: 15, xs: 2 } }}
-                  >
-                    <AccountCircle />
-                  </IconButton>
-                  <Menu
-                    id="menu-appbar"
-                    anchorEl={anchorEl}
-                    anchorOrigin={{
-                      vertical: "top",
-                      horizontal: "right"
+                  <Grid
+                    sx={{
+                      display: "flex",
+                      flexDirection: "row",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      width: "auto"
                     }}
-                    keepMounted
-                    transformOrigin={{
-                      vertical: "top",
-                      horizontal: "right"
-                    }}
-                    open={Boolean(anchorEl)}
-                    onClose={handleClose}
                   >
-                    <MenuItem onClick={handleClose}>Profile</MenuItem>
-                    <MenuItem onClick={handleClose}>My account</MenuItem>
-                  </Menu> */}
+                    <IconButton
+                      size="large"
+                      aria-label="account of current user"
+                      aria-controls="menu-appbar"
+                      aria-haspopup="true"
+                      onClick={handleMenu}
+                      color="inherit"
+                      sx={{ ml: { md: 0.5, xs: 2 }, mt: 0.5 }}
+                    >
+                      <AccountCircle />
+                    </IconButton>
+
+                    <Menu
+                      id="menu-appbar"
+                      sx={{ mt: 5, mr: { md: 0.5, xs: 1 } }}
+                      PaperProps={{
+                        sx: { height: "auto", width: "auto", px: 1, py: 0.5 }
+                      }}
+                      anchorEl={anchorEl}
+                      anchorOrigin={{
+                        vertical: "top",
+                        horizontal: "right"
+                      }}
+                      keepMounted
+                      transformOrigin={{
+                        vertical: "top",
+                        horizontal: "right"
+                      }}
+                      open={Boolean(anchorEl)}
+                      onClose={handleClose}
+                    >
+                      <MenuItem
+                        sx={{
+                          display:
+                            urlPath.indexOf("/room") >= 0 ? "flex" : "none"
+                        }}
+                        onClick={handleLeaveRoom}
+                      >
+                        Leave Room
+                      </MenuItem>
+                      <MenuItem onClick={handleClose}>
+                        <Grid onClick={!user ? handleSignUp : handleSignOut}>
+                          {!user ? "Sign Up" : "Sign Out"}
+                        </Grid>
+                      </MenuItem>
+                    </Menu>
+                  </Grid>
                 </Grid>
               )}
             </Grid>
-            <Grid>
-              <Button
-                sx={[
-                  {
-                    display: { md: "none", xs: "none" },
-                    background: "#67A3EE",
-                    color: "secondary.main",
-                    px: { md: 2, xs: 1.5 },
-                    py: { md: 0.5, xs: 0.5 },
-                    fontSize: { md: "20px", xs: "13px" }
-                  },
-                  {
-                    "&:hover": {
-                      color: "white",
-                      backgroundColor: "green"
-                    }
-                  }
-                ]}
-              >
-                {/* <Link to="/signup"> */}
-                Sign Up
-                {/* </Link> */}
-              </Button>
-            </Grid>
             <Grid
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
               sx={{
+                flexDirection: "row",
+                justifyContent: "center",
+                alignItems: "center",
+                width: "auto",
+                height: "50px",
+                borderRadius: "10px",
+                border: "2px solid #67A3EE",
+                mr: { md: 2, xs: 0 },
+                mt: { md: 1, xs: 0.5 },
+                p: { md: 1, xs: 0.5 },
+                cursor: "pointer",
                 display: urlPath.indexOf("/room") >= 0 ? "flex" : "none"
               }}
             >
-              <Button
-                onClick={handleLeaveRoom}
-                sx={[
-                  {
-                    background: "#67A3EE",
-                    color: "secondary.main",
-                    px: { md: 2, xs: 1.5 },
-                    py: { md: 0.5, xs: 0.5 },
-                    fontSize: { md: "20px", xs: "13px" },
-                    mx: { md: 2, xs: 1 }
-                  },
-                  {
-                    "&:hover": {
-                      color: "white",
-                      backgroundColor: "green"
-                    }
-                  }
-                ]}
-              >
-                Leave Room
-              </Button>
+              <MdViewSidebar size={32} />
             </Grid>
-            <Grid>
-              <Button
-                title={!user ? "Sign Up By Joining a room below" : ""}
-                onClick={!user ? handleSignUp : handleSignOut}
-                // disabled={!user}
-                sx={[
-                  {
-                    background: "#67A3EE",
-                    color: "secondary.main",
-                    px: { md: 2, xs: 1.5 },
-                    py: { md: 0.5, xs: 0.5 },
-                    fontSize: { md: "20px", xs: "13px" },
-                    mx: { md: 2, xs: 1 }
-                  },
-                  {
-                    "&:hover": {
-                      color: "white",
-                      backgroundColor: "green"
-                    }
-                  }
-                ]}
-              >
-                {!user ? "Sign Up" : "Sign Out"}
-              </Button>
+            <Grid
+              sx={{
+                mr: { md: 10, xs: 0 },
+                mt: { md: 0.5, xs: 0 }
+              }}
+            >
+              <DarkModeToggle />
             </Grid>
           </Grid>
         </Toolbar>

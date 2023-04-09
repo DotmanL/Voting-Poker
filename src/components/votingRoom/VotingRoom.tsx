@@ -20,7 +20,7 @@ import { getBaseUrlWithoutRoute } from "api";
 import VotingResultsContainer from "./VotingResultsContainer";
 import RightSidebar from "./RightSidebar";
 import { IIssue } from "interfaces/Issues";
-import { SidebarContext } from "components/providers/SideBarProvider";
+import { SidebarContext } from "utility/providers/SideBarProvider";
 import IssueService from "api/IssueService";
 
 import { useQuery } from "react-query";
@@ -84,7 +84,6 @@ function VotingRoom(props: Props) {
   const [roomUsers, setRoomUsers] = useState<IUserDetails[]>();
   const [userVote, setUserVote] = useState<number | undefined>();
   const [votesCasted, setVotesCasted] = useState<IUserDetails[] | undefined>();
-  // const [isDisabled, setIsDisabled]= useState<boolean>()
   const [isVoted, setIsVoted] = useState<boolean>(false);
   const getRoomId = useParams();
   const getUserId = localStorage.getItem("userId");
@@ -106,7 +105,9 @@ function VotingRoom(props: Props) {
 
     return () => {
       // TODO: can't reset vote on leaving room, only do when vote session is completed.
-      // TODO: implement many to many relationship between each room and userId and userVote.
+      // TODO: implement many to many relationship between each room and userId, userVote and votedState to prevent user from carrying
+      // TODO: votes from one room to another, also keep ttrack of votedState. A useEffect in this compoonent will be used to load
+      // TODO: specific user votes and other data for the room.
       // user!.votedState = false;
       // user!.currentVote = undefined;
       // newSocket.emit("leaveRoom", { userId });
@@ -193,26 +194,6 @@ function VotingRoom(props: Props) {
     socket.emit("votes", { allVotes: roomUsersVotes, roomId: room.roomId });
   };
 
-  // const handleNewVotingSession = async () => {
-  //   roomUsers?.forEach((ru) => {
-  //     ru.votedState = false;
-  //     ru.currentVote = undefined;
-  //   });
-  //   user!.votedState = false;
-  //   user!.currentVote = undefined;
-  //   const currentRoomUsers = await UserService.getRoomUsers(room.roomId);
-  //   for (const currentRoomUser of currentRoomUsers!) {
-  //     currentRoomUser.votedState = false;
-  //     currentRoomUser.currentVote = undefined;
-  //     await UserService.resetVote(currentRoomUser!._id!);
-  //   }
-  //   setUserVote(undefined);
-  //   const updatedCurrentRoomUsers = await UserService.getRoomUsers(room.roomId);
-  //   setRoomUsers(updatedCurrentRoomUsers!);
-  //   socket.emit("votes", { allVotes: false, roomId: room.roomId });
-  //   socket.emit("isUserVoted", roomUsers);
-  // };
-
   const handleNewVotingSession = async () => {
     const updatedRoomUsers = roomUsers?.map((ru) => ({
       ...ru,
@@ -237,10 +218,12 @@ function VotingRoom(props: Props) {
         sessionId: `${socket.id}${Math.random()}`,
         socketId: socket.id
       };
-      setIsVoted(
-        (voteValue === userVote && !isVoted) || (voteValue !== userVote && true)
-      );
 
+      const isVotedState =
+        (voteValue === userVote && !isVoted) ||
+        (voteValue !== userVote && true);
+
+      setIsVoted(isVotedState);
       user.currentVote = userVotingDetails.vote;
       user.currentRoomId = userVotingDetails.roomId;
       user.votedState =
@@ -250,18 +233,14 @@ function VotingRoom(props: Props) {
       socket.emit("isVotedState", {
         roomId: user.currentRoomId,
         userId: user._id,
-        votedState:
-          (voteValue === userVote && !isVoted) ||
-          (voteValue !== userVote && true)
+        votedState: isVotedState
       });
 
       user!.currentVote = voteValue;
       await UserService.updateUser(user!._id!, user!);
       setUserVote(voteValue);
       const roomUserIndex = roomUsers!.findIndex((r) => r._id === user._id);
-      roomUsers![roomUserIndex].votedState =
-        (voteValue === userVote && !isVoted) ||
-        (voteValue !== userVote && true);
+      roomUsers![roomUserIndex].votedState = isVotedState;
       roomUsers![roomUserIndex].currentVote = voteValue;
       socket.emit("isUserVoted", roomUsers);
     }
@@ -416,7 +395,9 @@ function VotingRoom(props: Props) {
                       alignItems: "center",
                       boxShadow: 5,
                       transition: "transform ease 300ms",
-                      background: roomUser!.votedState! ? "#67A3EE" : "white"
+                      background: roomUser!.votedState!
+                        ? "#67A3EE"
+                        : "secondary.main"
                     },
                     {
                       "&:hover": {

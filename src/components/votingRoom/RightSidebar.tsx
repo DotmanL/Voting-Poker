@@ -1,8 +1,6 @@
 import React, { useContext, useState, useEffect } from "react";
 import Box from "@mui/material/Box";
 import SwipeableDrawer from "@mui/material/SwipeableDrawer";
-import Button from "@mui/material/Button";
-import { RiArrowRightSLine } from "react-icons/ri";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { BiImport } from "react-icons/bi";
 import { AiOutlineClose } from "react-icons/ai";
@@ -13,7 +11,7 @@ import MultipleUrlsModal from "./MultipleUrlsModal";
 import SingleIssueTextbox from "./SingleIssueTextbox";
 import { IIssue } from "interfaces/Issues";
 import IssuesView from "./IssuesView";
-import { SidebarContext } from "components/providers/SideBarProvider";
+import { SidebarContext } from "utility/providers/SideBarProvider";
 import { toast } from "react-toastify";
 import IssueService from "api/IssueService";
 import {
@@ -133,7 +131,7 @@ function RightSidebar(props: Props) {
   const list = (
     <Box
       sx={{
-        width: 450,
+        width: { md: 450, xs: "100vw" },
         height: "100%",
         display: "flex",
         flexDirection: "column",
@@ -149,7 +147,7 @@ function RightSidebar(props: Props) {
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "space-between",
-          padding: "5px"
+          p: { md: "5px", xs: "8px" }
         }}
       >
         <Grid>
@@ -176,7 +174,10 @@ function RightSidebar(props: Props) {
                   borderRadius: "50%",
                   "&:hover": {
                     transition: "box-shadow 0.3s ease-in-out",
-                    boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.2)"
+                    boxShadow: (theme) =>
+                      theme.palette.mode === "dark"
+                        ? "0px 0px 10px 2px rgba(255, 255, 255, 0.2)"
+                        : "0px 0px 10px 2px rgba(0, 0, 0, 0.2)"
                   }
                 }}
                 onClick={() => {
@@ -192,7 +193,12 @@ function RightSidebar(props: Props) {
             <Dropdown isDropDownOpen={isDropDownOpen}>
               <>
                 {options.map((option, i) => (
-                  <Grid key={i}>
+                  <Grid
+                    key={i}
+                    sx={{
+                      borderRadius: "10px"
+                    }}
+                  >
                     <Grid
                       sx={{
                         py: 1,
@@ -201,12 +207,15 @@ function RightSidebar(props: Props) {
                         pl: "25px",
                         pr: "50px",
                         cursor: "pointer",
-                        background: "#FFFFFF",
+                        boxShadow: (theme) =>
+                          theme.palette.mode === "dark"
+                            ? "0px 0px 10px 2px rgba(255, 255, 255, 0.2)"
+                            : "0px 0px 10px 2px rgba(0, 0, 0, 0.2)",
+                        background: (theme) => theme.palette.secondary.main,
                         "&:hover": {
                           background: "#67A3EE",
                           color: "#FFFFFF",
-                          transition: "box-shadow 0.3s ease-in-out",
-                          boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.2)"
+                          transition: "box-shadow 0.3s ease-in-out"
                         }
                       }}
                       key={i}
@@ -251,14 +260,14 @@ function RightSidebar(props: Props) {
                     zIndex: 100,
                     py: 2,
                     cursor: "pointer",
-                    background: "#FFFFFF"
+                    background: (theme) => theme.palette.secondary.main
                   }}
                 >
                   <Grid
                     sx={{
                       px: 2,
                       width: "100%",
-                      background: "secondary.main",
+                      background: (theme) => theme.palette.secondary.main,
                       "&:hover": {
                         background: "darkGray",
                         color: "black",
@@ -358,47 +367,22 @@ function RightSidebar(props: Props) {
 
   return (
     <Grid>
-      <Button
-        sx={[
-          {
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "center",
-            alignItems: "center",
-            background: "#67A3EE",
-            cursor: isSidebarOpen ? "pointer !important" : "pointer",
-            pointerEvents: isSidebarOpen ? "auto" : "initial",
-            color: "secondary.main",
-            px: { md: 2, xs: 1.5 },
-            py: { md: 0.5, xs: 0.5 },
-            fontSize: "20px",
-            marginRight: isSidebarOpen ? "380px" : "0px"
-          },
-          {
-            "&:hover": {
-              color: "white",
-              backgroundColor: "green"
-            }
-          }
-        ]}
-        onClick={toggleDrawer(true)}
-      >
-        <Typography variant="h5">Issues</Typography>
-        <RiArrowRightSLine size={24} style={{ marginTop: "8px" }} />
-      </Button>
       <SwipeableDrawer
         anchor={"right"}
         open={isSidebarOpen}
         onClose={toggleDrawer(false)}
         onOpen={toggleDrawer(true)}
         sx={{ height: "0vh" }}
+        PaperProps={{
+          sx: { background: (theme) => theme.palette.secondary.main }
+        }}
         ModalProps={{
           BackdropProps: {
             invisible: true,
             sx: {
               cursor: "pointer",
               width: "100%",
-              height: "20vh"
+              height: "0vh"
             }
           }
         }}

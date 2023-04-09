@@ -5,7 +5,7 @@ import { IUserDetails } from "interfaces/User/IUserDetails";
 import React, { useContext } from "react";
 import VotingCard from "./VotingCard";
 import VotingResult from "./VotingResult";
-import { SidebarContext } from "components/providers/SideBarProvider";
+import { SidebarContext } from "utility/providers/SideBarProvider";
 type Props = {
   room: IRoom;
   votesCasted: IUserDetails[] | undefined;

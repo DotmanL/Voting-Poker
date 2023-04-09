@@ -122,11 +122,10 @@ function IssuesCard(props: Props) {
         my: "15px",
         opacity: isDragging ? 0 : 1,
         boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.2)",
-        background: "#FFFFFF",
+        background: "secondary.main",
         "&:hover": {
           border: "1px solid #FFFFFF",
           opacity: isDragging ? 0 : 1,
-          color: "#000000",
           transition: "box-shadow 0.3s ease-in-out",
           boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.2)"
         }
@@ -164,21 +163,23 @@ function IssuesCard(props: Props) {
               flexDirection: "column",
               alignItems: "flex-start",
               width: "200px",
-              height: "100px",
+              height: "auto",
               borderRadius: "10px",
               zIndex: 100,
               py: 2,
               cursor: "pointer",
-              background: "white",
-              boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.2)",
-              color: "black"
+              background: (theme) => theme.palette.secondary.main,
+              boxShadow: (theme) =>
+                theme.palette.mode === "dark"
+                  ? "0px 0px 10px 2px rgba(255, 255, 255, 0.2)"
+                  : "0px 0px 10px 2px rgba(0, 0, 0, 0.2)"
             }}
           >
             <Grid
               sx={{
                 px: 2,
                 width: "100%",
-                background: "secondary.main",
+                background: (theme) => theme.palette.secondary.main,
                 "&:hover": {
                   background: "darkGray",
                   color: "black",

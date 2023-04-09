@@ -51,6 +51,7 @@ function VotingCard(props: Props) {
               display: "flex",
               flexDirection: "row",
               justifyContent: "center",
+              background: "secondary.main",
               alignItems: "center",
               boxShadow: 10,
               transition: "transform ease 300ms"
