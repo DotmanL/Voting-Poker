@@ -48,17 +48,11 @@ function RoomsTable(props: Props) {
             {
               mt: 4,
               ml: { md: 5, xs: 0 },
-              background: "white",
+              background: (theme) => theme.palette.secondary.main,
               color: "black",
               px: { md: 4, xs: 2 },
               py: { md: 0.7, xs: 0.5 },
               fontSize: "24px"
-            },
-            {
-              "&:hover": {
-                color: "white",
-                opacity: "0.6"
-              }
             }
           ]}
         >
@@ -84,10 +78,6 @@ function RoomsTable(props: Props) {
               </TableCell>
               <TableCell align="left">{row.name}</TableCell>
               <TableCell align="left">
-                {/* <Link
-                  to={`/room/${row.roomId}`}
-                  onClick={() => handleJoinRoom(row)}
-                > */}
                 <Button
                   variant="contained"
                   onClick={() => handleJoinRoom(row)}

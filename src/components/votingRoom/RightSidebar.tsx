@@ -73,6 +73,9 @@ function RightSidebar(props: Props) {
       setIsSingleIssueTextBoxOpen(false);
       return;
     }
+    return () => {
+      setIsSidebarOpen(false);
+    };
   }, [issues, isSidebarOpen]);
 
   const toggleDrawer =

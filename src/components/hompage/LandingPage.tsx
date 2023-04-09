@@ -11,13 +11,12 @@ function LandingPage() {
       sx={{
         flexDirection: { md: "row", xs: "column" },
         justifyContent: "flex-start",
-        boxShadow: "inset 0 0 0 2000px rgba(255, 255, 255, 0.5)",
         mt: "80px",
         p: 0,
         height: "100vh",
         overflowX: "hidden",
         position: "relative",
-        backgroundColor: "secondary.main"
+        background: (theme) => theme.palette.secondary.main
       }}
     >
       <Grid sx={{ display: { md: "flex", xs: "none" } }}>
