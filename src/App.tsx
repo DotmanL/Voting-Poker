@@ -4,7 +4,6 @@ import { Routes, Route } from "react-router-dom";
 import { CssBaseline, Grid } from "@mui/material";
 import { IUser } from "interfaces/User/IUser";
 import ScrollToTop from "components/shared/hooks/ScrollToTop";
-import Layout from "./components/layout/Layout";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { ToastContainer, Zoom } from "react-toastify";
 import HomePageContainer from "components/hompage/HomePageContainer";
@@ -26,11 +25,7 @@ export const userContext = createContext<IUser | null>(null);
 function App() {
   const [currentUser, setCurrentUser] = useState<IUser>();
   const getThemeMode = localStorage.getItem("mode");
-  console.log(getThemeMode);
-
   const themeMode = getThemeMode === "dark" ? "dark" : "light";
-  console.log(themeMode);
-
   const [mode, setMode] = React.useState<"light" | "dark">(themeMode);
   const colorMode = React.useMemo(
     () => ({
@@ -77,19 +72,17 @@ function App() {
                   />
                   <ScrollToTop>
                     <Routes>
-                      <Route path="/" element={<Layout />}>
-                        <Route index element={<HomePageContainer />} />
-                        <Route
-                          path="new-room"
-                          element={<RoomOnboardingContainer />}
-                        />
-                        <Route
-                          path="room/:roomId"
-                          element={<VotingRoomContainer />}
-                        />
+                      <Route index element={<HomePageContainer />} />
+                      <Route
+                        path="new-room"
+                        element={<RoomOnboardingContainer />}
+                      />
+                      <Route
+                        path="room/:roomId"
+                        element={<VotingRoomContainer />}
+                      />
 
-                        <Route path="*" element={<NotFoundContainer />} />
-                      </Route>
+                      <Route path="*" element={<NotFoundContainer />} />
                     </Routes>
                   </ScrollToTop>
                 </DndProvider>

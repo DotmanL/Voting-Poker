@@ -86,8 +86,8 @@ function LandingPage() {
                   {
                     mt: 4,
                     ml: { md: 5, xs: 0 },
-                    background: "primary.main",
-                    color: "white",
+                    background: (theme) => theme.palette.primary.main,
+                    color: "secondary.main",
                     px: { md: 4, xs: 2 },
                     py: { md: 0.7, xs: 0.5 },
                     fontSize: "20px"

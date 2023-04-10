@@ -84,7 +84,7 @@ function RoomsTable(props: Props) {
                   sx={[
                     {
                       background: "primary.main",
-                      color: "white",
+                      color: "secondary.main",
                       fontSize: "14px"
                     },
                     {

@@ -82,8 +82,8 @@ function CreateUser(props: Props) {
                       height: { md: "auto", xs: "auto" },
                       px: { md: 2, xs: 1 },
                       fontSize: { md: "24px", xs: "16px" },
-                      background: "#67A3EE",
-                      color: "white"
+                      background: "primary.main",
+                      color: "secondary.main"
                     },
                     {
                       "&:hover": {

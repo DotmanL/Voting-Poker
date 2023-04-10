@@ -136,8 +136,8 @@ function RoomCreate(props: Props) {
                       {
                         width: { md: "40%", xs: "70%" },
                         fontSize: { md: "24px", xs: "16px" },
-                        background: "#67A3EE",
-                        color: "white",
+                        background: "primary.main",
+                        color: "secondary.main",
                         py: { md: 0.5 }
                       },
                       {

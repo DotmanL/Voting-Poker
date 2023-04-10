@@ -4,7 +4,6 @@ import SwipeableDrawer from "@mui/material/SwipeableDrawer";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { BiImport } from "react-icons/bi";
 import { AiOutlineClose } from "react-icons/ai";
-import { GrAdd } from "react-icons/gr";
 import { Divider, Grid, Tooltip, Typography } from "@mui/material";
 import Dropdown from "components/shared/component/DropDown";
 import MultipleUrlsModal from "./MultipleUrlsModal";
@@ -12,6 +11,7 @@ import SingleIssueTextbox from "./SingleIssueTextbox";
 import { IIssue } from "interfaces/Issues";
 import IssuesView from "./IssuesView";
 import { SidebarContext } from "utility/providers/SideBarProvider";
+import AddIcon from "@mui/icons-material/Add";
 import { toast } from "react-toastify";
 import IssueService from "api/IssueService";
 import {
@@ -168,7 +168,12 @@ function RightSidebar(props: Props) {
             width: "25%"
           }}
         >
-          <Grid sx={{ display: "flex", flexDirection: "column" }}>
+          <Grid
+            sx={{
+              display: { md: "flex", xs: "none" },
+              flexDirection: "column"
+            }}
+          >
             <Tooltip title="Import Issues">
               <Grid
                 sx={{
@@ -346,7 +351,14 @@ function RightSidebar(props: Props) {
                 }}
                 onClick={() => setIsSingleIssueTextBoxOpen(true)}
               >
-                <GrAdd style={{ marginLeft: "15px" }} size={28} />
+                <AddIcon
+                  sx={{
+                    marginLeft: "15px",
+                    color: (theme) => theme.palette.primary.main,
+                    width: "32px",
+                    height: "32px"
+                  }}
+                />
                 <Typography variant="h6" sx={{ ml: 1 }}>
                   Add Issue(s)
                 </Typography>

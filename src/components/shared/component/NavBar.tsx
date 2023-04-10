@@ -13,9 +13,10 @@ import UserService from "api/UserService";
 import { IUser } from "interfaces/User/IUser";
 import { toast } from "react-toastify";
 import { userContext } from "../../../App";
-import { MdViewSidebar } from "react-icons/md";
+import ViewSidebarIcon from "@mui/icons-material/ViewSidebar";
 import { SidebarContext } from "utility/providers/SideBarProvider";
 import DarkModeToggle from "./DarkModeToggle";
+import MobileNavBar from "./MobileNavBar";
 
 type Props = {
   appName: string;
@@ -24,7 +25,7 @@ type Props = {
 };
 
 export const NavBar = (props: Props) => {
-  const { appName, currentUser, isBorderBottom } = props;
+  const { appName, currentUser } = props;
   const navigate = useNavigate();
   const userData = useContext(userContext);
   const location = useLocation();
@@ -86,20 +87,29 @@ export const NavBar = (props: Props) => {
         elevation={!scrolledDownEnough ? 0 : 7}
         sx={{
           top: "0",
+          background: (theme) => theme.palette.secondary.main,
           boxShadow: !scrolledDownEnough
             ? "none"
             : "0 5px 5px -2px rgba(0, 0, 0, 0.2)",
           height: { md: "90px", xs: "80px" },
-          borderBottom: isBorderBottom ? "2px solid #67A3EE" : "",
-          p: 2,
+          // borderBottom: isBorderBottom ? "2px solid #67A3EE" : "",
           justifyContent: { md: "space-between", xs: "flex-start" }
         }}
         position="fixed"
       >
+        <MobileNavBar
+          user={user}
+          appName={appName}
+          handleLeaveRoom={handleLeaveRoom}
+          handleSignOut={handleSignOut}
+          handleSignUp={handleSignUp}
+        />
         <Toolbar
           sx={{
-            display: "flex",
+            display: { md: "flex", xs: "none" },
             flexDirection: "row",
+            my: 2,
+            ml: 2,
             alignItems: "center",
             justifyContent: { md: "space-between", xs: "flex-start" },
             marginRight: isSidebarOpen ? "380px" : "0"
@@ -113,7 +123,7 @@ export const NavBar = (props: Props) => {
                   fontFamily: "Jost",
                   fontWeight: "bold",
                   fontSize: { md: "40px", xs: "24px" },
-                  color: "#67A3EE"
+                  color: "primary.main"
                 }}
               >
                 {appName}
@@ -226,7 +236,9 @@ export const NavBar = (props: Props) => {
                 width: "auto",
                 height: "50px",
                 borderRadius: "10px",
-                border: "2px solid #67A3EE",
+                borderWidth: "1px",
+                borderStyle: "solid",
+                borderColor: (theme) => theme.palette.primary.main,
                 mr: { md: 2, xs: 0 },
                 mt: { md: 1, xs: 0.5 },
                 p: { md: 1, xs: 0.5 },
@@ -234,11 +246,17 @@ export const NavBar = (props: Props) => {
                 display: urlPath.indexOf("/room") >= 0 ? "flex" : "none"
               }}
             >
-              <MdViewSidebar size={32} />
+              <ViewSidebarIcon
+                sx={{
+                  width: "32px",
+                  height: "32px",
+                  color: (theme) => theme.palette.primary.main
+                }}
+              />
             </Grid>
             <Grid
               sx={{
-                mr: { md: 10, xs: 0 },
+                mr: { md: 7, xs: 0 },
                 mt: { md: 0.5, xs: 0 }
               }}
             >
