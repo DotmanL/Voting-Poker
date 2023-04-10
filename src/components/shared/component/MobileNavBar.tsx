@@ -7,7 +7,7 @@ import { useLocation } from "react-router-dom";
 import MenuIcon from "@mui/icons-material/Menu";
 import { AiOutlineClose } from "react-icons/ai";
 import { IUser } from "interfaces/User/IUser";
-import { MdViewSidebar } from "react-icons/md";
+import ViewSidebarIcon from "@mui/icons-material/ViewSidebar";
 import DarkModeToggle from "./DarkModeToggle";
 
 type Props = {
@@ -167,7 +167,7 @@ function MobileNavBar(props: Props) {
             width: "auto",
             height: "50px",
             borderRadius: "10px",
-            border: "2px solid #67A3EE",
+            border: "1px solid #67A3EE",
             mr: 1,
             mt: 0.5,
             px: 1,
@@ -176,7 +176,13 @@ function MobileNavBar(props: Props) {
             display: urlPath.indexOf("/room") >= 0 ? "flex" : "none"
           }}
         >
-          <MdViewSidebar size={24} />
+          <ViewSidebarIcon
+            sx={{
+              width: "24px",
+              height: "24px",
+              color: (theme) => theme.palette.primary.main
+            }}
+          />
         </Grid>
       </Grid>
       <SwipeableDrawer
