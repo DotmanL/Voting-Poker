@@ -32,11 +32,33 @@ const getAllIssues = async (roomId: string) => {
   }
 };
 
+const getIssue = async (_id: string) => {
+  try {
+    const response = await apiClient.get<IIssue>(`getIssue/${_id}`);
+    return response.data;
+  } catch (err: any) {
+    console.error(err.message);
+  }
+};
+
 const updateIssue = async (_id: string, issue: IIssue) => {
   try {
     const body = JSON.stringify(issue);
     const response = await apiClient.put<IIssue[]>(`updateIssue/${_id}`, body);
-    toast.success("Issue updated successfully");
+    return response.status;
+  } catch (err: any) {
+    console.error(err.message);
+  }
+};
+
+const updateIssueStatus = async (_id: string, isActive: boolean) => {
+  try {
+    const requestBody = { isActive };
+    const body = JSON.stringify(requestBody);
+    const response = await apiClient.put<IIssue[]>(
+      `updateIssueStatus/${_id}`,
+      body
+    );
     return response.status;
   } catch (err: any) {
     console.error(err.message);
@@ -74,7 +96,9 @@ const deleteIssues = async (issueIds: string[]) => {
 export const IssueService = {
   createIssues,
   getAllIssues,
+  getIssue,
   updateIssue,
+  updateIssueStatus,
   updateIssueOrder,
   deleteIssues
 };

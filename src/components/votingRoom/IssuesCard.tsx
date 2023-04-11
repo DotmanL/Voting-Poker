@@ -1,22 +1,38 @@
 import React, { useRef, useState } from "react";
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
-import { BiLinkExternal } from "react-icons/bi";
 import { BiDotsHorizontal } from "react-icons/bi";
-import { BsThreeDotsVertical } from "react-icons/bs";
 import type { Identifier, XYCoord } from "dnd-core";
+import LaunchIcon from "@mui/icons-material/Launch";
 import { useDrag, useDrop } from "react-dnd";
 import Typography from "@mui/material/Typography";
+import Link from "@mui/material/Link";
+import { IRoom } from "interfaces/Room/IRoom";
+import CardType from "utility/CardType";
+import IssueService from "api/IssueService";
+import { IIssue } from "interfaces/Issues";
+import {
+  QueryObserverResult,
+  RefetchOptions,
+  RefetchQueryFilters
+} from "react-query/types/core/types";
 
 type Props = {
+  room: IRoom;
   id: string;
   index: number;
   link: string;
   name: string;
+  issue: IIssue;
+  issues: IIssue[];
   moveCard: (dragIndex: number, hoverIndex: number) => void;
+  refetchIssues: <TPageData>(
+    options?: (RefetchOptions & RefetchQueryFilters<TPageData>) | undefined
+  ) => Promise<QueryObserverResult<IIssue[] | undefined, Error>>;
   activeCardId: string;
   setActiveCardId: React.Dispatch<React.SetStateAction<string | undefined>>;
-  handleDeleteIssue(id: string): Promise<void>;
+  handleDeleteIssue(index: number): Promise<void>;
+  handleNewVotingSession?: () => Promise<void>;
 };
 
 const ItemTypes = {
@@ -31,17 +47,25 @@ interface DragItem {
 
 function IssuesCard(props: Props) {
   const {
+    room,
     index,
     link,
     name,
+    issue,
+    issues,
+    refetchIssues,
     moveCard,
     id,
     setActiveCardId,
     activeCardId,
+    // handleNewVotingSession,
     handleDeleteIssue
   } = props;
   const ref = useRef<HTMLDivElement>(null);
   const [isMiniDropDownOpen, setIsMiniDropDownOpen] = useState<boolean>(false);
+  const [isStoryPointsDropDownOpen, setIsStoryPointsDropDownOpen] =
+    useState<boolean>(false);
+  const cardValues = CardType(room.votingSystem);
 
   const [{ handlerId, canDrop }, drop] = useDrop<
     DragItem,
@@ -100,6 +124,47 @@ function IssuesCard(props: Props) {
   });
   drag(drop(ref));
 
+  async function deSelectAllActiveIssues() {
+    const getAllActiveIssuesInRoom = issues.filter((issue) => issue.isActive);
+    if (getAllActiveIssuesInRoom.length > 0) {
+      for (let i = 0; i < getAllActiveIssuesInRoom.length; i++) {
+        await IssueService.updateIssueStatus(
+          getAllActiveIssuesInRoom[i]._id!,
+          false
+        );
+      }
+    } else {
+      return;
+    }
+    return;
+  }
+
+  async function selectActiveCard() {
+    if (activeCardId === id) {
+      await IssueService.updateIssueStatus(id, false);
+      setActiveCardId("");
+    } else {
+      if (activeCardId) {
+        await IssueService.updateIssueStatus(activeCardId, false);
+      }
+      await deSelectAllActiveIssues();
+      await IssueService.updateIssueStatus(id, true);
+      setActiveCardId(id);
+    }
+  }
+
+  async function handleAddStoryPoints(cardValue: number) {
+    const issueToUpdate = {
+      ...issue,
+      storyPoints: cardValue
+    };
+    const response = await IssueService.updateIssue(id, issueToUpdate);
+    if (response) {
+      refetchIssues();
+      setIsStoryPointsDropDownOpen(false);
+    }
+  }
+
   return (
     <Grid
       ref={ref}
@@ -121,13 +186,18 @@ function IssuesCard(props: Props) {
         cursor: isDragging ? "grabbing" : "pointer",
         my: "15px",
         opacity: isDragging ? 0 : 1,
-        boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.2)",
+        boxShadow: (theme) =>
+          theme.palette.mode === "dark"
+            ? activeCardId === id
+              ? "0px 0px 10px 2px rgba(255, 255, 255, 0.5)"
+              : "0px 0px 10px 2px rgba(255, 255, 255, 0.2)"
+            : activeCardId === id
+            ? "0px 0px 10px 2px rgba(0, 0, 0, 0.4)"
+            : "0px 0px 10px 2px rgba(0, 0, 0, 0.2)",
         background: "secondary.main",
         "&:hover": {
-          border: "1px solid #FFFFFF",
-          opacity: isDragging ? 0 : 1,
-          transition: "box-shadow 0.3s ease-in-out",
-          boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.2)"
+          border: isStoryPointsDropDownOpen ? "" : "1px solid #FFFFFF",
+          opacity: isDragging ? 0 : 1
         }
       }}
     >
@@ -186,7 +256,7 @@ function IssuesCard(props: Props) {
                   opacity: 0.8
                 }
               }}
-              onClick={() => handleDeleteIssue(id)}
+              onClick={() => handleDeleteIssue(index)}
             >
               Delete Issue
             </Grid>
@@ -194,7 +264,16 @@ function IssuesCard(props: Props) {
         )}
       </Grid>
 
-      <Grid sx={{ px: 1 }}>{link}</Grid>
+      <Grid sx={{ px: 1, width: "90%", my: 1 }}>
+        <Link
+          href={link}
+          target="_blank"
+          rel="noreferrer"
+          sx={{ wordBreak: "break-word" }}
+        >
+          {link}
+        </Link>
+      </Grid>
       <Grid
         sx={{
           display: "flex",
@@ -205,18 +284,144 @@ function IssuesCard(props: Props) {
           mt: 2
         }}
       >
-        <Grid
-          onClick={() => {
-            activeCardId === id ? setActiveCardId("") : setActiveCardId(id);
-          }}
-        >
-          <Button variant="contained">
-            {activeCardId === id ? "Voting...." : "Vote this Issue"}{" "}
+        <Grid onClick={selectActiveCard}>
+          <Button
+            variant="contained"
+            sx={{
+              background: (theme) =>
+                theme.palette.mode === "dark" ? "#151e22" : "#67A3EE",
+              border: "0.5px solid #67A3EE",
+              color: "white",
+              "&:hover": {
+                background: "darkGray",
+                opacity: 0.8
+              }
+            }}
+          >
+            {activeCardId === id
+              ? !!issue.storyPoints
+                ? "Vote Again"
+                : "Voting Now...."
+              : !!issue.storyPoints
+              ? "Vote Again"
+              : "Vote this Issue"}
           </Button>
         </Grid>
-        <Grid>
-          <BiLinkExternal style={{ marginRight: "10px" }} size={24} />
-          <BsThreeDotsVertical size={24} />
+        <Grid sx={{ display: "flex", flexDirection: "row" }}>
+          <Link
+            href={link}
+            target="_blank"
+            rel="noreferrer"
+            sx={{ wordBreak: "break-word" }}
+          >
+            <LaunchIcon
+              sx={{
+                mr: "10px",
+                "&:hover": {
+                  color: "green",
+                  opacity: 0.8
+                }
+              }}
+            />
+          </Link>
+
+          <Grid
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "white",
+              background: "black",
+              borderRadius: "50%",
+              fontSize: "20px",
+              width: "30px",
+              height: "30px"
+            }}
+            onClick={() => {
+              setIsStoryPointsDropDownOpen(!isStoryPointsDropDownOpen);
+            }}
+          >
+            {!!issue.storyPoints ? issue.storyPoints : "-"}
+          </Grid>
+        </Grid>
+        <Grid
+          sx={{ position: "absolute", marginTop: "30px", marginLeft: "-23px" }}
+        >
+          {isStoryPointsDropDownOpen && (
+            <Grid
+              sx={{
+                display: "flex",
+                flexDirection: "row",
+                flexWrap: "wrap",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "white",
+                width: { md: "320px", xs: "250px" },
+                height: { md: "250px", xs: "180px" },
+                borderRadius: "10px",
+                ml: "-20px",
+                zIndex: 700,
+                py: 1,
+                cursor: "pointer",
+                background: (theme) => theme.palette.secondary.main,
+                boxShadow: (theme) =>
+                  theme.palette.mode === "dark"
+                    ? "0px 0px 10px 2px rgba(255, 255, 255, 0.2)"
+                    : "0px 0px 10px 2px rgba(0, 0, 0, 0.2)",
+                "&:hover": {
+                  border: "1px solid #FFFFFF"
+                }
+              }}
+            >
+              <Grid
+                sx={{
+                  display: "flex",
+                  flexDirection: "row",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                  width: "100%",
+                  height: "100%",
+                  px: 1,
+                  py: 1
+                }}
+              >
+                {cardValues.map((cardValue, index) => (
+                  <Grid
+                    key={index}
+                    sx={{
+                      display: "flex",
+                      flexDirection: "row",
+                      background: "black",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "white",
+                      borderRadius: "50%",
+                      mx: 0.5,
+                      my: 0.2,
+                      fontSize: "20px",
+                      width: "45px",
+                      height: "45px",
+                      boxShadow: (theme) =>
+                        theme.palette.mode === "dark"
+                          ? "0px 0px 10px 2px rgba(255, 255, 255, 0.2)"
+                          : "0px 0px 10px 2px rgba(0, 0, 0, 0.2)",
+                      "&:hover": {
+                        border: "primary.main",
+                        opacity: 0.8
+                      }
+                    }}
+                    onClick={() => {
+                      handleAddStoryPoints(cardValue);
+                    }}
+                  >
+                    {cardValue}
+                  </Grid>
+                ))}
+              </Grid>
+            </Grid>
+          )}
         </Grid>
       </Grid>
     </Grid>

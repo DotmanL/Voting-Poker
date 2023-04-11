@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import Grid from "@mui/material/Grid";
 import { IIssue } from "interfaces/Issues";
 import IssuesCard from "./IssuesCard";
@@ -9,20 +9,32 @@ import {
   RefetchOptions,
   RefetchQueryFilters
 } from "react-query/types/core/types";
+import { IRoom } from "interfaces/Room/IRoom";
 
 type Props = {
   socket: any;
-  roomId: string;
+  room: IRoom;
   setCards: React.Dispatch<React.SetStateAction<IIssue[]>>;
   cards: IIssue[];
   refetchIssues: <TPageData>(
     options?: (RefetchOptions & RefetchQueryFilters<TPageData>) | undefined
   ) => Promise<QueryObserverResult<IIssue[] | undefined, Error>>;
+  handleNewVotingSession: () => Promise<void>;
+  setActiveCardId: React.Dispatch<React.SetStateAction<string | undefined>>;
+  activeCardId: string | undefined;
 };
 
 function IssuesView(props: Props) {
-  const { cards, setCards, refetchIssues, socket, roomId } = props;
-  const [activeCardId, setActiveCardId] = useState<string>();
+  const {
+    cards,
+    setCards,
+    refetchIssues,
+    socket,
+    room,
+    setActiveCardId,
+    handleNewVotingSession,
+    activeCardId
+  } = props;
 
   useEffect(() => {
     if (cards) {
@@ -53,37 +65,36 @@ function IssuesView(props: Props) {
       const orderedIssues = updatedIssues?.sort((a, b) => a.order! - b.order!);
       setCards(orderedIssues!);
 
-      socket.emit("orderUpdate", { isOrderUpdated: true, roomId: roomId });
+      socket.emit("orderUpdate", { isOrderUpdated: true, roomId: room.roomId });
     },
-    [cards, setCards, socket, roomId]
+    [cards, setCards, socket, room]
   );
 
-  const handleDeleteIssue = useCallback(
-    async (id: string) => {
-      await IssueService.deleteIssues([id]);
-      refetchIssues();
-    },
-    [refetchIssues]
-  );
+  const handleDeleteIssue = async (index: number) => {
+    await IssueService.deleteIssues([cards[index]._id!]);
+    await refetchIssues();
+  };
 
-  const renderCard = useCallback(
-    (card: IIssue, index: number) => {
-      return (
-        <IssuesCard
-          key={card._id}
-          id={card._id!}
-          index={index}
-          name={card.name}
-          link={card.link}
-          moveCard={moveCard}
-          activeCardId={activeCardId!}
-          setActiveCardId={setActiveCardId}
-          handleDeleteIssue={handleDeleteIssue}
-        />
-      );
-    },
-    [moveCard, activeCardId, handleDeleteIssue]
-  );
+  const renderCard = (card: IIssue, index: number) => {
+    return (
+      <IssuesCard
+        key={card._id}
+        id={card._id!}
+        issue={card}
+        issues={cards}
+        index={index}
+        name={card.name}
+        link={card.link}
+        refetchIssues={refetchIssues}
+        room={room}
+        moveCard={moveCard}
+        activeCardId={activeCardId!}
+        setActiveCardId={setActiveCardId}
+        handleDeleteIssue={handleDeleteIssue}
+        handleNewVotingSession={handleNewVotingSession}
+      />
+    );
+  };
 
   return (
     <Grid

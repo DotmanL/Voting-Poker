@@ -19,6 +19,7 @@ import {
   RefetchOptions,
   RefetchQueryFilters
 } from "react-query/types/core/types";
+import { IRoom } from "interfaces/Room/IRoom";
 
 const options = [
   {
@@ -46,14 +47,27 @@ type Props = {
   issues: IIssue[];
   error: Error | null;
   isLoading: boolean;
-  roomId: string;
+  room: IRoom;
+  handleNewVotingSession: () => Promise<void>;
   refetchIssues: <TPageData>(
     options?: (RefetchOptions & RefetchQueryFilters<TPageData>) | undefined
   ) => Promise<QueryObserverResult<IIssue[] | undefined, Error>>;
+  setActiveCardId: React.Dispatch<React.SetStateAction<string | undefined>>;
+  activeCardId: string | undefined;
 };
 
 function RightSidebar(props: Props) {
-  const { issues, isLoading, error, refetchIssues, roomId, socket } = props;
+  const {
+    issues,
+    isLoading,
+    error,
+    refetchIssues,
+    room,
+    socket,
+    setActiveCardId,
+    handleNewVotingSession,
+    activeCardId
+  } = props;
   const { isSidebarOpen, setIsSidebarOpen } = useContext(SidebarContext);
   const [isDropDownOpen, setIsDropDownOpen] = useState<boolean>(false);
   const [isMiniDropDownOpen, setIsMiniDropDownOpen] = useState<boolean>(false);
@@ -64,7 +78,7 @@ function RightSidebar(props: Props) {
   const [cards, setCards] = useState(issues);
 
   useEffect(() => {
-    if (issues) {
+    if (!!issues) {
       setCards(issues);
     }
     if (!isSidebarOpen) {
@@ -73,10 +87,22 @@ function RightSidebar(props: Props) {
       setIsSingleIssueTextBoxOpen(false);
       return;
     }
+    if (socket) {
+      socket.on("isIssuesSidebarOpenResponse", (data: any) => {
+        if (data.isIssuesSidebarOpen) {
+          setIsSidebarOpen(true);
+          refetchIssues();
+        } else {
+          return;
+        }
+      });
+    }
     return () => {
-      setIsSidebarOpen(false);
+      if (!issues) {
+        setIsSidebarOpen(false);
+      }
     };
-  }, [issues, isSidebarOpen, setIsSidebarOpen]);
+  }, [issues, isSidebarOpen, setIsSidebarOpen, socket, refetchIssues]);
 
   const toggleDrawer =
     (isSideBarOpen: boolean) =>
@@ -94,8 +120,12 @@ function RightSidebar(props: Props) {
 
   async function handleCreateIssues(formData: IIssue[]) {
     await IssueService.createIssues(formData);
-    refetchIssues();
     setIsAddMultipleModalOpen(false);
+    refetchIssues();
+    socket.emit("isIssuesSidebarOpen", {
+      isIssuesSidebarOpen: true,
+      roomId: room.roomId
+    });
     setIsSingleIssueTextBoxOpen(false);
   }
 
@@ -108,7 +138,7 @@ function RightSidebar(props: Props) {
   }
 
   async function handleDeleteAllIssues() {
-    const roomIssuesIds = await IssueService.getAllIssues(roomId);
+    const roomIssuesIds = await IssueService.getAllIssues(room.roomId);
     if (!roomIssuesIds) {
       return;
     }
@@ -164,8 +194,8 @@ function RightSidebar(props: Props) {
             display: "flex",
             flexDirection: "row",
             alignItems: "center",
-            justifyContent: "space-between",
-            width: "25%"
+            justifyContent: { md: "space-between", xs: "flex-end" },
+            width: { md: "25%", xs: "100vw" }
           }}
         >
           <Grid
@@ -245,7 +275,8 @@ function RightSidebar(props: Props) {
               onFormSubmitted={handleCreateIssues}
             />
           </Grid>
-          <Grid sx={{ cursor: "pointer" }}>
+
+          <Grid sx={{ cursor: "pointer", display: { md: "flex", xs: "none" } }}>
             {!!issues && (
               <BsThreeDotsVertical
                 onClick={() => {
@@ -290,7 +321,11 @@ function RightSidebar(props: Props) {
               </Dropdown>
             )}
           </Grid>
-          <Divider sx={{ borderWidth: 2 }} orientation="vertical" flexItem />
+          <Divider
+            sx={{ borderWidth: 2, display: { md: "flex", xs: "none" } }}
+            orientation="vertical"
+            flexItem
+          />
           <Tooltip title="Close Sidebar">
             <Grid
               sx={{
@@ -322,11 +357,14 @@ function RightSidebar(props: Props) {
         >
           {cards && (
             <IssuesView
-              roomId={roomId}
+              room={room}
               socket={socket}
               cards={cards}
               setCards={setCards}
               refetchIssues={refetchIssues}
+              setActiveCardId={setActiveCardId}
+              handleNewVotingSession={handleNewVotingSession}
+              activeCardId={activeCardId}
             />
           )}
           <Grid sx={{ ml: 2, mb: 2 }}>

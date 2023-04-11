@@ -35,7 +35,7 @@ function CustomModal(props: Props) {
                 left: "50%",
                 transform: "translate(-50%, -50%)",
                 width: { md: modalWidth, xs: "80%" },
-                height: !!size ? sizeList[size] : "auto",
+                height: { md: !!size ? sizeList[size] : "auto", xs: "sm" },
                 bgcolor: "background.paper",
                 border: "2px solid #67A3EE",
                 borderRadius: "10px",

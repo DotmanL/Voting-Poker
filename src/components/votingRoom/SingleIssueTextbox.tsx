@@ -106,7 +106,7 @@ function SingleIssueTextbox(props: Props) {
           >
             <Button
               variant="outlined"
-              sx={{ mt: 6, px: 4, fontSize: "20px" }}
+              sx={{ mt: 6, px: 2, fontSize: { md: "20px", xs: "14px" } }}
               onClick={() => {
                 setIsSingleIssueTextBoxOpen(false);
                 clearField();
@@ -119,7 +119,7 @@ function SingleIssueTextbox(props: Props) {
               color="primary"
               variant="contained"
               type="submit"
-              sx={{ mt: 6, ml: 5, px: 4, fontSize: "20px" }}
+              sx={{ mt: 6, ml: 5, px: 2, fontSize: { md: "20px", xs: "14px" } }}
             >
               {formik.isSubmitting ? <CircularProgress size={24} /> : `Submit`}
             </Button>

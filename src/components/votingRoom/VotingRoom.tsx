@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useCallback } from "react";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import { userContext } from "App";
@@ -14,7 +14,7 @@ import { useParams } from "react-router-dom";
 import { IUserDetails } from "interfaces/User/IUserDetails";
 import { toast } from "react-toastify";
 import { makeStyles } from "@mui/styles";
-import { Button } from "@mui/material";
+import { Button, Link } from "@mui/material";
 import UserService from "api/UserService";
 import { getBaseUrlWithoutRoute } from "api";
 import VotingResultsContainer from "./VotingResultsContainer";
@@ -46,7 +46,7 @@ const useStyles = makeStyles((theme) => ({
     width: "400px",
     height: "200px",
     [theme.breakpoints.down("md")]: {
-      width: "300px",
+      width: "220px",
       height: "150px"
     }
   },
@@ -85,6 +85,9 @@ function VotingRoom(props: Props) {
   const [userVote, setUserVote] = useState<number | undefined>();
   const [votesCasted, setVotesCasted] = useState<IUserDetails[] | undefined>();
   const [isVoted, setIsVoted] = useState<boolean>(false);
+  const [activeCardId, setActiveCardId] = useState<string | undefined>("");
+  const [activeIssue, setActiveIssue] = useState<IIssue>();
+
   const getRoomId = useParams();
   const getUserId = localStorage.getItem("userId");
   const userId = getUserId ? JSON.parse(getUserId) : null;
@@ -115,8 +118,32 @@ function VotingRoom(props: Props) {
     };
   }, []);
 
+  const getIssue = useCallback(
+    (issueId: string) => {
+      const activeIssue = issues?.find((issue) => issue._id === issueId);
+
+      return activeIssue;
+    },
+    [issues]
+  );
+
+  useEffect(() => {
+    const getActiveIssue = issues?.find((issue) => issue.isActive === true);
+    console.log(getActiveIssue);
+
+    if (!getActiveIssue) {
+      setActiveCardId("");
+      return;
+    }
+    if (activeCardId || getActiveIssue) {
+      const currentActiveIssue = getIssue(getActiveIssue._id!);
+      setActiveIssue(currentActiveIssue);
+    }
+  }, [activeCardId, getIssue, issues]);
+
   useEffect(() => {
     if (!socket) return;
+
     socket.emit("user", {
       name: user?.name,
       _id: user?._id,
@@ -158,8 +185,9 @@ function VotingRoom(props: Props) {
       }
     });
 
-    socket.on("votesResponse", (userVotingDetails: IUserDetails[]) => {
-      setVotesCasted(userVotingDetails);
+    socket.on("votesResponse", (data: any) => {
+      setVotesCasted(data.allVotes);
+      refetchIssues();
     });
 
     // socket.on("leaveRoomResponse", (data: IUser) => {
@@ -177,7 +205,7 @@ function VotingRoom(props: Props) {
     return () => {
       socket.off("user");
     };
-  }, [room, socket, user, getRoomId.roomId]);
+  }, [room, socket, user, getRoomId.roomId, refetchIssues]);
 
   const isDisabled = () => {
     if (!roomUsers) {
@@ -189,8 +217,25 @@ function VotingRoom(props: Props) {
       : false;
   };
 
-  const handleRevealVotes = () => {
+  const handleVotesAverage = (roomUsersVotes: IUserDetails[] | undefined) => {
+    const totalVotes = roomUsersVotes!.reduce(
+      (acc, curr) => acc + curr.currentVote!,
+      0
+    );
+    const averageVotes = Math.round(totalVotes / roomUsersVotes!.length);
+    return averageVotes;
+  };
+
+  const handleRevealVotes = async () => {
     const roomUsersVotes = roomUsers;
+    const votesAvg = handleVotesAverage(roomUsersVotes);
+    const issueToUpdate = {
+      ...activeIssue!,
+      storyPoints: votesAvg
+    };
+    if (activeCardId) {
+      await IssueService.updateIssue(activeCardId, issueToUpdate);
+    }
     socket.emit("votes", { allVotes: roomUsersVotes, roomId: room.roomId });
   };
 
@@ -206,7 +251,10 @@ function VotingRoom(props: Props) {
     const promises =
       currentRoomUsers?.map((ru) => UserService.resetVote(ru?._id!)) ?? [];
     await Promise.all(promises);
-    socket.emit("votes", { allVotes: false, roomId: room.roomId });
+    socket.emit("votes", {
+      allVotes: false,
+      roomId: room.roomId
+    });
     socket.emit("isUserVoted", updatedRoomUsers ?? []);
   };
 
@@ -263,6 +311,51 @@ function VotingRoom(props: Props) {
           alignItems: "center"
         }}
       >
+        {!!activeCardId && (
+          <Grid
+            sx={{
+              position: "absolute",
+              top: { md: 90, xs: 75 },
+              left: 0,
+              right: 0,
+              mt: 1,
+              ml: { md: 4, xs: 1 },
+              width: { md: "35%", xs: "95vw" },
+              height: { md: "auto", xs: "auto" },
+              px: 2,
+              py: 1,
+              borderRadius: "10px",
+              display: !!activeCardId ? "flex" : "none",
+              flexDirection: "column",
+              background: "secondary.main",
+              border: { md: "0px", xs: "1px solid green" },
+              cursor: "pointer",
+              alignItems: "flex-start",
+              justifyContent: "center",
+              boxShadow: (theme) =>
+                theme.palette.mode === "dark"
+                  ? "0px 0px 10px 2px rgba(255, 255, 255, 0.1)"
+                  : "0px 0px 10px 2px rgba(0, 0, 0, 0.1)"
+            }}
+          >
+            <Typography
+              variant="h5"
+              sx={{ wordBreak: "break-word", fontSize: { md: 24, xs: 10 } }}
+            >
+              Voting {activeIssue?.name}
+            </Typography>
+            <Link
+              variant="h6"
+              href={activeIssue?.link}
+              target="_blank"
+              rel="noreferrer"
+              sx={{ wordBreak: "break-word", fontSize: { md: 24, xs: 10 } }}
+            >
+              {activeIssue?.link}
+            </Link>
+          </Grid>
+        )}
+
         <Grid
           sx={{
             position: "absolute",
@@ -281,10 +374,13 @@ function VotingRoom(props: Props) {
           <Grid>
             <RightSidebar
               socket={socket}
-              roomId={roomId!}
+              room={room}
               issues={issues || []}
               refetchIssues={refetchIssues}
               isLoading={isLoading}
+              setActiveCardId={setActiveCardId}
+              handleNewVotingSession={handleNewVotingSession}
+              activeCardId={activeCardId}
               error={error}
             />
           </Grid>
@@ -343,12 +439,12 @@ function VotingRoom(props: Props) {
                 sx={[
                   {
                     mt: 1,
-                    width: { md: "250px", xs: "200px" },
+                    width: "auto",
                     background: "#67A3EE",
                     borderRadius: "5px",
                     color: "white",
-                    px: { md: 3, xs: 2 },
-                    py: { md: 0.5 },
+                    px: { md: 2, xs: 1 },
+                    py: { md: 1 },
                     fontSize: { md: "16px", xs: "12px" }
                   },
                   {
@@ -373,7 +469,7 @@ function VotingRoom(props: Props) {
             flexDirection: "row",
             justifyContent: "center",
             alignItems: "center",
-            mt: 2
+            mt: { md: 4, xs: 3 }
           }}
         >
           {roomUsers &&

@@ -112,7 +112,8 @@ export const NavBar = (props: Props) => {
             ml: 2,
             alignItems: "center",
             justifyContent: { md: "space-between", xs: "flex-start" },
-            marginRight: isSidebarOpen ? "380px" : "0"
+            marginRight:
+              isSidebarOpen && urlPath.indexOf("/room") >= 0 ? "380px" : "0"
           }}
         >
           <Link to="/">

@@ -75,29 +75,30 @@ function MobileNavBar(props: Props) {
           width: "100%"
         }}
       >
-        <Typography variant="h6">Hi, {user?.name}</Typography>
+        <Typography variant="h6">
+          {!!user ? `Hi ${" "}${user?.name}` : ""}
+        </Typography>
       </Grid>
       <Grid
         sx={{
           display: "flex",
           flexDirection: "column",
           justifyContent: "flex-start",
-          px: 4,
+          px: 3,
           width: "100%"
         }}
       >
         <Grid
           sx={{
+            m: 0,
+            width: "100%",
             display: "flex",
             flexDirection: "row",
-            alignItems: "center",
-            fontSize: "24px"
+            p: 0,
+            justifyContent: "flex-start"
           }}
         >
-          Switch Modes
-          <Grid sx={{ mt: 0.5 }}>
-            <DarkModeToggle />
-          </Grid>
+          <DarkModeToggle isMobileFlex />
         </Grid>
         <Grid sx={{}}>
           <Grid
@@ -127,7 +128,7 @@ function MobileNavBar(props: Props) {
       <Grid
         sx={{
           display: "flex",
-          flexDirection: "row",
+          flexDirection: urlPath.indexOf("/room") >= 0 ? "row" : "row-reverse",
           alignItems: "flex-start",
           justifyContent: "space-between",
           width: "100%"
@@ -150,7 +151,7 @@ function MobileNavBar(props: Props) {
             sx={{
               fontFamily: "Jost",
               fontWeight: "bold",
-              mt: 0.5,
+              mt: 1,
               fontSize: { md: "40px", xs: "22px" },
               color: "primary.main"
             }}
@@ -186,7 +187,7 @@ function MobileNavBar(props: Props) {
         </Grid>
       </Grid>
       <SwipeableDrawer
-        anchor={"left"}
+        anchor={urlPath.indexOf("/room") >= 0 ? "left" : "right"}
         open={isMobileNavOpen}
         onClose={toggleDrawer(false)}
         onOpen={toggleDrawer(true)}

@@ -21,7 +21,7 @@ function VotingResultsContainer(props: Props) {
       {!votesCasted && (
         <Grid
           sx={{
-            position: "absolute" as "absolute",
+            position: "absolute",
             backgroundColor: "secondary.main",
             display: "flex",
             flexDirection: "column",
@@ -32,7 +32,7 @@ function VotingResultsContainer(props: Props) {
             height: { md: "200px", xs: "150px" },
             left: 0,
             right: 0,
-            bottom: { md: 0, xs: 4 }
+            bottom: { md: 0, xs: 0 }
           }}
         >
           <Grid
@@ -55,7 +55,7 @@ function VotingResultsContainer(props: Props) {
         <Slide direction="up" in={!!votesCasted} mountOnEnter unmountOnExit>
           <Grid
             sx={{
-              position: "absolute" as "absolute",
+              position: "absolute",
               left: 0,
               right: 0,
               bottom: { md: 0, xs: 4 },
@@ -63,7 +63,6 @@ function VotingResultsContainer(props: Props) {
               flexDirection: "row",
               justifyContent: "center",
               background: "#67A3EE",
-              transition: "width 2s ease-in 1s",
               width: "100%",
               height: "200px"
             }}
