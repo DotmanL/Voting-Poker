@@ -52,8 +52,6 @@ type Props = {
   refetchIssues: <TPageData>(
     options?: (RefetchOptions & RefetchQueryFilters<TPageData>) | undefined
   ) => Promise<QueryObserverResult<IIssue[] | undefined, Error>>;
-  setActiveCardId: React.Dispatch<React.SetStateAction<string | undefined>>;
-  activeCardId: string | undefined;
 };
 
 function RightSidebar(props: Props) {
@@ -64,9 +62,7 @@ function RightSidebar(props: Props) {
     refetchIssues,
     room,
     socket,
-    setActiveCardId,
-    handleNewVotingSession,
-    activeCardId
+    handleNewVotingSession
   } = props;
   const { isSidebarOpen, setIsSidebarOpen } = useContext(SidebarContext);
   const [isDropDownOpen, setIsDropDownOpen] = useState<boolean>(false);
@@ -79,6 +75,7 @@ function RightSidebar(props: Props) {
 
   useEffect(() => {
     if (!socket) return;
+
     if (!!issues) {
       setCards(issues);
     }
@@ -95,11 +92,6 @@ function RightSidebar(props: Props) {
         return;
       }
     });
-    return () => {
-      if (!issues) {
-        setIsSidebarOpen(false);
-      }
-    };
   }, [issues, isSidebarOpen, setIsSidebarOpen, socket, refetchIssues]);
 
   const toggleDrawer =
@@ -360,9 +352,7 @@ function RightSidebar(props: Props) {
               cards={cards}
               setCards={setCards}
               refetchIssues={refetchIssues}
-              setActiveCardId={setActiveCardId}
               handleNewVotingSession={handleNewVotingSession}
-              activeCardId={activeCardId}
             />
           )}
           <Grid sx={{ ml: 2, mb: 2 }}>

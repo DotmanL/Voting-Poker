@@ -24,15 +24,14 @@ type Props = {
   link: string;
   name: string;
   issue: IIssue;
-  issues: IIssue[];
+  issues?: IIssue[];
   moveCard: (dragIndex: number, hoverIndex: number) => void;
   refetchIssues: <TPageData>(
     options?: (RefetchOptions & RefetchQueryFilters<TPageData>) | undefined
   ) => Promise<QueryObserverResult<IIssue[] | undefined, Error>>;
-  activeCardId: string;
-  setActiveCardId: React.Dispatch<React.SetStateAction<string | undefined>>;
   handleDeleteIssue(index: number): Promise<void>;
   handleNewVotingSession?: () => Promise<void>;
+  socket: any;
 };
 
 const ItemTypes = {
@@ -52,16 +51,15 @@ function IssuesCard(props: Props) {
     link,
     name,
     issue,
-    issues,
+    socket,
     refetchIssues,
     moveCard,
     id,
-    setActiveCardId,
-    activeCardId,
     // handleNewVotingSession,
     handleDeleteIssue
   } = props;
   const ref = useRef<HTMLDivElement>(null);
+  const [activeCardId, setActiveCardId] = useState<string | undefined>("");
   const [isMiniDropDownOpen, setIsMiniDropDownOpen] = useState<boolean>(false);
   const [isStoryPointsDropDownOpen, setIsStoryPointsDropDownOpen] =
     useState<boolean>(false);
@@ -124,31 +122,20 @@ function IssuesCard(props: Props) {
   });
   drag(drop(ref));
 
-  async function deSelectAllActiveIssues() {
-    const getAllActiveIssuesInRoom = issues.filter((issue) => issue.isActive);
-    if (getAllActiveIssuesInRoom.length > 0) {
-      for (let i = 0; i < getAllActiveIssuesInRoom.length; i++) {
-        await IssueService.updateIssueStatus(
-          getAllActiveIssuesInRoom[i]._id!,
-          false
-        );
-      }
-    } else {
-      return;
-    }
-    return;
-  }
-
   async function selectActiveCard() {
+    if (!socket) return;
     if (activeCardId === id) {
-      await IssueService.updateIssueStatus(id, false);
+      socket.emit("isActiveCard", {
+        isActiveCardSelected: false,
+        roomId: room.roomId
+      });
       setActiveCardId("");
     } else {
-      if (activeCardId) {
-        await IssueService.updateIssueStatus(activeCardId, false);
-      }
-      await deSelectAllActiveIssues();
-      await IssueService.updateIssueStatus(id, true);
+      socket.emit("isActiveCard", {
+        isActiveCardSelected: true,
+        roomId: room.roomId,
+        activeIssueId: id
+      });
       setActiveCardId(id);
     }
   }

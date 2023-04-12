@@ -20,8 +20,6 @@ type Props = {
     options?: (RefetchOptions & RefetchQueryFilters<TPageData>) | undefined
   ) => Promise<QueryObserverResult<IIssue[] | undefined, Error>>;
   handleNewVotingSession: () => Promise<void>;
-  setActiveCardId: React.Dispatch<React.SetStateAction<string | undefined>>;
-  activeCardId: string | undefined;
 };
 
 function IssuesView(props: Props) {
@@ -31,9 +29,7 @@ function IssuesView(props: Props) {
     refetchIssues,
     socket,
     room,
-    setActiveCardId,
-    handleNewVotingSession,
-    activeCardId
+    handleNewVotingSession
   } = props;
 
   useEffect(() => {
@@ -85,11 +81,10 @@ function IssuesView(props: Props) {
         index={index}
         name={card.name}
         link={card.link}
+        socket={socket}
         refetchIssues={refetchIssues}
         room={room}
         moveCard={moveCard}
-        activeCardId={activeCardId!}
-        setActiveCardId={setActiveCardId}
         handleDeleteIssue={handleDeleteIssue}
         handleNewVotingSession={handleNewVotingSession}
       />

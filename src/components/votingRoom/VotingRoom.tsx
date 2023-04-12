@@ -12,7 +12,7 @@ import CardContent from "@mui/material/CardContent";
 import { io } from "socket.io-client";
 import { useParams } from "react-router-dom";
 import { IUserDetails } from "interfaces/User/IUserDetails";
-import { toast } from "react-toastify";
+// import { toast } from "react-toastify";
 import { makeStyles } from "@mui/styles";
 import { Button, Link } from "@mui/material";
 import UserService from "api/UserService";
@@ -85,7 +85,6 @@ function VotingRoom(props: Props) {
   const [userVote, setUserVote] = useState<number | undefined>();
   const [votesCasted, setVotesCasted] = useState<IUserDetails[] | undefined>();
   const [isVoted, setIsVoted] = useState<boolean>(false);
-  const [activeCardId, setActiveCardId] = useState<string | undefined>("");
   const [activeIssue, setActiveIssue] = useState<IIssue>();
   const [showActiveIssue, setShowActiveIssue] = useState<boolean>(false);
   const getRoomId = useParams();
@@ -105,7 +104,6 @@ function VotingRoom(props: Props) {
   useEffect(() => {
     const newSocket = io(getBaseUrlWithoutRoute());
     setSocket(newSocket);
-
     return () => {
       // TODO: can't reset vote on leaving room, only do when vote session is completed.
       // TODO: implement many to many relationship between each room and userId, userVote and votedState to prevent user from carrying
@@ -125,7 +123,7 @@ function VotingRoom(props: Props) {
       name: user?.name,
       _id: user?._id,
       socketId: socket.id && socket.id,
-      roomId: room.roomId,
+      roomId: getRoomId.roomId,
       votedState: user?.votedState,
       currentVote: user?.currentVote
     });
@@ -142,14 +140,14 @@ function VotingRoom(props: Props) {
       setRoomUsers(roomData);
     });
 
-    socket.on("welcome", (data: any) => {
-      const welcomeMessage = ` Hi ${user && user.name}, welcome to ${
-        room.name
-      } room`;
-      if (data.userId === user!._id) {
-        toast.success(welcomeMessage, { autoClose: 100, pauseOnHover: true });
-      }
-    });
+    // socket.on("welcome", (data: any) => {
+    //   const welcomeMessage = ` Hi ${user && user.name}, welcome to ${
+    //     room.name
+    //   } room`;
+    //   if (data.userId === user!._id) {
+    //     toast.success(welcomeMessage, { autoClose: 100, pauseOnHover: true });
+    //   }
+    // });
 
     socket.on("isUserVotedResponse", (data: IUserDetails[]) => {
       const getRoomOnlyData = data.find(
@@ -162,8 +160,8 @@ function VotingRoom(props: Props) {
       }
     });
 
-    socket.on("votesResponse", (data: any) => {
-      setVotesCasted(data.allVotes);
+    socket.on("votesResponse", (userVotingDetails: IUserDetails[]) => {
+      setVotesCasted(userVotingDetails);
       refetchIssues();
     });
 
@@ -174,27 +172,22 @@ function VotingRoom(props: Props) {
       }
     });
 
+    socket.on("isActiveCardOpenResponse", (data: any) => {
+      const currentActiveIssue = issues?.find(
+        (issue) => issue._id === data.activeIssueId
+      );
+      if (!currentActiveIssue) {
+        setShowActiveIssue(data.isActiveCardSelected);
+        return;
+      }
+      setActiveIssue(currentActiveIssue);
+      setShowActiveIssue(data.isActiveCardSelected);
+    });
+
     return () => {
       socket.off("user");
     };
-  }, [room, socket, user, room.roomId, refetchIssues]);
-
-  useEffect(() => {
-    if (!socket) return;
-    if (activeCardId) {
-      const currentActiveIssue = issues?.find(
-        (issue) => issue._id === activeCardId
-      );
-      setActiveIssue(currentActiveIssue);
-    }
-    socket.emit("isActiveCard", {
-      isActiveCardSelected: activeCardId !== "" ? true : false,
-      roomId: room.roomId
-    });
-    socket.on("isActiveCardOpenResponse", (data: any) => {
-      setShowActiveIssue(data.isActiveCardSelected);
-    });
-  }, [activeCardId, issues, socket, activeIssue, room.roomId]);
+  }, [room, socket, user, getRoomId.roomId, refetchIssues, issues]);
 
   const isDisabled = () => {
     if (!roomUsers) {
@@ -222,8 +215,8 @@ function VotingRoom(props: Props) {
       ...activeIssue!,
       storyPoints: votesAvg
     };
-    if (activeCardId) {
-      await IssueService.updateIssue(activeCardId, issueToUpdate);
+    if (activeIssue) {
+      await IssueService.updateIssue(activeIssue._id!, issueToUpdate);
     }
     socket.emit("votes", { allVotes: roomUsersVotes, roomId: room.roomId });
   };
@@ -367,9 +360,7 @@ function VotingRoom(props: Props) {
               issues={issues || []}
               refetchIssues={refetchIssues}
               isLoading={isLoading}
-              setActiveCardId={setActiveCardId}
               handleNewVotingSession={handleNewVotingSession}
-              activeCardId={activeCardId}
               error={error}
             />
           </Grid>

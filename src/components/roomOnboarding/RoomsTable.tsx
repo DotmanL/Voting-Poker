@@ -21,6 +21,8 @@ function RoomsTable(props: Props) {
 
   const handleJoinRoom = async (roomDetails: IRoom) => {
     localStorage.setItem("room", JSON.stringify(roomDetails));
+
+    //TODO: update this to check the userRoom collection for the user room details, if we don't have one, create one
     navigate(`/room/${roomDetails.roomId}`);
     //HACK: used to reconnect user on joining room
     // window.location.reload();
