@@ -4,6 +4,7 @@ import { userContext } from "App";
 import { IUserDetails } from "interfaces/User/IUserDetails";
 import { IRoom } from "interfaces/Room/IRoom";
 import Typography from "@mui/material/Typography";
+import { SidebarContext } from "utility/providers/SideBarProvider";
 import { useSpring, animated } from "react-spring";
 import PartyPopper from "./assets/partyPopper.gif";
 import popSound from "./assets/cheers.mp3";
@@ -16,6 +17,7 @@ type Props = {
 
 function VotingResult(props: Props) {
   const user = useContext(userContext);
+  const { isSidebarOpen } = useContext(SidebarContext);
   const { votesCasted, room } = props;
   const [showCelebration, setShowCelebration] = useState<boolean>(false);
   const [playPop] = useSound(popSound);
@@ -44,7 +46,7 @@ function VotingResult(props: Props) {
       setShowCelebration(true);
       setTimeout(() => {
         setShowCelebration(false);
-      }, 35000);
+      }, 20000);
     }
   }, [votesCasted]);
 
@@ -56,7 +58,8 @@ function VotingResult(props: Props) {
         width: "100vw",
         justifyContent: "center",
         alignItems: "center",
-        position: "relative"
+        position: "relative",
+        marginRight: isSidebarOpen ? "400px" : ""
       }}
     >
       <Grid
@@ -102,7 +105,7 @@ function VotingResult(props: Props) {
               justifyContent: "center",
               borderRadius: "8px",
               px: 1,
-              background: "white",
+              background: (theme) => theme.palette.secondary.main,
               m: 1
             }}
             key={i}
@@ -112,7 +115,13 @@ function VotingResult(props: Props) {
                 {room.roomId === user!.currentRoomId && v.name}
               </Typography>
             </Grid>
-            <Grid sx={{ mx: 2 }} key={i}>
+            <Grid
+              sx={{
+                mx: 2,
+                background: (theme) => theme.palette.secondary.main
+              }}
+              key={i}
+            >
               <Typography sx={{ fontSize: "25px" }}>{v.currentVote}</Typography>
             </Grid>
           </Grid>

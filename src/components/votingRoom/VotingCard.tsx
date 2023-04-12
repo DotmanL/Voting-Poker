@@ -42,8 +42,8 @@ function VotingCard(props: Props) {
           variant="outlined"
           sx={[
             {
-              minWidth: { md: 80, xs: 70 },
-              minHeight: { md: 120, xs: 100 },
+              minWidth: { md: 80, xs: 50 },
+              minHeight: { md: 120, xs: 70 },
               mx: { md: 2, xs: 1 },
               border: "1px solid #67A3EE",
               cursor: "pointer",
@@ -51,6 +51,7 @@ function VotingCard(props: Props) {
               display: "flex",
               flexDirection: "row",
               justifyContent: "center",
+              background: "secondary.main",
               alignItems: "center",
               boxShadow: 10,
               transition: "transform ease 300ms"
@@ -67,7 +68,12 @@ function VotingCard(props: Props) {
           onClick={() => handleClickCard(cardNumber)}
         >
           <CardContent>
-            <Typography variant="h4">{cardNumber} </Typography>
+            <Typography
+              variant="h4"
+              sx={{ fontSize: { md: "36px", xs: "24px" } }}
+            >
+              {cardNumber}{" "}
+            </Typography>
           </CardContent>
         </Card>
       ))}

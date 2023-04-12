@@ -78,12 +78,12 @@ function CreateUser(props: Props) {
                 <Button
                   sx={[
                     {
-                      width: { md: "80%", xs: "100%" },
-                      height: { md: "50px", xs: "auto" },
-                      p: { md: 2, xs: 1 },
+                      width: { md: "100%", xs: "100%" },
+                      height: { md: "auto", xs: "auto" },
+                      px: { md: 2, xs: 1 },
                       fontSize: { md: "24px", xs: "16px" },
-                      background: "#67A3EE",
-                      color: "white"
+                      background: "primary.main",
+                      color: "secondary.main"
                     },
                     {
                       "&:hover": {

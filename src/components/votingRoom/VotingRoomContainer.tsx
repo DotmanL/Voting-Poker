@@ -72,12 +72,25 @@ function VotingRoomContainer() {
   }
 
   return (
-    <Grid>
-      <NavBar appName={roomDetails?.name} currentUser={currentUser!} />
+    <Grid
+      sx={{
+        height: "100%",
+        backgroundColor: "secondary.main"
+      }}
+    >
+      <NavBar
+        appName={roomDetails?.name}
+        isBorderBottom={false}
+        currentUser={currentUser!}
+      />
       {isLoading ? (
         <Spinner />
       ) : (
-        <Grid>
+        <Grid
+          sx={{
+            height: "100%"
+          }}
+        >
           {roomDetails && (
             <VotingRoom
               room={roomDetails}
