@@ -16,7 +16,6 @@ const createIssues = async (issues: IIssue[]) => {
     const requestBody = { issues };
     const body = JSON.stringify(requestBody);
     const response = await apiClient.post<IIssue[]>("createIssues", body);
-    toast.success("Issues added successfully");
     return response.status;
   } catch (err: any) {
     console.error(err.message);

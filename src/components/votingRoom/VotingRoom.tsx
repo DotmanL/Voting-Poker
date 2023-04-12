@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState, useCallback } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import { userContext } from "App";
@@ -87,7 +87,7 @@ function VotingRoom(props: Props) {
   const [isVoted, setIsVoted] = useState<boolean>(false);
   const [activeCardId, setActiveCardId] = useState<string | undefined>("");
   const [activeIssue, setActiveIssue] = useState<IIssue>();
-
+  const [showActiveIssue, setShowActiveIssue] = useState<boolean>(false);
   const getRoomId = useParams();
   const getUserId = localStorage.getItem("userId");
   const userId = getUserId ? JSON.parse(getUserId) : null;
@@ -118,29 +118,6 @@ function VotingRoom(props: Props) {
     };
   }, []);
 
-  const getIssue = useCallback(
-    (issueId: string) => {
-      const activeIssue = issues?.find((issue) => issue._id === issueId);
-
-      return activeIssue;
-    },
-    [issues]
-  );
-
-  useEffect(() => {
-    const getActiveIssue = issues?.find((issue) => issue.isActive === true);
-    console.log(getActiveIssue);
-
-    if (!getActiveIssue) {
-      setActiveCardId("");
-      return;
-    }
-    if (activeCardId || getActiveIssue) {
-      const currentActiveIssue = getIssue(getActiveIssue._id!);
-      setActiveIssue(currentActiveIssue);
-    }
-  }, [activeCardId, getIssue, issues]);
-
   useEffect(() => {
     if (!socket) return;
 
@@ -148,7 +125,7 @@ function VotingRoom(props: Props) {
       name: user?.name,
       _id: user?._id,
       socketId: socket.id && socket.id,
-      roomId: getRoomId.roomId,
+      roomId: room.roomId,
       votedState: user?.votedState,
       currentVote: user?.currentVote
     });
@@ -190,11 +167,6 @@ function VotingRoom(props: Props) {
       refetchIssues();
     });
 
-    // socket.on("leaveRoomResponse", (data: IUser) => {
-    //   user!.votedState = data.votedState;
-    //   user!.currentVote = !data.votedState ? undefined : user?.currentVote;
-    // });
-
     socket.on("isVotedResponse", (data: IUser) => {
       if (data._id === user?._id) {
         setIsVoted(data.votedState!);
@@ -205,7 +177,24 @@ function VotingRoom(props: Props) {
     return () => {
       socket.off("user");
     };
-  }, [room, socket, user, getRoomId.roomId, refetchIssues]);
+  }, [room, socket, user, room.roomId, refetchIssues]);
+
+  useEffect(() => {
+    if (!socket) return;
+    if (activeCardId) {
+      const currentActiveIssue = issues?.find(
+        (issue) => issue._id === activeCardId
+      );
+      setActiveIssue(currentActiveIssue);
+    }
+    socket.emit("isActiveCard", {
+      isActiveCardSelected: activeCardId !== "" ? true : false,
+      roomId: room.roomId
+    });
+    socket.on("isActiveCardOpenResponse", (data: any) => {
+      setShowActiveIssue(data.isActiveCardSelected);
+    });
+  }, [activeCardId, issues, socket, activeIssue, room.roomId]);
 
   const isDisabled = () => {
     if (!roomUsers) {
@@ -311,7 +300,7 @@ function VotingRoom(props: Props) {
           alignItems: "center"
         }}
       >
-        {!!activeCardId && (
+        {showActiveIssue && (
           <Grid
             sx={{
               position: "absolute",
@@ -320,22 +309,22 @@ function VotingRoom(props: Props) {
               right: 0,
               mt: 1,
               ml: { md: 4, xs: 1 },
-              width: { md: "35%", xs: "95vw" },
+              width: { md: "auto", xs: "95vw" },
               height: { md: "auto", xs: "auto" },
               px: 2,
               py: 1,
               borderRadius: "10px",
-              display: !!activeCardId ? "flex" : "none",
+              display: "flex",
               flexDirection: "column",
               background: "secondary.main",
               border: { md: "0px", xs: "1px solid green" },
               cursor: "pointer",
               alignItems: "flex-start",
-              justifyContent: "center",
-              boxShadow: (theme) =>
-                theme.palette.mode === "dark"
-                  ? "0px 0px 10px 2px rgba(255, 255, 255, 0.1)"
-                  : "0px 0px 10px 2px rgba(0, 0, 0, 0.1)"
+              justifyContent: "center"
+              // boxShadow: (theme) =>
+              //   theme.palette.mode === "dark"
+              //     ? "0px 0px 10px 2px rgba(255, 255, 255, 0.1)"
+              //     : "0px 0px 10px 2px rgba(0, 0, 0, 0.1)"
             }}
           >
             <Typography

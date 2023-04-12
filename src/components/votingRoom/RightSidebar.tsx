@@ -78,6 +78,7 @@ function RightSidebar(props: Props) {
   const [cards, setCards] = useState(issues);
 
   useEffect(() => {
+    if (!socket) return;
     if (!!issues) {
       setCards(issues);
     }
@@ -85,18 +86,15 @@ function RightSidebar(props: Props) {
       setIsMiniDropDownOpen(false);
       setIsDropDownOpen(false);
       setIsSingleIssueTextBoxOpen(false);
-      return;
     }
-    if (socket) {
-      socket.on("isIssuesSidebarOpenResponse", (data: any) => {
-        if (data.isIssuesSidebarOpen) {
-          setIsSidebarOpen(true);
-          refetchIssues();
-        } else {
-          return;
-        }
-      });
-    }
+    socket.on("isIssuesSidebarOpenResponse", (data: any) => {
+      if (data.isIssuesSidebarOpen) {
+        setIsSidebarOpen(true);
+        refetchIssues();
+      } else {
+        return;
+      }
+    });
     return () => {
       if (!issues) {
         setIsSidebarOpen(false);
