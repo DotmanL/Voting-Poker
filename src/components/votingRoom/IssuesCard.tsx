@@ -32,6 +32,8 @@ type Props = {
   handleDeleteIssue(index: number): Promise<void>;
   handleNewVotingSession?: () => Promise<void>;
   socket: any;
+  setActiveCardId: React.Dispatch<React.SetStateAction<string | undefined>>;
+  activeCardId: string | undefined;
 };
 
 const ItemTypes = {
@@ -52,6 +54,8 @@ function IssuesCard(props: Props) {
     name,
     issue,
     socket,
+    setActiveCardId,
+    activeCardId,
     refetchIssues,
     moveCard,
     id,
@@ -59,7 +63,7 @@ function IssuesCard(props: Props) {
     handleDeleteIssue
   } = props;
   const ref = useRef<HTMLDivElement>(null);
-  const [activeCardId, setActiveCardId] = useState<string | undefined>("");
+  // const [activeCardId, setActiveCardId] = useState<string | undefined>("");
   const [isMiniDropDownOpen, setIsMiniDropDownOpen] = useState<boolean>(false);
   const [isStoryPointsDropDownOpen, setIsStoryPointsDropDownOpen] =
     useState<boolean>(false);
@@ -122,9 +126,9 @@ function IssuesCard(props: Props) {
   });
   drag(drop(ref));
 
-  async function selectActiveCard() {
+  async function selectActiveCard(cardId: string) {
     if (!socket) return;
-    if (activeCardId === id) {
+    if (activeCardId === cardId) {
       socket.emit("isActiveCard", {
         isActiveCardSelected: false,
         roomId: room.roomId
@@ -134,9 +138,9 @@ function IssuesCard(props: Props) {
       socket.emit("isActiveCard", {
         isActiveCardSelected: true,
         roomId: room.roomId,
-        activeIssueId: id
+        activeIssueId: cardId
       });
-      setActiveCardId(id);
+      setActiveCardId(cardId);
     }
   }
 
@@ -271,7 +275,7 @@ function IssuesCard(props: Props) {
           mt: 2
         }}
       >
-        <Grid onClick={selectActiveCard}>
+        <Grid onClick={() => selectActiveCard(id)}>
           <Button
             variant="contained"
             sx={{
@@ -285,13 +289,13 @@ function IssuesCard(props: Props) {
               }
             }}
           >
-            {activeCardId === id
-              ? !!issue.storyPoints
-                ? "Vote Again"
-                : "Voting Now...."
-              : !!issue.storyPoints
-              ? "Vote Again"
-              : "Vote this Issue"}
+            {activeCardId === id && !!issue.storyPoints
+              ? "Voting Now...."
+              : activeCardId !== id && !!issue.storyPoints
+              ? "Vote Again...."
+              : activeCardId !== id && !issue.storyPoints
+              ? "Vote this issue"
+              : "Vote this issue"}
           </Button>
         </Grid>
         <Grid sx={{ display: "flex", flexDirection: "row" }}>

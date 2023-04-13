@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Grid from "@mui/material/Grid";
 import { IIssue } from "interfaces/Issues";
 import IssuesCard from "./IssuesCard";
@@ -31,6 +31,8 @@ function IssuesView(props: Props) {
     room,
     handleNewVotingSession
   } = props;
+
+  const [activeCardId, setActiveCardId] = useState<string | undefined>("");
 
   useEffect(() => {
     if (cards) {
@@ -83,6 +85,8 @@ function IssuesView(props: Props) {
         link={card.link}
         socket={socket}
         refetchIssues={refetchIssues}
+        setActiveCardId={setActiveCardId}
+        activeCardId={activeCardId}
         room={room}
         moveCard={moveCard}
         handleDeleteIssue={handleDeleteIssue}
