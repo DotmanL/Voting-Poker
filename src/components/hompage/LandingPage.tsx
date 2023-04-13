@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Button, Grid, Typography } from "@mui/material";
+import { Button, Grid, Typography } from "@mui/material";
 import bg1 from "./assets/bg1.svg";
 import teams from "./assets/teams.svg";
 import waveBottom from "./assets/wavesBottom.svg";
@@ -10,7 +10,6 @@ function LandingPage() {
     <Grid
       sx={{
         flexDirection: { md: "row", xs: "column" },
-        justifyContent: "flex-start",
         mt: "80px",
         p: 0,
         height: "100vh",
@@ -46,11 +45,11 @@ function LandingPage() {
             flexDirection: "column",
             alignItems: { xs: "center" },
             width: { md: "45%", xs: "100%" },
-            height: { md: "auto", xs: "30vh" },
+            height: { md: "auto" },
             p: { md: 3, xs: 0.5 }
           }}
         >
-          <Grid sx={{ mt: { md: 15, xs: 5 }, ml: "5%" }}>
+          <Grid sx={{ mt: { md: 15, xs: 2 }, ml: "5%" }}>
             <Typography
               variant="h2"
               sx={{
@@ -120,12 +119,12 @@ function LandingPage() {
               flexDirection: { md: "row", xs: "column" },
               justifyContent: "center",
               alignItems: "center",
-              mb: { md: 2, xs: 6 },
-              mt: { md: 2, xs: 4 },
+              mb: { md: 2, xs: 1 },
+              mt: { md: 2, xs: 1 },
               ml: { md: -2, xs: 1 }
             }}
           >
-            <Box
+            <Grid
               component="img"
               sx={{
                 width: { md: "550px", xs: "400px" },
@@ -135,11 +134,12 @@ function LandingPage() {
               alt="teams card"
             />
 
-            <Box
+            <Grid
               component="img"
               sx={{
                 width: { md: "400px", xs: "300px" },
-                mt: { md: 25, xs: 1 },
+                mt: { md: 25, xs: 0 },
+                mb: { md: 0, xs: 2 },
                 ml: { md: -5, xs: 1 }
               }}
               src={bg1}
