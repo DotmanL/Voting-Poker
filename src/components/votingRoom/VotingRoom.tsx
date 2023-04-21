@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import { userContext } from "App";
@@ -11,8 +11,8 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import { io } from "socket.io-client";
 import { useParams } from "react-router-dom";
-import { IUserDetails } from "interfaces/User/IUserDetails";
 // import { toast } from "react-toastify";
+import { IRoomUsers } from "interfaces/RoomUsers";
 import { makeStyles } from "@mui/styles";
 import { Button, Link } from "@mui/material";
 import UserService from "api/UserService";
@@ -24,6 +24,7 @@ import { SidebarContext } from "utility/providers/SideBarProvider";
 import IssueService from "api/IssueService";
 
 import { useQuery } from "react-query";
+import RoomUsersService from "api/RoomUsersService";
 
 const useStyles = makeStyles((theme) => ({
   "@keyframes glowing": {
@@ -81,9 +82,9 @@ function VotingRoom(props: Props) {
   const user = useContext(userContext);
   const { isSidebarOpen } = useContext(SidebarContext);
   const [socket, setSocket] = useState<any>(null);
-  const [roomUsers, setRoomUsers] = useState<IUserDetails[]>();
+  const [roomUsers, setRoomUsers] = useState<IRoomUsers[]>();
   const [userVote, setUserVote] = useState<number | undefined>();
-  const [votesCasted, setVotesCasted] = useState<IUserDetails[] | undefined>();
+  const [votesCasted, setVotesCasted] = useState<IRoomUsers[] | undefined>();
   const [isVoted, setIsVoted] = useState<boolean>(false);
   const [activeIssue, setActiveIssue] = useState<IIssue>();
   const [showActiveIssue, setShowActiveIssue] = useState<boolean>(false);
@@ -101,9 +102,30 @@ function VotingRoom(props: Props) {
     IssueService.getAllIssues(roomId!)
   );
 
+  const joinRoom = useCallback(async () => {
+    const roomUsersFormData = {
+      userId: user?._id!,
+      roomId: getRoomId.roomId!,
+      userName: user?.name!
+    };
+    const roomUsersData = await RoomUsersService.getRoomUsersByRoomId(
+      getRoomId.roomId!
+    );
+    const existingRoomUsersData = roomUsersData.find(
+      (roomUserData) =>
+        roomUserData.roomId === getRoomId.roomId &&
+        roomUserData.userId === user?._id!
+    );
+    if (!existingRoomUsersData) {
+      await RoomUsersService.createRoomUsers(roomUsersFormData);
+    }
+  }, [getRoomId.roomId, user?._id, user?.name]);
+
   useEffect(() => {
     const newSocket = io(getBaseUrlWithoutRoute());
     setSocket(newSocket);
+    joinRoom();
+
     return () => {
       // TODO: can't reset vote on leaving room, only do when vote session is completed.
       // TODO: implement many to many relationship between each room and userId, userVote and votedState to prevent user from carrying
@@ -114,13 +136,13 @@ function VotingRoom(props: Props) {
       // newSocket.emit("leaveRoom", { userId });
       newSocket.disconnect();
     };
-  }, []);
+  }, [joinRoom]);
 
   useEffect(() => {
     if (!socket) return;
 
     socket.emit("user", {
-      name: user?.name,
+      userName: user?.name,
       _id: user?._id,
       socketId: socket.id && socket.id,
       roomId: getRoomId.roomId,
@@ -128,7 +150,7 @@ function VotingRoom(props: Props) {
       currentVote: user?.currentVote
     });
 
-    socket.on("userResponse", async (data: IUserDetails[]) => {
+    socket.on("userResponse", async (data: IRoomUsers[]) => {
       const userResponse = () => {
         const getRoomOnlyData = data.filter((d) => d.roomId === room.roomId);
         return getRoomOnlyData;
@@ -136,7 +158,9 @@ function VotingRoom(props: Props) {
       if (!user) {
         return;
       }
+
       const roomData = userResponse();
+      console.log(roomData);
       setRoomUsers(roomData);
     });
 
@@ -149,7 +173,7 @@ function VotingRoom(props: Props) {
     //   }
     // });
 
-    socket.on("isUserVotedResponse", (data: IUserDetails[]) => {
+    socket.on("isUserVotedResponse", (data: IRoomUsers[]) => {
       const getRoomOnlyData = data.find(
         (d) => d.roomId === room.roomId && d._id === user?._id
       );
@@ -160,7 +184,7 @@ function VotingRoom(props: Props) {
       }
     });
 
-    socket.on("votesResponse", (userVotingDetails: IUserDetails[]) => {
+    socket.on("votesResponse", (userVotingDetails: IRoomUsers[]) => {
       setVotesCasted(userVotingDetails);
       refetchIssues();
     });
@@ -199,7 +223,7 @@ function VotingRoom(props: Props) {
       : false;
   };
 
-  const handleVotesAverage = (roomUsersVotes: IUserDetails[] | undefined) => {
+  const handleVotesAverage = (roomUsersVotes: IRoomUsers[] | undefined) => {
     const totalVotes = roomUsersVotes!.reduce(
       (acc, curr) => acc + curr.currentVote!,
       0
@@ -453,7 +477,7 @@ function VotingRoom(props: Props) {
           }}
         >
           {roomUsers &&
-            roomUsers.map((roomUser: IUserDetails, i: number) => (
+            roomUsers.map((roomUser: IRoomUsers, i: number) => (
               <Grid key={roomUser._id}>
                 <Card
                   variant="outlined"
@@ -507,7 +531,7 @@ function VotingRoom(props: Props) {
                   }}
                 >
                   <Typography variant="h4">
-                    {roomUser && roomUser.name}
+                    {roomUser && roomUser.userName}
                   </Typography>
                 </Grid>
               </Grid>

@@ -1,14 +1,16 @@
 import Grid from "@mui/material/Grid";
 import Slide from "@mui/material/Slide";
 import { IRoom } from "interfaces/Room/IRoom";
-import { IUserDetails } from "interfaces/User/IUserDetails";
 import React, { useContext } from "react";
 import VotingCard from "./VotingCard";
 import VotingResult from "./VotingResult";
+import { IRoomUsers } from "interfaces/RoomUsers";
 import { SidebarContext } from "utility/providers/SideBarProvider";
+
+
 type Props = {
   room: IRoom;
-  votesCasted: IUserDetails[] | undefined;
+  votesCasted: IRoomUsers[] | undefined;
   handleAddVote: (voteValue: number) => Promise<void>;
 };
 

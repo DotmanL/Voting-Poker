@@ -35,6 +35,7 @@ function IssuesView(props: Props) {
   const [activeCardId, setActiveCardId] = useState<string | undefined>("");
 
   useEffect(() => {
+    if (!socket) return;
     if (cards) {
       socket.on("orderUpdateResponse", (data: any) => {
         if (data.isOrderUpdated) {
@@ -42,6 +43,13 @@ function IssuesView(props: Props) {
         }
       });
     }
+    socket.on("triggerRefetchIssuesResponse", (data: any) => {
+      if (data.isRefetchIssues) {
+        refetchIssues();
+      } else {
+        return;
+      }
+    });
   }, [cards, socket, refetchIssues]);
 
   const moveCard = useCallback(
@@ -70,7 +78,10 @@ function IssuesView(props: Props) {
 
   const handleDeleteIssue = async (index: number) => {
     await IssueService.deleteIssues([cards[index]._id!]);
-    await refetchIssues();
+    socket.emit("triggerRefetchIssues", {
+      isRefetchIssues: true,
+      roomId: room.roomId
+    });
   };
 
   const renderCard = (card: IIssue, index: number) => {

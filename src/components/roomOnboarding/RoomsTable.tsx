@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import { IRoom } from "interfaces/Room/IRoom";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -10,6 +10,9 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import Button from "@mui/material/Button";
+import RoomUsersService from "api/RoomUsersService";
+import { userContext } from "App";
+
 
 type Props = {
   allRooms: IRoom[];
@@ -18,10 +21,29 @@ type Props = {
 function RoomsTable(props: Props) {
   const navigate = useNavigate();
   const { allRooms } = props;
+  const user = useContext(userContext);
+
+  console.log(user);
+  
 
   const handleJoinRoom = async (roomDetails: IRoom) => {
     localStorage.setItem("room", JSON.stringify(roomDetails));
-
+    const roomUsersFormData = {
+      userId: user?._id!,
+      roomId: roomDetails.roomId!,
+      userName: user?.name!,
+    };
+    const roomUsersData = await RoomUsersService.getRoomUsersByRoomId(
+      roomDetails.roomId
+    );
+    const existingRoomUsersData = roomUsersData.find(
+      (roomUserData) =>
+        roomUserData.roomId === roomDetails.roomId &&
+        roomUserData.userId === user?._id!
+    );
+    if (!existingRoomUsersData) {
+      await RoomUsersService.createRoomUsers(roomUsersFormData);
+    }
     //TODO: update this to check the userRoom collection for the user room details, if we don't have one, create one
     navigate(`/room/${roomDetails.roomId}`);
     //HACK: used to reconnect user on joining room

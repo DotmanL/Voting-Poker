@@ -92,6 +92,14 @@ function RightSidebar(props: Props) {
         return;
       }
     });
+
+    socket.on("triggerRefetchIssuesResponse", (data: any) => {
+      if (data.isRefetchIssues) {
+        refetchIssues();
+      } else {
+        return;
+      }
+    });
   }, [issues, isSidebarOpen, setIsSidebarOpen, socket, refetchIssues]);
 
   const toggleDrawer =
@@ -143,7 +151,10 @@ function RightSidebar(props: Props) {
       return;
     }
     await IssueService.deleteIssues(issueIds);
-    refetchIssues();
+    socket.emit("triggerRefetchIssues", {
+      isRefetchIssues: true,
+      roomId: room.roomId
+    });
     setIsMiniDropDownOpen(false);
   }
 
