@@ -72,12 +72,13 @@ const useStyles = makeStyles((theme) => ({
 type Props = {
   room: IRoom;
   socket: any;
+  roomUsersData: IRoomUsers[];
   handleCreateUser: (user: IUser) => void;
   isModalOpen: boolean;
 };
 
 function VotingRoom(props: Props) {
-  const { room, handleCreateUser, isModalOpen } = props;
+  const { room, roomUsersData, handleCreateUser, isModalOpen } = props;
   const classes = useStyles();
   const user = useContext(userContext);
   const { isSidebarOpen } = useContext(SidebarContext);
@@ -108,18 +109,17 @@ function VotingRoom(props: Props) {
       roomId: getRoomId.roomId!,
       userName: user?.name!
     };
-    const roomUsersData = await RoomUsersService.getRoomUsersByRoomId(
-      getRoomId.roomId!
-    );
+
     const existingRoomUsersData = roomUsersData.find(
       (roomUserData) =>
         roomUserData.roomId === getRoomId.roomId &&
         roomUserData.userId === user?._id!
     );
-    if (!existingRoomUsersData) {
+
+    if (!!user && !existingRoomUsersData) {
       await RoomUsersService.createRoomUsers(roomUsersFormData);
     }
-  }, [getRoomId.roomId, user?._id, user?.name]);
+  }, [getRoomId.roomId, user, roomUsersData]);
 
   useEffect(() => {
     const newSocket = io(getBaseUrlWithoutRoute());
@@ -127,13 +127,6 @@ function VotingRoom(props: Props) {
     joinRoom();
 
     return () => {
-      // TODO: can't reset vote on leaving room, only do when vote session is completed.
-      // TODO: implement many to many relationship between each room and userId, userVote and votedState to prevent user from carrying
-      // TODO: votes from one room to another, also keep ttrack of votedState. A useEffect in this compoonent will be used to load
-      // TODO: specific user votes and other data for the room.
-      // user!.votedState = false;
-      // user!.currentVote = undefined;
-      // newSocket.emit("leaveRoom", { userId });
       newSocket.disconnect();
     };
   }, [joinRoom]);
@@ -153,15 +146,27 @@ function VotingRoom(props: Props) {
     socket.on("userResponse", async (data: IRoomUsers[]) => {
       const userResponse = () => {
         const getRoomOnlyData = data.filter((d) => d.roomId === room.roomId);
+
+        for (let i = 0; i < getRoomOnlyData.length; i++) {
+          const roomOnlyData = getRoomOnlyData[i];
+          const roomUserData = roomUsersData.find(
+            (rud) => rud.userId === roomOnlyData._id
+          );
+
+          if (roomUserData) {
+            roomOnlyData.currentVote = roomUserData.currentVote;
+            roomOnlyData.votedState = roomUserData.votedState;
+          }
+        }
         return getRoomOnlyData;
       };
+
       if (!user) {
         return;
       }
 
       const roomData = userResponse();
-      console.log(roomData);
-      setRoomUsers(roomData);
+      setRoomUsers(roomData!);
     });
 
     // socket.on("welcome", (data: any) => {
@@ -178,7 +183,6 @@ function VotingRoom(props: Props) {
         (d) => d.roomId === room.roomId && d._id === user?._id
       );
 
-      //Checks if our data contains any user in the room where a vote update was done
       if (!!getRoomOnlyData) {
         setRoomUsers(data);
       }
@@ -211,7 +215,15 @@ function VotingRoom(props: Props) {
     return () => {
       socket.off("user");
     };
-  }, [room, socket, user, getRoomId.roomId, refetchIssues, issues]);
+  }, [
+    room,
+    socket,
+    user,
+    getRoomId.roomId,
+    refetchIssues,
+    issues,
+    roomUsersData
+  ]);
 
   const isDisabled = () => {
     if (!roomUsers) {

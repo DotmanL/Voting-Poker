@@ -13,7 +13,6 @@ import Button from "@mui/material/Button";
 import RoomUsersService from "api/RoomUsersService";
 import { userContext } from "App";
 
-
 type Props = {
   allRooms: IRoom[];
 };
@@ -23,15 +22,12 @@ function RoomsTable(props: Props) {
   const { allRooms } = props;
   const user = useContext(userContext);
 
-  console.log(user);
-  
-
   const handleJoinRoom = async (roomDetails: IRoom) => {
     localStorage.setItem("room", JSON.stringify(roomDetails));
     const roomUsersFormData = {
       userId: user?._id!,
       roomId: roomDetails.roomId!,
-      userName: user?.name!,
+      userName: user?.name!
     };
     const roomUsersData = await RoomUsersService.getRoomUsersByRoomId(
       roomDetails.roomId
@@ -41,14 +37,10 @@ function RoomsTable(props: Props) {
         roomUserData.roomId === roomDetails.roomId &&
         roomUserData.userId === user?._id!
     );
-    if (!existingRoomUsersData) {
+    if (!!user && !existingRoomUsersData) {
       await RoomUsersService.createRoomUsers(roomUsersFormData);
     }
-    //TODO: update this to check the userRoom collection for the user room details, if we don't have one, create one
     navigate(`/room/${roomDetails.roomId}`);
-    //HACK: used to reconnect user on joining room
-    // window.location.reload();
-    // window.location.reload();
   };
 
   return (

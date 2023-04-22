@@ -1,5 +1,4 @@
 import axios from "axios";
-import { toast } from "react-toastify";
 import { IRoomUsers } from "interfaces/RoomUsers";
 import { getBaseUrl } from "api";
 
@@ -11,16 +10,15 @@ const apiClient = axios.create({
   }
 });
 type roomUsersUpdate = {
-  currentVote: number;
-  activeIssueId: string;
-  votedState: boolean;
+  currentVote?: number;
+  activeIssueId?: string;
+  votedState?: boolean;
 };
 
 const createRoomUsers = async (formData: IRoomUsers) => {
   try {
     const body = JSON.stringify(formData);
     const response = await apiClient.post<IRoomUsers>("createRoomUser", body);
-    toast.success("Room Users created successfully");
     return response.status;
   } catch (err: any) {
     console.error(err.message);
