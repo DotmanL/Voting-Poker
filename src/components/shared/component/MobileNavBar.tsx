@@ -3,7 +3,7 @@ import { SidebarContext } from "utility/providers/SideBarProvider";
 import Box from "@mui/material/Box";
 import SwipeableDrawer from "@mui/material/SwipeableDrawer";
 import { Grid, IconButton, Typography } from "@mui/material";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import MenuIcon from "@mui/icons-material/Menu";
 import { AiOutlineClose } from "react-icons/ai";
 import { IUser } from "interfaces/User/IUser";
@@ -144,21 +144,22 @@ function MobileNavBar(props: Props) {
             <MenuIcon sx={{ width: "30px", height: "30px" }} />
           </IconButton>
         </Grid>
-
-        <Grid sx={{}}>
-          <Typography
-            variant="h5"
-            sx={{
-              fontFamily: "Jost",
-              fontWeight: "bold",
-              mt: 1,
-              fontSize: { md: "40px", xs: "22px" },
-              color: "primary.main"
-            }}
-          >
-            {appName}
-          </Typography>
-        </Grid>
+        <Link to="/" style={{ textDecoration: "none" }}>
+          <Grid>
+            <Typography
+              variant="h5"
+              sx={{
+                fontFamily: "Jost",
+                fontWeight: "bold",
+                mt: 1,
+                fontSize: { md: "40px", xs: "22px" },
+                color: "primary.main"
+              }}
+            >
+              {appName}
+            </Typography>
+          </Grid>
+        </Link>
         <Grid
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
           sx={{

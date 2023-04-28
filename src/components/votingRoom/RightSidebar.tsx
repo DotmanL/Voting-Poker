@@ -20,6 +20,7 @@ import {
   RefetchQueryFilters
 } from "react-query/types/core/types";
 import { IRoom } from "interfaces/Room/IRoom";
+import { IssueContext } from "utility/providers/IssuesProvider";
 
 const options = [
   {
@@ -67,6 +68,7 @@ function RightSidebar(props: Props) {
   const { isSidebarOpen, setIsSidebarOpen } = useContext(SidebarContext);
   const [isDropDownOpen, setIsDropDownOpen] = useState<boolean>(false);
   const [isMiniDropDownOpen, setIsMiniDropDownOpen] = useState<boolean>(false);
+  const { activeIssue, setActiveIssue } = useContext(IssueContext);
   const [isSingleIssueTextBoxOpen, setIsSingleIssueTextBoxOpen] =
     useState<boolean>(false);
   const [isAddMultipleModalOpen, setIsAddMultipleModalOpen] =
@@ -79,6 +81,7 @@ function RightSidebar(props: Props) {
     if (!!issues) {
       setCards(issues);
     }
+
     if (!isSidebarOpen) {
       setIsMiniDropDownOpen(false);
       setIsDropDownOpen(false);
@@ -88,16 +91,12 @@ function RightSidebar(props: Props) {
       if (data.isIssuesSidebarOpen) {
         setIsSidebarOpen(true);
         refetchIssues();
-      } else {
-        return;
       }
     });
 
     socket.on("triggerRefetchIssuesResponse", (data: any) => {
       if (data.isRefetchIssues) {
         refetchIssues();
-      } else {
-        return;
       }
     });
   }, [issues, isSidebarOpen, setIsSidebarOpen, socket, refetchIssues]);
@@ -149,6 +148,14 @@ function RightSidebar(props: Props) {
     if (issueIds.length <= 0) {
       toast.warn("No issues to delete");
       return;
+    }
+
+    if (issueIds.includes(activeIssue?._id!)) {
+      socket.emit("updateActiveIssueId", {
+        roomActiveIssueId: "",
+        roomId: room.roomId
+      });
+      setActiveIssue(undefined);
     }
     await IssueService.deleteIssues(issueIds);
     socket.emit("triggerRefetchIssues", {

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect } from "react";
 import Grid from "@mui/material/Grid";
 import { IIssue } from "interfaces/Issues";
 import IssuesCard from "./IssuesCard";
@@ -10,6 +10,7 @@ import {
   RefetchQueryFilters
 } from "react-query/types/core/types";
 import { IRoom } from "interfaces/Room/IRoom";
+import { IssueContext } from "utility/providers/IssuesProvider";
 
 type Props = {
   socket: any;
@@ -31,8 +32,7 @@ function IssuesView(props: Props) {
     room,
     handleNewVotingSession
   } = props;
-
-  const [activeCardId, setActiveCardId] = useState<string | undefined>("");
+  const { activeIssue, setActiveIssue } = useContext(IssueContext);
 
   useEffect(() => {
     if (!socket) return;
@@ -77,6 +77,13 @@ function IssuesView(props: Props) {
   );
 
   const handleDeleteIssue = async (index: number) => {
+    if (cards[index]._id! === activeIssue?._id!) {
+      socket.emit("updateActiveIssueId", {
+        roomActiveIssueId: "",
+        roomId: room.roomId
+      });
+      setActiveIssue(undefined);
+    }
     await IssueService.deleteIssues([cards[index]._id!]);
     socket.emit("triggerRefetchIssues", {
       isRefetchIssues: true,
@@ -87,17 +94,12 @@ function IssuesView(props: Props) {
   const renderCard = (card: IIssue, index: number) => {
     return (
       <IssuesCard
-        key={card._id}
+        key={card._id!}
         id={card._id!}
         issue={card}
-        issues={cards}
         index={index}
-        name={card.name}
-        link={card.link}
         socket={socket}
         refetchIssues={refetchIssues}
-        setActiveCardId={setActiveCardId}
-        activeCardId={activeCardId}
         room={room}
         moveCard={moveCard}
         handleDeleteIssue={handleDeleteIssue}

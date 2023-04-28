@@ -9,10 +9,15 @@ const apiClient = axios.create({
     "Content-Type": "application/json"
   }
 });
-type roomUsersUpdate = {
+
+export type RoomUserUpdate = {
   currentVote?: number;
   activeIssueId?: string;
   votedState?: boolean;
+};
+
+export type RoomUsersUpdate = {
+  activeIssueId?: string;
 };
 
 const createRoomUsers = async (formData: IRoomUsers) => {
@@ -30,13 +35,13 @@ const getRoomUsersByRoomId = async (roomId: string) => {
   return response.data;
 };
 
-const updateRoomUsers = async (
+const updateRoomUser = async (
   roomId: string,
   userId: string,
-  roomUsersUpdate: roomUsersUpdate
+  roomUserUpdate: RoomUserUpdate
 ) => {
   try {
-    const body = JSON.stringify(roomUsersUpdate);
+    const body = JSON.stringify(roomUserUpdate);
 
     const response = await apiClient.put<IRoomUsers>(
       `roomUsers/${roomId}/${userId}`,
@@ -48,10 +53,43 @@ const updateRoomUsers = async (
   }
 };
 
+const updateRoomUsers = async (
+  roomId: string,
+  roomUsersUpdate: RoomUsersUpdate
+) => {
+  try {
+    // const requestBody = { activeIssueId };
+    // const body = JSON.stringify(requestBody);
+    const body = JSON.stringify(roomUsersUpdate);
+    const response = await apiClient.put<IRoomUsers>(
+      `roomUsers/${roomId}`,
+      body
+    );
+    return response.status;
+  } catch (err: any) {
+    console.error(err.message);
+  }
+};
+
+const resetRoomUserVote = async (
+  roomId: string,
+  roomUserUpdate: RoomUserUpdate
+) => {
+  try {
+    const body = JSON.stringify(roomUserUpdate);
+    const response = await apiClient.put(`resetRoomUserVote/${roomId}`, body);
+    return response.data;
+  } catch (err: any) {
+    console.error(err.message);
+  }
+};
+
 export const RoomUsersService = {
   createRoomUsers,
   getRoomUsersByRoomId,
-  updateRoomUsers
+  updateRoomUser,
+  updateRoomUsers,
+  resetRoomUserVote
 };
 
 export default RoomUsersService;

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from "react";
-import { useQueries } from "react-query";
+import { useQuery } from "react-query";
 import { IUser } from "interfaces/User/IUser";
 import { Grid } from "@mui/material";
 import { IRoom } from "interfaces/Room/IRoom";
@@ -11,15 +11,12 @@ import VotingRoom from "./VotingRoom";
 import RoomService from "../../api/RoomService";
 import UserService from "../../api/UserService";
 import Spinner from "components/shared/component/Spinner";
-import RoomUsersService from "api/RoomUsersService";
-import { IRoomUsers } from "interfaces/RoomUsers";
 
 const getBaseUrl = () => {
   let url;
   switch (process.env.NODE_ENV) {
     case "production":
       url = "https://votingpokerapi.herokuapp.com/";
-      // url = "https://dotvoting.onrender.com";
       break;
     case "development":
     default:
@@ -35,33 +32,16 @@ function VotingRoomContainer() {
   const getRoomId = useParams();
   const roomId = Object.values(getRoomId)[0];
 
-  async function getRoomDetails() {
-    return await RoomService.getRoomDetails(roomId!);
-  }
-
-  async function getRoomUsersByRoomId() {
-    return await RoomUsersService.getRoomUsersByRoomId(roomId!);
-  }
-
-  const queries = useQueries([
-    {
-      queryKey: "getRoom",
-      queryFn: () => getRoomDetails()
-    },
-    {
-      queryKey: "getRoomUsers",
-      queryFn: () => getRoomUsersByRoomId()
-    }
-  ]);
-
-  const roomDetailsQuery = queries[0];
-  const roomUsersByRoomIdQuery = queries[1];
-
-  const [roomDetails, setRoomDetails] = useState<IRoom>(roomDetailsQuery.data!);
-  const [roomUserDetails, setRoomUserDetails] = useState<IRoomUsers[]>(
-    roomUsersByRoomIdQuery.data!
+  const {
+    isLoading,
+    error,
+    data: roomData
+  } = useQuery<IRoom | undefined, Error>("getRoom", async () =>
+    RoomService.getRoomDetails(roomId!)
   );
+
   const user = useContext(userContext);
+  const [roomDetails, setRoomDetails] = useState<IRoom>(roomData!);
   const [currentUser, setCurrentUser] = useState<IUser | null>(user);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(!user ? true : false);
 
@@ -84,16 +64,12 @@ function VotingRoomContainer() {
     } else {
       setIsModalOpen(true);
     }
-    setRoomDetails(roomDetailsQuery.data!);
-    setRoomUserDetails(roomUsersByRoomIdQuery.data!);
-  }, [user, roomDetailsQuery, roomUsersByRoomIdQuery]);
 
-  if (roomDetailsQuery.error) {
-    return <p>{(roomDetailsQuery.error as Error)?.message}</p>;
-  }
+    setRoomDetails(roomData!);
+  }, [user, roomData]);
 
-  if (roomUsersByRoomIdQuery.error) {
-    return <p>{(roomUsersByRoomIdQuery.error as Error)?.message}</p>;
+  if (error) {
+    return <p>{(error as Error)?.message}</p>;
   }
 
   return (
@@ -108,7 +84,7 @@ function VotingRoomContainer() {
         isBorderBottom={false}
         currentUser={currentUser!}
       />
-      {roomDetailsQuery.isLoading && roomUsersByRoomIdQuery.isLoading ? (
+      {isLoading ? (
         <Spinner />
       ) : (
         <Grid
@@ -116,10 +92,9 @@ function VotingRoomContainer() {
             height: "100%"
           }}
         >
-          {roomDetails && roomUserDetails && (
+          {roomDetails && (
             <VotingRoom
               room={roomDetails}
-              roomUsersData={roomUserDetails}
               socket={socket}
               handleCreateUser={handleCreateUser}
               isModalOpen={isModalOpen}
