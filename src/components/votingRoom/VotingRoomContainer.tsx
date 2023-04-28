@@ -17,7 +17,6 @@ const getBaseUrl = () => {
   switch (process.env.NODE_ENV) {
     case "production":
       url = "https://votingpokerapi.herokuapp.com/";
-      // url = "https://dotvoting.onrender.com";
       break;
     case "development":
     default:
@@ -32,6 +31,7 @@ const socket = io(getBaseUrl());
 function VotingRoomContainer() {
   const getRoomId = useParams();
   const roomId = Object.values(getRoomId)[0];
+
   const {
     isLoading,
     error,
@@ -40,10 +40,10 @@ function VotingRoomContainer() {
     RoomService.getRoomDetails(roomId!)
   );
 
-  const [roomDetails, setRoomDetails] = useState<IRoom>(roomData!);
   const user = useContext(userContext);
+  const [roomDetails, setRoomDetails] = useState<IRoom>(roomData!);
   const [currentUser, setCurrentUser] = useState<IUser | null>(user);
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(!!user);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(!user ? true : false);
 
   const handleCreateUser = async (formData: IUser) => {
     await UserService.createUser(formData);
@@ -54,16 +54,17 @@ function VotingRoomContainer() {
     localStorage.setItem("userId", JSON.stringify(userByName?._id));
     setCurrentUser(userByName!);
     socket.emit("user", { userByName });
-    setIsModalOpen(false);
     window.location.reload();
+    setIsModalOpen(false);
   };
 
   useEffect(() => {
-    if (user) {
+    if (!!user) {
       setIsModalOpen(false);
     } else {
       setIsModalOpen(true);
     }
+
     setRoomDetails(roomData!);
   }, [user, roomData]);
 

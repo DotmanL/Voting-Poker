@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useContext } from "react";
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
 import { BiDotsHorizontal } from "react-icons/bi";
@@ -16,15 +16,14 @@ import {
   RefetchOptions,
   RefetchQueryFilters
 } from "react-query/types/core/types";
+import RoomUsersService, { RoomUsersUpdate } from "api/RoomUsersService";
+import { IssueContext } from "utility/providers/IssuesProvider";
 
 type Props = {
   room: IRoom;
   id: string;
   index: number;
-  link: string;
-  name: string;
   issue: IIssue;
-  issues?: IIssue[];
   moveCard: (dragIndex: number, hoverIndex: number) => void;
   refetchIssues: <TPageData>(
     options?: (RefetchOptions & RefetchQueryFilters<TPageData>) | undefined
@@ -32,8 +31,6 @@ type Props = {
   handleDeleteIssue(index: number): Promise<void>;
   handleNewVotingSession?: () => Promise<void>;
   socket: any;
-  setActiveCardId: React.Dispatch<React.SetStateAction<string | undefined>>;
-  activeCardId: string | undefined;
 };
 
 const ItemTypes = {
@@ -50,12 +47,8 @@ function IssuesCard(props: Props) {
   const {
     room,
     index,
-    link,
-    name,
     issue,
     socket,
-    setActiveCardId,
-    activeCardId,
     refetchIssues,
     moveCard,
     id,
@@ -63,7 +56,7 @@ function IssuesCard(props: Props) {
     handleDeleteIssue
   } = props;
   const ref = useRef<HTMLDivElement>(null);
-  // const [activeCardId, setActiveCardId] = useState<string | undefined>("");
+  const { activeIssue, setActiveIssue } = useContext(IssueContext);
   const [isMiniDropDownOpen, setIsMiniDropDownOpen] = useState<boolean>(false);
   const [isStoryPointsDropDownOpen, setIsStoryPointsDropDownOpen] =
     useState<boolean>(false);
@@ -126,21 +119,29 @@ function IssuesCard(props: Props) {
   });
   drag(drop(ref));
 
-  async function selectActiveCard(cardId: string) {
+  async function selectActiveCard(issue: IIssue, issueId: string) {
     if (!socket) return;
-    if (activeCardId === cardId) {
+    if (activeIssue?._id === issueId) {
       socket.emit("isActiveCard", {
         isActiveCardSelected: false,
         roomId: room.roomId
       });
-      setActiveCardId("");
+      const roomUsersUpdate: RoomUsersUpdate = {
+        activeIssueId: ""
+      };
+      await RoomUsersService.updateRoomUsers(room.roomId, roomUsersUpdate);
+      setActiveIssue(undefined);
     } else {
       socket.emit("isActiveCard", {
         isActiveCardSelected: true,
         roomId: room.roomId,
-        activeIssueId: cardId
+        activeIssueId: issueId
       });
-      setActiveCardId(cardId);
+      const roomUsersUpdate: RoomUsersUpdate = {
+        activeIssueId: issueId!
+      };
+      await RoomUsersService.updateRoomUsers(room.roomId, roomUsersUpdate);
+      setActiveIssue(issue);
     }
   }
 
@@ -170,7 +171,7 @@ function IssuesCard(props: Props) {
         height: "auto",
         border: canDrop
           ? "1px solid green"
-          : activeCardId === id
+          : activeIssue?._id === issue._id
           ? "2px solid #67A3EE"
           : "0px solid gray",
         borderRadius: "12px",
@@ -179,10 +180,10 @@ function IssuesCard(props: Props) {
         opacity: isDragging ? 0 : 1,
         boxShadow: (theme) =>
           theme.palette.mode === "dark"
-            ? activeCardId === id
+            ? activeIssue?._id === issue._id
               ? "0px 0px 10px 2px rgba(255, 255, 255, 0.5)"
               : "0px 0px 10px 2px rgba(255, 255, 255, 0.2)"
-            : activeCardId === id
+            : activeIssue?._id === issue._id
             ? "0px 0px 10px 2px rgba(0, 0, 0, 0.4)"
             : "0px 0px 10px 2px rgba(0, 0, 0, 0.2)",
         background: "secondary.main",
@@ -201,7 +202,7 @@ function IssuesCard(props: Props) {
         }}
       >
         <Grid>
-          <Typography variant="h6">{name}</Typography>
+          <Typography variant="h6">{issue.name}</Typography>
         </Grid>
 
         <Grid>
@@ -257,12 +258,12 @@ function IssuesCard(props: Props) {
 
       <Grid sx={{ px: 1, width: "90%", my: 1 }}>
         <Link
-          href={link}
+          href={issue.link}
           target="_blank"
           rel="noreferrer"
           sx={{ wordBreak: "break-word" }}
         >
-          {link}
+          {issue.link}
         </Link>
       </Grid>
       <Grid
@@ -275,7 +276,7 @@ function IssuesCard(props: Props) {
           mt: 2
         }}
       >
-        <Grid onClick={() => selectActiveCard(id)}>
+        <Grid onClick={() => selectActiveCard(issue, issue._id!)}>
           <Button
             variant="contained"
             sx={{
@@ -289,18 +290,19 @@ function IssuesCard(props: Props) {
               }
             }}
           >
-            {activeCardId === id && !!issue.storyPoints
+            {(activeIssue?._id === issue._id && !issue.storyPoints) ||
+            (activeIssue?._id === issue._id && !!issue.storyPoints)
               ? "Voting Now...."
-              : activeCardId !== id && !!issue.storyPoints
+              : activeIssue?._id !== issue._id && !!issue.storyPoints
               ? "Vote Again...."
-              : activeCardId !== id && !issue.storyPoints
+              : activeIssue?._id !== issue._id && !issue.storyPoints
               ? "Vote this issue"
               : "Vote this issue"}
           </Button>
         </Grid>
         <Grid sx={{ display: "flex", flexDirection: "row" }}>
           <Link
-            href={link}
+            href={issue.link}
             target="_blank"
             rel="noreferrer"
             sx={{ wordBreak: "break-word" }}

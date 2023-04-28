@@ -1,7 +1,7 @@
 import React, { useContext, useState, useEffect } from "react";
 import Grid from "@mui/material/Grid";
 import { userContext } from "App";
-import { IUserDetails } from "interfaces/User/IUserDetails";
+import { IRoomUsers } from "interfaces/RoomUsers";
 import { IRoom } from "interfaces/Room/IRoom";
 import Typography from "@mui/material/Typography";
 import { SidebarContext } from "utility/providers/SideBarProvider";
@@ -11,7 +11,7 @@ import popSound from "./assets/cheers.mp3";
 import useSound from "use-sound";
 
 type Props = {
-  votesCasted?: IUserDetails[];
+  votesCasted?: IRoomUsers[];
   room: IRoom;
 };
 
@@ -33,8 +33,8 @@ function VotingResult(props: Props) {
     }
   });
 
-  const checkEquality = (votesCasted: IUserDetails[], currentVote: string) => {
-    const values = votesCasted.map((item: IUserDetails) => item[currentVote]);
+  const checkEquality = (votesCasted: IRoomUsers[], currentVote: string) => {
+    const values = votesCasted.map((item: IRoomUsers) => item[currentVote]);
     const allEqual = values.every(
       (val: number, i: number, arr: number[]) => val === arr[0]
     );
@@ -112,7 +112,7 @@ function VotingResult(props: Props) {
           >
             <Grid>
               <Typography sx={{ fontSize: "25px", ml: 2 }}>
-                {room.roomId === user!.currentRoomId && v.name}
+                {room.roomId === user!.currentRoomId && v.userName}
               </Typography>
             </Grid>
             <Grid

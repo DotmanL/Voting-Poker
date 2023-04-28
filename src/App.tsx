@@ -18,6 +18,7 @@ import { DndProvider } from "react-dnd";
 import SidebarProvider from "utility/providers/SideBarProvider";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { getDesignTokens } from "theme";
+import IssuesProvider from "utility/providers/IssuesProvider";
 
 const queryClient = new QueryClient();
 export const userContext = createContext<IUser | null>(null);
@@ -62,31 +63,33 @@ function App() {
           <CssBaseline />
           <userContext.Provider value={currentUser!}>
             <SidebarProvider>
-              <Grid>
-                <DndProvider backend={HTML5Backend}>
-                  <ToastContainer
-                    style={{ marginTop: "80px" }}
-                    closeOnClick
-                    draggable={false}
-                    transition={Zoom}
-                  />
-                  <ScrollToTop>
-                    <Routes>
-                      <Route index element={<HomePageContainer />} />
-                      <Route
-                        path="new-room"
-                        element={<RoomOnboardingContainer />}
-                      />
-                      <Route
-                        path="room/:roomId"
-                        element={<VotingRoomContainer />}
-                      />
+              <IssuesProvider>
+                <Grid>
+                  <DndProvider backend={HTML5Backend}>
+                    <ToastContainer
+                      style={{ marginTop: "80px" }}
+                      closeOnClick
+                      draggable={false}
+                      transition={Zoom}
+                    />
+                    <ScrollToTop>
+                      <Routes>
+                        <Route index element={<HomePageContainer />} />
+                        <Route
+                          path="new-room"
+                          element={<RoomOnboardingContainer />}
+                        />
+                        <Route
+                          path="room/:roomId"
+                          element={<VotingRoomContainer />}
+                        />
 
-                      <Route path="*" element={<NotFoundContainer />} />
-                    </Routes>
-                  </ScrollToTop>
-                </DndProvider>
-              </Grid>
+                        <Route path="*" element={<NotFoundContainer />} />
+                      </Routes>
+                    </ScrollToTop>
+                  </DndProvider>
+                </Grid>
+              </IssuesProvider>
             </SidebarProvider>
           </userContext.Provider>
         </ThemeProvider>

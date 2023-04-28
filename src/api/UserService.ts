@@ -64,7 +64,7 @@ const updateUser = async (_id: string, userData: IUser) => {
 
 const resetVote = async (_id: string) => {
   try {
-    const response = await apiClient.put<IUser>(`resetVote/${_id}`);
+    const response = await apiClient.put(`resetVote/${_id}`);
     return response.data;
   } catch (err: any) {
     console.error(err.message);

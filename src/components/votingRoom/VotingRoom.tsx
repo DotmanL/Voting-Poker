@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import { userContext } from "App";
@@ -11,19 +11,22 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import { io } from "socket.io-client";
 import { useParams } from "react-router-dom";
-import { IUserDetails } from "interfaces/User/IUserDetails";
 // import { toast } from "react-toastify";
+import { IRoomUsers } from "interfaces/RoomUsers";
 import { makeStyles } from "@mui/styles";
 import { Button, Link } from "@mui/material";
-import UserService from "api/UserService";
 import { getBaseUrlWithoutRoute } from "api";
 import VotingResultsContainer from "./VotingResultsContainer";
 import RightSidebar from "./RightSidebar";
 import { IIssue } from "interfaces/Issues";
 import { SidebarContext } from "utility/providers/SideBarProvider";
 import IssueService from "api/IssueService";
-
 import { useQuery } from "react-query";
+import RoomUsersService, {
+  RoomUserUpdate,
+  RoomUsersUpdate
+} from "api/RoomUsersService";
+import { IssueContext } from "utility/providers/IssuesProvider";
 
 const useStyles = makeStyles((theme) => ({
   "@keyframes glowing": {
@@ -81,11 +84,11 @@ function VotingRoom(props: Props) {
   const user = useContext(userContext);
   const { isSidebarOpen } = useContext(SidebarContext);
   const [socket, setSocket] = useState<any>(null);
-  const [roomUsers, setRoomUsers] = useState<IUserDetails[]>();
+  const [roomUsers, setRoomUsers] = useState<IRoomUsers[]>();
   const [userVote, setUserVote] = useState<number | undefined>();
-  const [votesCasted, setVotesCasted] = useState<IUserDetails[] | undefined>();
+  const { activeIssue, setActiveIssue } = useContext(IssueContext);
+  const [votesCasted, setVotesCasted] = useState<IRoomUsers[] | undefined>();
   const [isVoted, setIsVoted] = useState<boolean>(false);
-  const [activeIssue, setActiveIssue] = useState<IIssue>();
   const [showActiveIssue, setShowActiveIssue] = useState<boolean>(false);
   const getRoomId = useParams();
   const getUserId = localStorage.getItem("userId");
@@ -101,26 +104,63 @@ function VotingRoom(props: Props) {
     IssueService.getAllIssues(roomId!)
   );
 
+  const joinRoom = useCallback(async () => {
+    const roomUsersFormData = {
+      userId: user?._id!,
+      roomId: getRoomId.roomId!,
+      userName: user?.name!
+    };
+    const roomUsersData = await RoomUsersService.getRoomUsersByRoomId(
+      getRoomId.roomId!
+    );
+    const existingRoomUsersData = roomUsersData.find(
+      (roomUserData) =>
+        roomUserData.roomId === getRoomId.roomId &&
+        roomUserData.userId === user?._id!
+    );
+
+    if (!!user && !existingRoomUsersData) {
+      await RoomUsersService.createRoomUsers(roomUsersFormData);
+    }
+  }, [getRoomId.roomId, user]);
+
+  const getActiveIssue = useCallback(async () => {
+    const roomUsersData = await RoomUsersService.getRoomUsersByRoomId(roomId!);
+    const activeIssueId = roomUsersData.find(
+      (rud) => rud.roomId === roomId
+    )?.activeIssueId;
+
+    if (!activeIssueId) {
+      setShowActiveIssue(false);
+      return;
+    }
+    const activeIssue = await IssueService.getIssue(activeIssueId);
+
+    if (!activeIssue) {
+      return;
+    }
+    setActiveIssue(activeIssue);
+    setShowActiveIssue(true);
+    return activeIssue;
+  }, [roomId, setActiveIssue]);
+
   useEffect(() => {
     const newSocket = io(getBaseUrlWithoutRoute());
     setSocket(newSocket);
+
+    joinRoom();
+    getActiveIssue();
+
     return () => {
-      // TODO: can't reset vote on leaving room, only do when vote session is completed.
-      // TODO: implement many to many relationship between each room and userId, userVote and votedState to prevent user from carrying
-      // TODO: votes from one room to another, also keep ttrack of votedState. A useEffect in this compoonent will be used to load
-      // TODO: specific user votes and other data for the room.
-      // user!.votedState = false;
-      // user!.currentVote = undefined;
-      // newSocket.emit("leaveRoom", { userId });
       newSocket.disconnect();
     };
-  }, []);
+  }, [joinRoom, getActiveIssue]);
 
   useEffect(() => {
     if (!socket) return;
 
     socket.emit("user", {
-      name: user?.name,
+      userName: user?.name,
       _id: user?._id,
       socketId: socket.id && socket.id,
       roomId: getRoomId.roomId,
@@ -128,16 +168,33 @@ function VotingRoom(props: Props) {
       currentVote: user?.currentVote
     });
 
-    socket.on("userResponse", async (data: IUserDetails[]) => {
+    socket.on("userResponse", async (data: IRoomUsers[]) => {
+      const roomUsersData = await RoomUsersService.getRoomUsersByRoomId(
+        getRoomId.roomId!
+      );
       const userResponse = () => {
         const getRoomOnlyData = data.filter((d) => d.roomId === room.roomId);
+
+        for (let i = 0; i < getRoomOnlyData.length; i++) {
+          const roomOnlyData = getRoomOnlyData[i];
+          const roomUserData = roomUsersData.find(
+            (rud) => rud.userId === roomOnlyData._id
+          );
+
+          if (roomUserData) {
+            roomOnlyData.currentVote = roomUserData.currentVote;
+            roomOnlyData.votedState = roomUserData.votedState;
+          }
+        }
         return getRoomOnlyData;
       };
+
       if (!user) {
         return;
       }
+
       const roomData = userResponse();
-      setRoomUsers(roomData);
+      setRoomUsers(roomData!);
     });
 
     // socket.on("welcome", (data: any) => {
@@ -149,18 +206,17 @@ function VotingRoom(props: Props) {
     //   }
     // });
 
-    socket.on("isUserVotedResponse", (data: IUserDetails[]) => {
+    socket.on("isUserVotedResponse", (data: IRoomUsers[]) => {
       const getRoomOnlyData = data.find(
         (d) => d.roomId === room.roomId && d._id === user?._id
       );
 
-      //Checks if our data contains any user in the room where a vote update was done
       if (!!getRoomOnlyData) {
         setRoomUsers(data);
       }
     });
 
-    socket.on("votesResponse", (userVotingDetails: IUserDetails[]) => {
+    socket.on("votesResponse", (userVotingDetails: IRoomUsers[]) => {
       setVotesCasted(userVotingDetails);
       refetchIssues();
     });
@@ -184,10 +240,31 @@ function VotingRoom(props: Props) {
       setShowActiveIssue(data.isActiveCardSelected);
     });
 
+    socket.on("updateActiveIssueIdResponse", async (data: any) => {
+      if (data.roomActiveIssueId) {
+        const activeIssueInRoom = await IssueService.getIssue(
+          data.roomActiveIssueId
+        );
+        setActiveIssue(activeIssueInRoom);
+        setShowActiveIssue(true);
+      } else {
+        setActiveIssue(undefined);
+        setShowActiveIssue(false);
+      }
+    });
+
     return () => {
       socket.off("user");
     };
-  }, [room, socket, user, getRoomId.roomId, refetchIssues, issues]);
+  }, [
+    room,
+    socket,
+    user,
+    getRoomId.roomId,
+    setActiveIssue,
+    refetchIssues,
+    issues
+  ]);
 
   const isDisabled = () => {
     if (!roomUsers) {
@@ -199,7 +276,7 @@ function VotingRoom(props: Props) {
       : false;
   };
 
-  const handleVotesAverage = (roomUsersVotes: IUserDetails[] | undefined) => {
+  const handleVotesAverage = (roomUsersVotes: IRoomUsers[] | undefined) => {
     const totalVotes = roomUsersVotes!.reduce(
       (acc, curr) => acc + curr.currentVote!,
       0
@@ -221,6 +298,42 @@ function VotingRoom(props: Props) {
     socket.emit("votes", { allVotes: roomUsersVotes, roomId: room.roomId });
   };
 
+  async function setNextIssueToVote() {
+    if (!issues) {
+      return;
+    }
+    if (issues.length > 1 && !!activeIssue) {
+      const currentIssueIndex = issues.findIndex(
+        (issue) => issue._id === activeIssue?._id
+      );
+
+      const roomUsersUpdate: RoomUsersUpdate = {
+        activeIssueId:
+          issues.length === currentIssueIndex + 1
+            ? ""
+            : issues[currentIssueIndex + 1]._id!
+      };
+      await RoomUsersService.updateRoomUsers(room.roomId, roomUsersUpdate);
+
+      socket.emit("updateActiveIssueId", {
+        roomActiveIssueId:
+          issues.length === currentIssueIndex + 1
+            ? ""
+            : issues[currentIssueIndex + 1]._id!,
+        roomId: room.roomId
+      });
+
+      setShowActiveIssue(
+        issues.length === currentIssueIndex + 1 ? false : true
+      );
+      setActiveIssue(
+        issues.length === currentIssueIndex + 1
+          ? undefined
+          : issues[currentIssueIndex + 1]
+      );
+    }
+  }
+
   const handleNewVotingSession = async () => {
     const updatedRoomUsers = roomUsers?.map((ru) => ({
       ...ru,
@@ -229,15 +342,18 @@ function VotingRoom(props: Props) {
     }));
     setUserVote(undefined);
     setRoomUsers(updatedRoomUsers);
-    const currentRoomUsers = await UserService.getRoomUsers(room.roomId);
-    const promises =
-      currentRoomUsers?.map((ru) => UserService.resetVote(ru?._id!)) ?? [];
-    await Promise.all(promises);
+
+    const roomUserUpdate: RoomUserUpdate = {
+      votedState: false
+    };
+
+    await RoomUsersService.resetRoomUserVote(room.roomId, roomUserUpdate);
     socket.emit("votes", {
       allVotes: false,
       roomId: room.roomId
     });
     socket.emit("isUserVoted", updatedRoomUsers ?? []);
+    setNextIssueToVote();
   };
 
   const handleAddVote = async (voteValue: number) => {
@@ -259,6 +375,7 @@ function VotingRoom(props: Props) {
       user.votedState =
         (voteValue === userVote && !isVoted) ||
         (voteValue !== userVote && true);
+      user!.currentVote = voteValue;
 
       socket.emit("isVotedState", {
         roomId: user.currentRoomId,
@@ -266,8 +383,15 @@ function VotingRoom(props: Props) {
         votedState: isVotedState
       });
 
-      user!.currentVote = voteValue;
-      await UserService.updateUser(user!._id!, user!);
+      const roomUserUpdate: RoomUserUpdate = {
+        currentVote: user.currentVote!,
+        votedState: user.votedState!
+      };
+      await RoomUsersService.updateRoomUser(
+        room.roomId,
+        user._id!,
+        roomUserUpdate
+      );
       setUserVote(voteValue);
       const roomUserIndex = roomUsers!.findIndex((r) => r._id === user._id);
       roomUsers![roomUserIndex].votedState = isVotedState;
@@ -293,7 +417,7 @@ function VotingRoom(props: Props) {
           alignItems: "center"
         }}
       >
-        {showActiveIssue && (
+        {showActiveIssue ? (
           <Grid
             sx={{
               position: "absolute",
@@ -336,6 +460,8 @@ function VotingRoom(props: Props) {
               {activeIssue?.link}
             </Link>
           </Grid>
+        ) : (
+          <Grid></Grid>
         )}
 
         <Grid
@@ -453,7 +579,7 @@ function VotingRoom(props: Props) {
           }}
         >
           {roomUsers &&
-            roomUsers.map((roomUser: IUserDetails, i: number) => (
+            roomUsers.map((roomUser: IRoomUsers, i: number) => (
               <Grid key={roomUser._id}>
                 <Card
                   variant="outlined"
@@ -507,7 +633,7 @@ function VotingRoom(props: Props) {
                   }}
                 >
                   <Typography variant="h4">
-                    {roomUser && roomUser.name}
+                    {roomUser && roomUser.userName}
                   </Typography>
                 </Grid>
               </Grid>
