@@ -9,17 +9,28 @@ import { AiOutlineClose } from "react-icons/ai";
 import { IUser } from "interfaces/User/IUser";
 import ViewSidebarIcon from "@mui/icons-material/ViewSidebar";
 import DarkModeToggle from "./DarkModeToggle";
+import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
 
 type Props = {
   user: IUser;
   appName: string;
+  isCopied: boolean;
   handleSignOut: () => Promise<void>;
   handleLeaveRoom: () => Promise<void>;
   handleSignUp: () => Promise<void>;
+  setIsInviteModalOpen: (isInviteModalOpen: boolean) => void;
 };
 
 function MobileNavBar(props: Props) {
-  const { user, appName, handleSignOut, handleLeaveRoom, handleSignUp } = props;
+  const {
+    user,
+    appName,
+    isCopied,
+    handleSignOut,
+    handleLeaveRoom,
+    handleSignUp,
+    setIsInviteModalOpen
+  } = props;
   const [isMobileNavOpen, setIsMobileNavOpen] = useState<boolean>(false);
   const { isSidebarOpen, setIsSidebarOpen } = useContext(SidebarContext);
   const location = useLocation();
@@ -79,6 +90,7 @@ function MobileNavBar(props: Props) {
           {!!user ? `Hi ${" "}${user?.name}` : ""}
         </Typography>
       </Grid>
+
       <Grid
         sx={{
           display: "flex",
@@ -88,6 +100,38 @@ function MobileNavBar(props: Props) {
           width: "100%"
         }}
       >
+        <Grid
+          sx={{
+            mx: 0.5,
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            fontFamily: "Jost",
+            cursor: "pointer",
+            color: (theme) => theme.palette.primary.main,
+            py: 0.5,
+            background: (theme) => theme.palette.secondary.main,
+            borderColor: (theme) => theme.palette.primary.main,
+            "&:hover": {
+              opacity: 0.8
+            }
+          }}
+          onClick={() => {
+            setIsMobileNavOpen(false);
+            setIsInviteModalOpen(true);
+          }}
+        >
+          <Grid
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center"
+            }}
+          >
+            <PersonAddAlt1Icon sx={{ mr: 1 }} />
+            <Typography variant="h5">Invite Players</Typography>
+          </Grid>
+        </Grid>
         <Grid
           sx={{
             m: 0,
@@ -160,6 +204,34 @@ function MobileNavBar(props: Props) {
             </Typography>
           </Grid>
         </Link>
+        <Grid
+          sx={{
+            position: "absolute",
+            top: 60,
+            display: isCopied ? "flex" : "none",
+            px: 4,
+            height: "auto",
+            ml: 4,
+            mt: 2,
+            border: "2px solid none",
+            borderRadius: "8px",
+            background: "#14213d",
+            width: "auto",
+            color: (theme) => theme.palette.primary.main,
+            flexDirection: "row",
+            justifyContent: "center",
+            alignItems: "center"
+          }}
+        >
+          {isCopied ? (
+            <Typography variant="h6" fontSize="10px" sx={{ py: 1 }}>
+              Invitation Link Copied to you Clipboard,
+              <br /> You can now share with your team mates
+            </Typography>
+          ) : (
+            ""
+          )}
+        </Grid>
         <Grid
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
           sx={{

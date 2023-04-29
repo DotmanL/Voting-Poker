@@ -18,6 +18,7 @@ import {
 } from "react-query/types/core/types";
 import RoomUsersService, { RoomUsersUpdate } from "api/RoomUsersService";
 import { IssueContext } from "utility/providers/IssuesProvider";
+import { useClickAway } from "react-use";
 
 type Props = {
   room: IRoom;
@@ -52,7 +53,6 @@ function IssuesCard(props: Props) {
     refetchIssues,
     moveCard,
     id,
-    // handleNewVotingSession,
     handleDeleteIssue
   } = props;
   const ref = useRef<HTMLDivElement>(null);
@@ -61,6 +61,17 @@ function IssuesCard(props: Props) {
   const [isStoryPointsDropDownOpen, setIsStoryPointsDropDownOpen] =
     useState<boolean>(false);
   const cardValues = CardType(room.votingSystem);
+
+  const miniDropDownRef = useRef<HTMLDivElement>(null);
+  const storyPointsDropDownRef = useRef<HTMLDivElement>(null);
+
+  useClickAway(miniDropDownRef, () => {
+    setIsMiniDropDownOpen(false);
+  });
+
+  useClickAway(storyPointsDropDownRef, () => {
+    setIsStoryPointsDropDownOpen(false);
+  });
 
   const [{ handlerId, canDrop }, drop] = useDrop<
     DragItem,
@@ -145,11 +156,19 @@ function IssuesCard(props: Props) {
     }
   }
 
-  async function handleAddStoryPoints(cardValue: number) {
+  async function handleAddStoryPoints(cardValue: number | string) {
+    function storyPointValue() {
+      if (cardValue === "?") {
+        return 0;
+      } else {
+        return cardValue as number;
+      }
+    }
     const issueToUpdate = {
       ...issue,
-      storyPoints: cardValue
+      storyPoints: storyPointValue()
     };
+
     const response = await IssueService.updateIssue(id, issueToUpdate);
     if (response) {
       refetchIssues();
@@ -181,12 +200,13 @@ function IssuesCard(props: Props) {
         boxShadow: (theme) =>
           theme.palette.mode === "dark"
             ? activeIssue?._id === issue._id
-              ? "0px 0px 10px 2px rgba(255, 255, 255, 0.5)"
-              : "0px 0px 10px 2px rgba(255, 255, 255, 0.2)"
+              ? "0px 0px 10px 2px rgba(255, 255, 255, 0.4)"
+              : "0px 0px 10px 2px rgba(255, 255, 255, 0.1)"
             : activeIssue?._id === issue._id
             ? "0px 0px 10px 2px rgba(0, 0, 0, 0.4)"
-            : "0px 0px 10px 2px rgba(0, 0, 0, 0.2)",
-        background: "secondary.main",
+            : "0px 0px 10px 2px rgba(0, 0, 0, 0.1)",
+        background: (theme) =>
+          theme.palette.mode === "dark" ? "#000814" : "#fdf0d5",
         "&:hover": {
           border: isStoryPointsDropDownOpen ? "" : "1px solid #FFFFFF",
           opacity: isDragging ? 0 : 1
@@ -217,6 +237,7 @@ function IssuesCard(props: Props) {
 
       <Grid
         sx={{ position: "absolute", right: 55, marginTop: "30px", zIndex: 400 }}
+        ref={miniDropDownRef}
       >
         {isMiniDropDownOpen && (
           <Grid
@@ -324,8 +345,10 @@ function IssuesCard(props: Props) {
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "center",
-              color: "white",
-              background: "black",
+              color: (theme) =>
+                theme.palette.mode === "dark" ? "white" : "black",
+              background: (theme) =>
+                theme.palette.mode === "dark" ? "#151e22" : "#FFFFFF",
               borderRadius: "50%",
               fontSize: "20px",
               width: "30px",
@@ -340,6 +363,7 @@ function IssuesCard(props: Props) {
         </Grid>
         <Grid
           sx={{ position: "absolute", marginTop: "30px", marginLeft: "-23px" }}
+          ref={storyPointsDropDownRef}
         >
           {isStoryPointsDropDownOpen && (
             <Grid
@@ -357,11 +381,12 @@ function IssuesCard(props: Props) {
                 zIndex: 700,
                 py: 1,
                 cursor: "pointer",
-                background: (theme) => theme.palette.secondary.main,
+                background: (theme) =>
+                  theme.palette.mode === "dark" ? "#000814" : "#fdf0d5",
                 boxShadow: (theme) =>
                   theme.palette.mode === "dark"
-                    ? "0px 0px 10px 2px rgba(255, 255, 255, 0.2)"
-                    : "0px 0px 10px 2px rgba(0, 0, 0, 0.2)",
+                    ? "0px 0px 10px 2px rgba(255, 255, 255, 0.1)"
+                    : "0px 0px 10px 2px rgba(0, 0, 0, 0.1)",
                 "&:hover": {
                   border: "1px solid #FFFFFF"
                 }
@@ -386,10 +411,12 @@ function IssuesCard(props: Props) {
                     sx={{
                       display: "flex",
                       flexDirection: "row",
-                      background: "black",
+                      background: (theme) =>
+                        theme.palette.mode === "dark" ? "#000814" : "#fdf0d5",
                       alignItems: "center",
                       justifyContent: "center",
-                      color: "white",
+                      color: (theme) =>
+                        theme.palette.mode === "dark" ? "white" : "black",
                       borderRadius: "50%",
                       mx: 0.5,
                       my: 0.2,
@@ -398,8 +425,8 @@ function IssuesCard(props: Props) {
                       height: "45px",
                       boxShadow: (theme) =>
                         theme.palette.mode === "dark"
-                          ? "0px 0px 10px 2px rgba(255, 255, 255, 0.2)"
-                          : "0px 0px 10px 2px rgba(0, 0, 0, 0.2)",
+                          ? "0px 0px 10px 2px rgba(255, 255, 255, 0.1)"
+                          : "0px 0px 10px 2px rgba(0, 0, 0, 0.1)",
                       "&:hover": {
                         border: "primary.main",
                         opacity: 0.8

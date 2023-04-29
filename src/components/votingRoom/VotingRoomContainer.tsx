@@ -31,7 +31,7 @@ const socket = io(getBaseUrl());
 function VotingRoomContainer() {
   const getRoomId = useParams();
   const roomId = Object.values(getRoomId)[0];
-
+  const currentUrl = window.location.href;
   const {
     isLoading,
     error,
@@ -83,6 +83,7 @@ function VotingRoomContainer() {
         appName={roomDetails?.name}
         isBorderBottom={false}
         currentUser={currentUser!}
+        currentRoomLink={currentUrl}
       />
       {isLoading ? (
         <Spinner />

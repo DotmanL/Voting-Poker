@@ -11,7 +11,7 @@ type Props = {
 };
 
 const sizeList: { [key: string]: string } = {
-  sm: "350px",
+  sm: "300px",
   md: "700px",
   lg: "900px"
 };
