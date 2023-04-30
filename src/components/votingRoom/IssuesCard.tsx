@@ -375,11 +375,11 @@ function IssuesCard(props: Props) {
                 justifyContent: "center",
                 color: "white",
                 width: { md: "320px", xs: "250px" },
-                height: { md: "250px", xs: "180px" },
+                height: { md: "250px", xs: "auto" },
                 borderRadius: "10px",
                 ml: "-20px",
                 zIndex: 700,
-                py: 1,
+                py: { md: 1, xs: 0.5 },
                 cursor: "pointer",
                 background: (theme) =>
                   theme.palette.mode === "dark" ? "#000814" : "#fdf0d5",
