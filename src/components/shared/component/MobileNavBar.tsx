@@ -100,38 +100,42 @@ function MobileNavBar(props: Props) {
           width: "100%"
         }}
       >
-        <Grid
-          sx={{
-            mx: 0.5,
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "center",
-            fontFamily: "Jost",
-            cursor: "pointer",
-            color: (theme) => theme.palette.primary.main,
-            py: 0.5,
-            background: (theme) => theme.palette.secondary.main,
-            borderColor: (theme) => theme.palette.primary.main,
-            "&:hover": {
-              opacity: 0.8
-            }
-          }}
-          onClick={() => {
-            setIsMobileNavOpen(false);
-            setIsInviteModalOpen(true);
-          }}
-        >
+        {urlPath.includes("/room") ? (
           <Grid
             sx={{
+              mx: 0.5,
               display: "flex",
               flexDirection: "row",
-              alignItems: "center"
+              alignItems: "center",
+              fontFamily: "Jost",
+              cursor: "pointer",
+              color: (theme) => theme.palette.primary.main,
+              py: 0.5,
+              background: (theme) => theme.palette.secondary.main,
+              borderColor: (theme) => theme.palette.primary.main,
+              "&:hover": {
+                opacity: 0.8
+              }
+            }}
+            onClick={() => {
+              setIsMobileNavOpen(false);
+              setIsInviteModalOpen(true);
             }}
           >
-            <PersonAddAlt1Icon sx={{ mr: 1 }} />
-            <Typography variant="h5">Invite Players</Typography>
+            <Grid
+              sx={{
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center"
+              }}
+            >
+              <PersonAddAlt1Icon sx={{ mr: 1 }} />
+              <Typography variant="h5">Invite Players</Typography>
+            </Grid>
           </Grid>
-        </Grid>
+        ) : (
+          <Grid></Grid>
+        )}
         <Grid
           sx={{
             m: 0,
