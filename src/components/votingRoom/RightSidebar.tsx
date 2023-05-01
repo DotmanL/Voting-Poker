@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState, useEffect, useRef } from "react";
 import Box from "@mui/material/Box";
 import SwipeableDrawer from "@mui/material/SwipeableDrawer";
 import { BsThreeDotsVertical } from "react-icons/bs";
@@ -12,6 +12,7 @@ import { IIssue } from "interfaces/Issues";
 import IssuesView from "./IssuesView";
 import { SidebarContext } from "utility/providers/SideBarProvider";
 import AddIcon from "@mui/icons-material/Add";
+import { useClickAway } from "react-use";
 import { toast } from "react-toastify";
 import IssueService from "api/IssueService";
 import {
@@ -49,22 +50,13 @@ type Props = {
   error: Error | null;
   isLoading: boolean;
   room: IRoom;
-  handleNewVotingSession: () => Promise<void>;
   refetchIssues: <TPageData>(
     options?: (RefetchOptions & RefetchQueryFilters<TPageData>) | undefined
   ) => Promise<QueryObserverResult<IIssue[] | undefined, Error>>;
 };
 
 function RightSidebar(props: Props) {
-  const {
-    issues,
-    isLoading,
-    error,
-    refetchIssues,
-    room,
-    socket,
-    handleNewVotingSession
-  } = props;
+  const { issues, isLoading, error, refetchIssues, room, socket } = props;
   const { isSidebarOpen, setIsSidebarOpen } = useContext(SidebarContext);
   const [isDropDownOpen, setIsDropDownOpen] = useState<boolean>(false);
   const [isMiniDropDownOpen, setIsMiniDropDownOpen] = useState<boolean>(false);
@@ -74,6 +66,21 @@ function RightSidebar(props: Props) {
   const [isAddMultipleModalOpen, setIsAddMultipleModalOpen] =
     useState<boolean>(false);
   const [cards, setCards] = useState(issues);
+  const dropDownRef = useRef<HTMLDivElement>(null);
+  const miniDropDownRef = useRef<HTMLDivElement>(null);
+  const singleIssueTextBoxRef = useRef<HTMLDivElement>(null);
+
+  useClickAway(dropDownRef, () => {
+    setIsDropDownOpen(false);
+  });
+
+  useClickAway(miniDropDownRef, () => {
+    setIsMiniDropDownOpen(false);
+  });
+
+  useClickAway(singleIssueTextBoxRef, () => {
+    setIsSingleIssueTextBoxOpen(false);
+  });
 
   useEffect(() => {
     if (!socket) return;
@@ -165,6 +172,16 @@ function RightSidebar(props: Props) {
     setIsMiniDropDownOpen(false);
   }
 
+  function cummulativePoints() {
+    const totalStoryPoints = issues.reduce(
+      (acc, issue) => acc + issue?.storyPoints!,
+      0
+    );
+    return totalStoryPoints;
+  }
+
+  const issuesStoryPoints = cummulativePoints();
+
   if (error) {
     return <p>{(error as Error)?.message}</p>;
   }
@@ -211,6 +228,7 @@ function RightSidebar(props: Props) {
               display: { md: "flex", xs: "none" },
               flexDirection: "column"
             }}
+            ref={dropDownRef}
           >
             <Tooltip title="Import Issues">
               <Grid
@@ -284,7 +302,10 @@ function RightSidebar(props: Props) {
             />
           </Grid>
 
-          <Grid sx={{ cursor: "pointer", display: { md: "flex", xs: "none" } }}>
+          <Grid
+            ref={miniDropDownRef}
+            sx={{ cursor: "pointer", display: { md: "flex", xs: "none" } }}
+          >
             {!!issues && (
               <BsThreeDotsVertical
                 onClick={() => {
@@ -352,6 +373,31 @@ function RightSidebar(props: Props) {
           </Tooltip>
         </Grid>
       </Grid>
+      <Grid
+        sx={{
+          ml: 3,
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "flex-start"
+        }}
+      >
+        <Grid
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "flexStart"
+          }}
+        >
+          <Typography>
+            {issues.length} issue{issues.length > 1 ? "s" : ""}
+          </Typography>
+          <Typography sx={{ ml: 1, mt: 0.2 }}>•</Typography>
+          <Typography sx={{ ml: 1, mt: 0.2 }}>
+            {issuesStoryPoints} point{issuesStoryPoints > 1 ? "s" : ""}
+          </Typography>
+        </Grid>
+      </Grid>
 
       {isLoading ? (
         <Grid>Loading Issues</Grid>
@@ -370,10 +416,9 @@ function RightSidebar(props: Props) {
               cards={cards}
               setCards={setCards}
               refetchIssues={refetchIssues}
-              handleNewVotingSession={handleNewVotingSession}
             />
           )}
-          <Grid sx={{ ml: 2, mb: 2 }}>
+          <Grid sx={{ ml: 2, mb: 2 }} ref={singleIssueTextBoxRef}>
             {!isSingleIssueTextBoxOpen && (
               <Grid
                 sx={{

@@ -270,10 +270,12 @@ function VotingRoom(props: Props) {
     if (!roomUsers) {
       return true;
     }
-    return roomUsers.filter((ru) => ru.votedState === true).length <
-      roomUsers!.length
-      ? true
-      : false;
+    if (!!roomUsers && !!user) {
+      return roomUsers.filter((ru) => ru.votedState === true).length <
+        roomUsers!.length
+        ? true
+        : false;
+    }
   };
 
   const handleVotesAverage = (roomUsersVotes: IRoomUsers[] | undefined) => {
@@ -356,10 +358,18 @@ function VotingRoom(props: Props) {
     setNextIssueToVote();
   };
 
-  const handleAddVote = async (voteValue: number) => {
-    if (voteValue >= 0 && user) {
+  const handleAddVote = async (voteValue: number | string) => {
+    function getVoteValue() {
+      if (voteValue === "?") {
+        return 0;
+      } else {
+        return voteValue as number;
+      }
+    }
+
+    if (getVoteValue() >= 0 && user) {
       const userVotingDetails: IVotingDetails = {
-        vote: voteValue,
+        vote: getVoteValue(),
         roomId: getRoomId.roomId!,
         sessionId: `${socket.id}${Math.random()}`,
         socketId: socket.id
@@ -375,7 +385,7 @@ function VotingRoom(props: Props) {
       user.votedState =
         (voteValue === userVote && !isVoted) ||
         (voteValue !== userVote && true);
-      user!.currentVote = voteValue;
+      user!.currentVote = getVoteValue();
 
       socket.emit("isVotedState", {
         roomId: user.currentRoomId,
@@ -392,10 +402,10 @@ function VotingRoom(props: Props) {
         user._id!,
         roomUserUpdate
       );
-      setUserVote(voteValue);
+      setUserVote(getVoteValue());
       const roomUserIndex = roomUsers!.findIndex((r) => r._id === user._id);
       roomUsers![roomUserIndex].votedState = isVotedState;
-      roomUsers![roomUserIndex].currentVote = voteValue;
+      roomUsers![roomUserIndex].currentVote = getVoteValue();
       socket.emit("isUserVoted", roomUsers);
     }
   };
@@ -486,7 +496,6 @@ function VotingRoom(props: Props) {
               issues={issues || []}
               refetchIssues={refetchIssues}
               isLoading={isLoading}
-              handleNewVotingSession={handleNewVotingSession}
               error={error}
             />
           </Grid>
@@ -575,7 +584,7 @@ function VotingRoom(props: Props) {
             flexDirection: "row",
             justifyContent: "center",
             alignItems: "center",
-            mt: { md: 4, xs: 3 }
+            mt: { md: 3, xs: 3 }
           }}
         >
           {roomUsers &&
@@ -585,8 +594,8 @@ function VotingRoom(props: Props) {
                   variant="outlined"
                   sx={[
                     {
-                      width: { md: 80, xs: 70 },
-                      height: { md: 120, xs: 100 },
+                      width: { md: 70, xs: 60 },
+                      height: { md: 100, xs: 90 },
                       mx: { md: 2, xs: 1 },
                       border: "1px solid #67A3EE",
                       cursor: "pointer",

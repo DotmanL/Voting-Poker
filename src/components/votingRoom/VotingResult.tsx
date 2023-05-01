@@ -67,9 +67,10 @@ function VotingResult(props: Props) {
           display: "flex",
           flexDirection: "row",
           position: "absolute" as "absolute",
-          marginLeft: "100px",
+          marginLeft: { md: "100px", xs: "10px" },
           left: 10,
-          top: 0
+          top: 0,
+          bottom: 0
         }}
       >
         {showCelebration && (

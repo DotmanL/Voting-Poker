@@ -3,26 +3,17 @@ import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
-import { VotingTypes } from "../../interfaces/Room/VotingTypes";
+import CardType from "utility/CardType";
 
 type Props = {
   votingSystem: number;
-  handleClickCard: (value: number) => void;
+  handleClickCard: (value: number | string) => void;
 };
 
 function VotingCard(props: Props) {
   const { votingSystem, handleClickCard } = props;
 
-  const cardType = (votingType: VotingTypes): number[] => {
-    switch (votingType) {
-      case VotingTypes.Fibonnacci:
-        return [0, 0.5, 1, 2, 3, 5, 8, 13, 21];
-      case VotingTypes.Random:
-        return [0, 4];
-    }
-  };
-
-  const cardValues = cardType(votingSystem);
+  const cardValues = CardType(votingSystem);
 
   return (
     <Grid
@@ -30,7 +21,7 @@ function VotingCard(props: Props) {
         display: "flex",
         flexDirection: "row",
         alignItems: "center",
-        height: "100%",
+        height: "auto",
         px: { xs: 2 },
         overflowX: { md: "hidden", xs: "scroll" },
         width: { md: "100%", xs: "100vw" }
@@ -42,9 +33,9 @@ function VotingCard(props: Props) {
           variant="outlined"
           sx={[
             {
-              minWidth: { md: 80, xs: 50 },
-              minHeight: { md: 120, xs: 70 },
-              mx: { md: 2, xs: 1 },
+              minWidth: { md: 60, xs: 40 },
+              minHeight: { md: 80, xs: 60 },
+              mx: { md: 1, xs: 1 },
               border: "1px solid #67A3EE",
               cursor: "pointer",
               borderRadius: { md: "8px", xs: "4px" },
@@ -60,7 +51,7 @@ function VotingCard(props: Props) {
               "&:hover": {
                 borderRadius: "8px",
                 opacity: "0.9",
-                transform: "translate(0, -15px)",
+                transform: "translate(0, -5px)",
                 backgroundColor: "#67A3EE"
               }
             }
@@ -69,10 +60,10 @@ function VotingCard(props: Props) {
         >
           <CardContent>
             <Typography
-              variant="h4"
-              sx={{ fontSize: { md: "36px", xs: "24px" } }}
+              variant="h6"
+              sx={{ fontSize: { md: "32px", xs: "22px" } }}
             >
-              {cardNumber}{" "}
+              {cardNumber}
             </Typography>
           </CardContent>
         </Card>

@@ -58,17 +58,21 @@ function RoomsTable(props: Props) {
     >
       <Grid>
         <Button
-          variant="outlined"
-          disabled={true}
+          variant="contained"
           sx={[
             {
-              mt: 4,
+              mt: 2,
+              mb: 1,
               ml: { md: 5, xs: 0 },
               background: (theme) => theme.palette.secondary.main,
-              color: "black",
+              color: (theme) => theme.palette.primary.main,
               px: { md: 4, xs: 2 },
               py: { md: 0.7, xs: 0.5 },
-              fontSize: "24px"
+              opacity: 1,
+              fontSize: "24px",
+              "&:hover": {
+                opacity: 1
+              }
             }
           ]}
         >

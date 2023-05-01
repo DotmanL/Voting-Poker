@@ -16,52 +16,81 @@ import { userContext } from "../../../App";
 import ViewSidebarIcon from "@mui/icons-material/ViewSidebar";
 import { SidebarContext } from "utility/providers/SideBarProvider";
 import DarkModeToggle from "./DarkModeToggle";
+import { IssueContext } from "utility/providers/IssuesProvider";
 import MobileNavBar from "./MobileNavBar";
+import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
+import CustomModal from "./CustomModal";
+import { AiOutlineClose } from "react-icons/ai";
 
 type Props = {
   appName: string;
   currentUser?: IUser;
   isBorderBottom?: boolean;
+  currentRoomLink?: string;
 };
 
 export const NavBar = (props: Props) => {
-  const { appName, currentUser } = props;
+  const { appName, currentUser, currentRoomLink } = props;
   const navigate = useNavigate();
   const userData = useContext(userContext);
+  const { activeIssue } = useContext(IssueContext);
   const location = useLocation();
   const urlPath = location.pathname;
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const { isSidebarOpen, setIsSidebarOpen } = useContext(SidebarContext);
-  const [scrolledDownEnough, setScrolledDownEnough] = useState(false);
+  const [scrolledDownEnough, setScrolledDownEnough] = useState<boolean>(false);
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState<boolean>(false);
+  const [isCopied, setIsCopied] = useState<boolean>(false);
   const [user, setUser] = useState<IUser>(
     currentUser ? currentUser : userData!
   );
 
-  const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
+  async function handleMenu(event: React.MouseEvent<HTMLElement>) {
     setAnchorEl(event.currentTarget);
-  };
+  }
 
-  const handleClose = () => {
+  async function handleClose() {
     setAnchorEl(null);
-  };
+  }
 
-  const handleLeaveRoom = async () => {
+  async function handleLeaveRoom() {
     navigate("/new-room");
     handleClose();
     // toast.info("Kindly join a room");
-  };
+  }
 
-  const handleSignOut = async () => {
+  async function handleSignOut() {
     localStorage.removeItem("userId");
     await UserService.deleteUser(user._id);
     navigate("/");
     window.location.reload();
     toast.success("Sign Out Succesful and Account Deleted");
-  };
+  }
 
-  const handleSignUp = async () => {
+  async function handleSignUp() {
     navigate("/new-room");
-  };
+  }
+
+  async function copyTextToClipboard(text: string) {
+    if ("clipboard" in navigator) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+    return false;
+  }
+
+  async function handleCopyClick(text: string) {
+    const isCopySuccess = await copyTextToClipboard(text);
+    if (isCopySuccess) {
+      setIsCopied(true);
+      setIsInviteModalOpen(false);
+      setTimeout(() => {
+        setIsCopied(false);
+      }, 1000);
+      return;
+    }
+    return;
+  }
 
   useEffect(() => {
     if (currentUser) {
@@ -100,9 +129,11 @@ export const NavBar = (props: Props) => {
         <MobileNavBar
           user={user}
           appName={appName}
+          isCopied={isCopied}
           handleLeaveRoom={handleLeaveRoom}
           handleSignOut={handleSignOut}
           handleSignUp={handleSignUp}
+          setIsInviteModalOpen={setIsInviteModalOpen}
         />
         <Toolbar
           sx={{
@@ -134,6 +165,33 @@ export const NavBar = (props: Props) => {
 
           <Grid
             sx={{
+              display: isCopied ? "flex" : "none",
+              px: 4,
+              height: "auto",
+              ml: 4,
+              mt: 4,
+              border: "2px solid none",
+              borderRadius: "8px",
+              background: "#14213d",
+              width: "auto",
+              color: (theme) => theme.palette.primary.main,
+              flexDirection: "row",
+              justifyContent: "center",
+              alignItems: "center"
+            }}
+          >
+            {isCopied ? (
+              <Typography variant="h6" fontSize="18px" sx={{ py: 1 }}>
+                Invitation Link Copied to you Clipboard,
+                <br /> You can now share with your team mates
+              </Typography>
+            ) : (
+              ""
+            )}
+          </Grid>
+
+          <Grid
+            sx={{
               display: "flex",
               flexDirection: "row",
               justifyContent: "center",
@@ -145,7 +203,20 @@ export const NavBar = (props: Props) => {
                 display: "flex",
                 flexDirection: "row",
                 justifyContent: "center",
-                alignItems: "center"
+                alignItems: "center",
+                px: 1,
+                mr: { md: 2, xs: 0 },
+                ml: { md: 0, xs: 2 },
+                mt: { md: 1, xs: 0.5 },
+                "&:hover": {
+                  borderRadius: "6px",
+                  borderColor: (theme) => theme.palette.primary.main,
+                  transition: "box-shadow 0.3s ease-in-out",
+                  boxShadow: (theme) =>
+                    theme.palette.mode === "dark"
+                      ? "0px 0px 10px 2px rgba(255, 255, 255, 0.1)"
+                      : "0px 0px 10px 2px rgba(0, 0, 0, 0.1)"
+                }
               }}
             >
               {user && (
@@ -155,16 +226,13 @@ export const NavBar = (props: Props) => {
                     flexDirection: "row",
                     justifyContent: "center",
                     alignItems: "center",
-                    width: "auto",
-                    mr: { md: 2, xs: 0 },
-                    ml: { md: 0, xs: 2 }
+                    width: "auto"
                   }}
                 >
                   <Typography
                     variant="h5"
                     sx={{
-                      fontSize: { md: "24px", xs: "14px" },
-                      mt: { xs: 0.5 }
+                      fontSize: { md: "24px", xs: "14px" }
                     }}
                   >
                     Hi {user?.name}
@@ -185,14 +253,14 @@ export const NavBar = (props: Props) => {
                       aria-haspopup="true"
                       onClick={handleMenu}
                       color="inherit"
-                      sx={{ ml: { md: 0.5, xs: 2 }, mt: 0.5 }}
+                      sx={{ ml: { md: 0.5, xs: 2 } }}
                     >
                       <AccountCircle />
                     </IconButton>
 
                     <Menu
                       id="menu-appbar"
-                      sx={{ mt: 5, mr: { md: 0.5, xs: 1 } }}
+                      sx={{ mt: 5, mr: { md: 4, xs: 1 } }}
                       PaperProps={{
                         sx: { height: "auto", width: "auto", px: 1, py: 0.5 }
                       }}
@@ -228,6 +296,133 @@ export const NavBar = (props: Props) => {
                 </Grid>
               )}
             </Grid>
+
+            <Grid
+              sx={{
+                mx: 2,
+                mt: 1,
+                display: urlPath.indexOf("/room") >= 0 ? "flex" : "none",
+                flexDirection: "row",
+                alignItems: "center",
+                borderRadius: "6px",
+                border: "2px solid",
+                fontFamily: "Jost",
+                cursor: "pointer",
+                color: (theme) => theme.palette.primary.main,
+                px: 1.5,
+                py: 0.5,
+                background: (theme) => theme.palette.secondary.main,
+                borderColor: (theme) => theme.palette.primary.main,
+                "&:hover": {
+                  opacity: 0.8
+                }
+              }}
+              onClick={() => setIsInviteModalOpen(true)}
+            >
+              {!!activeIssue ? (
+                <PersonAddAlt1Icon sx={{}} />
+              ) : (
+                <Grid
+                  sx={{
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center"
+                  }}
+                >
+                  <PersonAddAlt1Icon sx={{ mr: 1 }} />
+                  <Typography variant="h5">Invite Players</Typography>
+                </Grid>
+              )}
+            </Grid>
+            <Grid>
+              <CustomModal
+                isOpen={isInviteModalOpen}
+                size="sm"
+                modalWidth="40vw"
+              >
+                <Grid
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "flexStart",
+                    mt: { md: 4, xs: 2 }
+                  }}
+                >
+                  <Grid
+                    sx={{
+                      position: "absolute",
+                      top: "20px",
+                      right: "20px",
+                      cursor: "pointer",
+                      "&:hover": {
+                        color: "red"
+                      }
+                    }}
+                    onClick={() => {
+                      setIsInviteModalOpen(false);
+                      setIsCopied(false);
+                    }}
+                  >
+                    <AiOutlineClose size={32} />
+                  </Grid>
+
+                  <Grid sx={{ pl: 5 }}>
+                    <Typography
+                      variant="h4"
+                      sx={{
+                        fontSize: { md: "24px", xs: "24px" },
+                        fontStyle: "bolder",
+                        fontWeight: "900px"
+                      }}
+                    >
+                      Invite Team Mates
+                    </Typography>
+                  </Grid>
+                  <Grid
+                    sx={{
+                      display: "flex",
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      mt: { md: 4, xs: 2 },
+                      width: "90%",
+                      height: "50px",
+                      borderRadius: "6px",
+                      fontSize: { md: "18px", xs: "10px" },
+                      textAlign: { xs: "center" },
+                      alignSelf: "center",
+                      border: { md: "2px solid", xs: "1px solid" },
+                      borderColor: (theme) => theme.palette.primary.main
+                    }}
+                  >
+                    {currentRoomLink}
+                  </Grid>
+                  <Grid
+                    sx={{
+                      display: "flex",
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      cursor: "pointer",
+                      mt: { md: 2, xs: 1 },
+                      mb: { xs: 2 },
+                      width: "90%",
+                      height: { md: "50px", xs: "30px" },
+                      borderRadius: "8px",
+                      alignSelf: "center",
+                      background: "#67A3EE",
+                      "&:hover": {
+                        opacity: 0.8
+                      }
+                    }}
+                    onClick={() => handleCopyClick(currentRoomLink!)}
+                  >
+                    Copy Room Link
+                  </Grid>
+                </Grid>
+              </CustomModal>
+            </Grid>
+
             <Grid
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
               sx={{
@@ -235,10 +430,10 @@ export const NavBar = (props: Props) => {
                 justifyContent: "center",
                 alignItems: "center",
                 width: "auto",
-                height: "50px",
+                height: "40px",
                 borderRadius: "10px",
                 borderWidth: "1px",
-                borderStyle: "solid",
+                border: "2px solid",
                 borderColor: (theme) => theme.palette.primary.main,
                 mr: { md: 2, xs: 0 },
                 mt: { md: 1, xs: 0.5 },
@@ -249,8 +444,8 @@ export const NavBar = (props: Props) => {
             >
               <ViewSidebarIcon
                 sx={{
-                  width: "32px",
-                  height: "32px",
+                  width: "28px",
+                  height: "28px",
                   color: (theme) => theme.palette.primary.main
                 }}
               />
