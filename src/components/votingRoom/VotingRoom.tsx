@@ -279,11 +279,16 @@ function VotingRoom(props: Props) {
   };
 
   const handleVotesAverage = (roomUsersVotes: IRoomUsers[] | undefined) => {
+    const actualRoomUsersVotes = roomUsersVotes?.filter(
+      (ruv) => ruv.currentVote !== 0
+    );
+
     const totalVotes = roomUsersVotes!.reduce(
       (acc, curr) => acc + curr.currentVote!,
       0
     );
-    const averageVotes = Math.round(totalVotes / roomUsersVotes!.length);
+
+    const averageVotes = Math.round(totalVotes / actualRoomUsersVotes?.length!);
     return averageVotes;
   };
 
@@ -367,24 +372,26 @@ function VotingRoom(props: Props) {
       }
     }
 
-    if (getVoteValue() >= 0 && user) {
+    const userRoomVote = getVoteValue();
+
+    if (userRoomVote >= 0 && user) {
       const userVotingDetails: IVotingDetails = {
-        vote: getVoteValue(),
+        vote: userRoomVote,
         roomId: getRoomId.roomId!,
         sessionId: `${socket.id}${Math.random()}`,
         socketId: socket.id
       };
 
       const isVotedState =
-        (voteValue === userVote && !isVoted) ||
-        (voteValue !== userVote && true);
+        (userRoomVote === userVote && !isVoted) ||
+        (userRoomVote !== userVote && true);
 
       setIsVoted(isVotedState);
       user.currentVote = userVotingDetails.vote;
       user.currentRoomId = userVotingDetails.roomId;
       user.votedState =
-        (voteValue === userVote && !isVoted) ||
-        (voteValue !== userVote && true);
+        (userRoomVote === userVote && !isVoted) ||
+        (userRoomVote !== userVote && true);
       user!.currentVote = getVoteValue();
 
       socket.emit("isVotedState", {

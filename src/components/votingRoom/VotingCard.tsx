@@ -33,7 +33,7 @@ function VotingCard(props: Props) {
           variant="outlined"
           sx={[
             {
-              minWidth: { md: 60, xs: 40 },
+              minWidth: { md: 60, xs: 50 },
               minHeight: { md: 80, xs: 60 },
               mx: { md: 1, xs: 1 },
               border: "1px solid #67A3EE",

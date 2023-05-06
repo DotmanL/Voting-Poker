@@ -25,8 +25,8 @@ export const getDesignTokens = (mode: PaletteMode) => ({
             main: "#67A3EE"
           },
           secondary: {
-            // main: "#FEFAE0",
-            main: "#edf2f4"
+            // main: "#edf2f4"
+            main: "#fdf0d5"
           },
           error: {
             main: red[500]
@@ -35,7 +35,6 @@ export const getDesignTokens = (mode: PaletteMode) => ({
       : {
           primary: {
             main: "#FFFFFF"
-            // main: "#67A3EE"
           },
           secondary: {
             main: "#151e22"

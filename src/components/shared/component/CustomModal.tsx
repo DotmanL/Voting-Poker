@@ -36,7 +36,7 @@ function CustomModal(props: Props) {
                 transform: "translate(-50%, -50%)",
                 width: { md: modalWidth, xs: "80%" },
                 height: { md: !!size ? sizeList[size] : "auto", xs: "sm" },
-                bgcolor: "background.paper",
+                background: (theme) => theme.palette.secondary.main,
                 border: "2px solid #67A3EE",
                 borderRadius: "10px",
                 boxShadow: 10
