@@ -214,10 +214,11 @@ function IssuesCard(props: Props) {
         sx={{
           display: "flex",
           flexDirection: "column",
+          alignSelf: "center",
           px: 1,
           py: 2,
           m: 0,
-          width: "100%",
+          width: { md: "400px", xs: "300px" },
           height: "auto",
           border: canDrop
             ? "1px solid green"
@@ -323,10 +324,24 @@ function IssuesCard(props: Props) {
             href={issue.link}
             target="_blank"
             rel="noreferrer"
-            sx={{ wordBreak: "break-word" }}
+            sx={{ wordBreak: "break-word", width: "80%" }}
           >
             {issue.link}
           </Link>
+        </Grid>
+
+        <Grid sx={{ px: 1, width: "90%", my: 1 }}>
+          <Typography
+            variant="h6"
+            sx={{
+              wordBreak: "break-word",
+              fontSize: { md: "18px", xs: "14px" }
+            }}
+          >
+            {issue.summary?.length! > 40
+              ? issue.summary?.slice(0, 40) + "..."
+              : issue.summary}
+          </Typography>
         </Grid>
         <Grid
           sx={{

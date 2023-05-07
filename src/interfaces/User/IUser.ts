@@ -7,4 +7,5 @@ export interface IUser extends IBase {
   currentRoomId?: string;
   votedState?: boolean;
   isConnected?: boolean;
+  jiraAccessToken?: string;
 }

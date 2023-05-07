@@ -143,7 +143,6 @@ function IssueCardDetails(props: Props) {
                 id="name"
                 name="name"
                 label="Issues Name"
-                defaultValue={issue.name}
                 value={formik.values.name}
                 onClick={() => setActiveField("name")}
                 onChange={(event) => {
@@ -174,7 +173,6 @@ function IssueCardDetails(props: Props) {
                 id="link"
                 name="link"
                 label="Issues Link"
-                defaultValue={issue.link}
                 value={formik.values.link}
                 onClick={() => setActiveField("link")}
                 onChange={(event) => {
@@ -204,8 +202,8 @@ function IssueCardDetails(props: Props) {
                 }}
                 id="summary"
                 name="summary"
+                multiline
                 label="Issues Summary"
-                defaultValue={issue.summary}
                 value={formik.values.summary}
                 onClick={() => setActiveField("summary")}
                 onChange={(event) => {
@@ -284,8 +282,8 @@ function IssueCardDetails(props: Props) {
                 cardValues={cardValues}
                 storyPointCardStyle={{
                   position: "absolute",
-                  left: "22vw",
-                  marginTop: "-60px",
+                  left: { md: "22vw", xs: "15vw" },
+                  marginTop: { md: "-60px", xs: "-150px" },
                   zIndex: 700
                 }}
               />

@@ -1,4 +1,10 @@
-import React, { useContext, useState, useEffect, useRef } from "react";
+import React, {
+  useContext,
+  useState,
+  useEffect,
+  useRef,
+  useCallback
+} from "react";
 import Box from "@mui/material/Box";
 import SwipeableDrawer from "@mui/material/SwipeableDrawer";
 import { BsThreeDotsVertical } from "react-icons/bs";
@@ -22,6 +28,10 @@ import {
 } from "react-query/types/core/types";
 import { IRoom } from "interfaces/Room/IRoom";
 import { IssueContext } from "utility/providers/IssuesProvider";
+import JiraImportModal from "./JiraImportModal";
+import { userContext } from "App";
+import JiraManagementModal from "./JiraManagementModal";
+import axios from "axios";
 
 const options = [
   {
@@ -33,14 +43,8 @@ const options = [
   {
     label: "Import from JIRA",
     value: "jiraImport",
-    toolTip: "Coming Soon...",
+    toolTip: "Import from jira",
     link: "https://example.com/option2"
-  },
-  {
-    label: "Import from CSV",
-    value: "csvImport",
-    toolTip: "Coming Soon...",
-    link: "https://example.com/option3"
   }
 ];
 
@@ -57,15 +61,22 @@ type Props = {
 
 function RightSidebar(props: Props) {
   const { issues, isLoading, error, refetchIssues, room, socket } = props;
+  const user = useContext(userContext);
   const { isSidebarOpen, setIsSidebarOpen } = useContext(SidebarContext);
   const [isDropDownOpen, setIsDropDownOpen] = useState<boolean>(false);
   const [isMiniDropDownOpen, setIsMiniDropDownOpen] = useState<boolean>(false);
+  const [isJiraImportModalOpen, setIsJiraImportModalOpen] =
+    useState<boolean>(false);
+  const [isJiraManagementModalOpen, setIsJiraManagementModalOpen] =
+    useState<boolean>(false);
   const { activeIssue, setActiveIssue } = useContext(IssueContext);
   const [isSingleIssueTextBoxOpen, setIsSingleIssueTextBoxOpen] =
     useState<boolean>(false);
   const [isAddMultipleModalOpen, setIsAddMultipleModalOpen] =
     useState<boolean>(false);
   const [cards, setCards] = useState(issues);
+  const [isJiraTokenValid, setIsJiraTokenValid] = useState<boolean>(false);
+  const [validityText, setValidityText] = useState<string>("");
   const dropDownRef = useRef<HTMLDivElement>(null);
   const miniDropDownRef = useRef<HTMLDivElement>(null);
   const singleIssueTextBoxRef = useRef<HTMLDivElement>(null);
@@ -108,6 +119,26 @@ function RightSidebar(props: Props) {
     });
   }, [issues, isSidebarOpen, setIsSidebarOpen, socket, refetchIssues]);
 
+  //TODO: Move to API
+  const checkTokenValidity = useCallback(async () => {
+    try {
+      const response = await axios.get(
+        "https://api.atlassian.com/oauth/token/accessible-resources",
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${user?.jiraAccessToken}`
+          }
+        }
+      );
+      setIsJiraTokenValid(true);
+      return response;
+    } catch (err) {
+      setIsJiraTokenValid(false);
+      setValidityText("Jira token has expired");
+    }
+  }, [user?.jiraAccessToken]);
+
   const toggleDrawer =
     (isSideBarOpen: boolean) =>
     (event: React.KeyboardEvent | React.MouseEvent) => {
@@ -138,6 +169,20 @@ function RightSidebar(props: Props) {
       setIsDropDownOpen(false);
       setIsAddMultipleModalOpen(true);
       setIsMiniDropDownOpen(false);
+    }
+    if (label === "jiraImport") {
+      if (!user) {
+        return;
+      }
+      if (isJiraTokenValid) {
+        setIsJiraManagementModalOpen(true);
+        setIsDropDownOpen(false);
+        setIsMiniDropDownOpen(false);
+      } else {
+        setIsJiraImportModalOpen(true);
+        setIsDropDownOpen(false);
+        setIsMiniDropDownOpen(false);
+      }
     }
   }
 
@@ -245,6 +290,7 @@ function RightSidebar(props: Props) {
                   }
                 }}
                 onClick={() => {
+                  checkTokenValidity();
                   setIsDropDownOpen(!isDropDownOpen);
                   setIsSingleIssueTextBoxOpen(false);
                   setIsMiniDropDownOpen(false);
@@ -300,6 +346,17 @@ function RightSidebar(props: Props) {
               setIsAddMultipleModalOpen={setIsAddMultipleModalOpen}
               onFormSubmitted={handleCreateIssues}
             />
+            <JiraImportModal
+              isJiraImportModalOpen={isJiraImportModalOpen}
+              setIsJiraImportModalOpen={setIsJiraImportModalOpen}
+              validityText={validityText}
+            />
+            {isJiraTokenValid && isJiraManagementModalOpen && (
+              <JiraManagementModal
+                isJiraManagementModalOpen={isJiraManagementModalOpen}
+                setIsJiraManagementModalOpen={setIsJiraManagementModalOpen}
+              />
+            )}
           </Grid>
 
           <Grid

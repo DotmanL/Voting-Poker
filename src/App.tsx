@@ -19,6 +19,7 @@ import SidebarProvider from "utility/providers/SideBarProvider";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { getDesignTokens } from "theme";
 import IssuesProvider from "utility/providers/IssuesProvider";
+import JiraCallbackContainer from "components/votingRoom/JiraCallbackContainer";
 
 const queryClient = new QueryClient();
 export const userContext = createContext<IUser | null>(null);
@@ -82,6 +83,10 @@ function App() {
                         <Route
                           path="room/:roomId"
                           element={<VotingRoomContainer />}
+                        />
+                        <Route
+                          path="/room/jiraCallback"
+                          element={<JiraCallbackContainer />}
                         />
 
                         <Route path="*" element={<NotFoundContainer />} />

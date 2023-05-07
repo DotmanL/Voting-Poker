@@ -56,6 +56,7 @@ const updateUser = async (_id: string, userData: IUser) => {
   try {
     const body = JSON.stringify(userData);
     const response = await apiClient.put<IUser[]>(`updateUser/${_id}`, body);
+    toast.success("user updated");
     return response.data;
   } catch (err: any) {
     console.error(err.message);

@@ -25,7 +25,7 @@ function IssueStoryPointsModal(props: Props) {
   } = props;
 
   return (
-    <Grid>
+    <>
       <Grid
         sx={{
           display: "flex",
@@ -138,7 +138,7 @@ function IssueStoryPointsModal(props: Props) {
           </Grid>
         )}
       </Grid>
-    </Grid>
+    </>
   );
 }
 
