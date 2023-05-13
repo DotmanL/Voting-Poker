@@ -31,7 +31,7 @@ import { IssueContext } from "utility/providers/IssuesProvider";
 import JiraImportModal from "./JiraImportModal";
 import { userContext } from "App";
 import JiraManagementModal from "./JiraManagementModal";
-import axios from "axios";
+import JiraService from "api/JiraService";
 
 const options = [
   {
@@ -119,25 +119,23 @@ function RightSidebar(props: Props) {
     });
   }, [issues, isSidebarOpen, setIsSidebarOpen, socket, refetchIssues]);
 
-  //TODO: Move to API
   const checkTokenValidity = useCallback(async () => {
     try {
-      const response = await axios.get(
-        "https://api.atlassian.com/oauth/token/accessible-resources",
-        {
-          headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${user?.jiraAccessToken}`
-          }
-        }
-      );
-      setIsJiraTokenValid(true);
+      const response = await JiraService.jiraAccessibleResources(user?._id!);
+
+      if (response?.status === 200) {
+        setIsJiraTokenValid(true);
+      }
+      if (user?.jiraAccessToken && !response) {
+        await JiraService.jiraAuthenticationAutoRefresh(user?._id!);
+        setIsJiraTokenValid(true);
+      }
       return response;
     } catch (err) {
       setIsJiraTokenValid(false);
       setValidityText("Jira token has expired");
     }
-  }, [user?.jiraAccessToken]);
+  }, [user?._id, user?.jiraAccessToken]);
 
   const toggleDrawer =
     (isSideBarOpen: boolean) =>
