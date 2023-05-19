@@ -27,7 +27,7 @@ export const userContext = createContext<IUser | null>(null);
 function App() {
   const [currentUser, setCurrentUser] = useState<IUser>();
   const getThemeMode = localStorage.getItem("mode");
-  const themeMode = getThemeMode === "dark" ? "dark" : "light";
+  const themeMode = getThemeMode === "light" ? "light" : "dark";
   const [mode, setMode] = React.useState<"light" | "dark">(themeMode);
   const colorMode = React.useMemo(
     () => ({

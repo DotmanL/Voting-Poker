@@ -1,7 +1,6 @@
 import React, { useRef, useState, useContext } from "react";
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
-import { BiDotsHorizontal } from "react-icons/bi";
 import type { Identifier, XYCoord } from "dnd-core";
 import LaunchIcon from "@mui/icons-material/Launch";
 import { useDrag, useDrop } from "react-dnd";
@@ -21,6 +20,8 @@ import { IssueContext } from "utility/providers/IssuesProvider";
 import { useClickAway } from "react-use";
 import IssueCardDetails from "./IssueCardDetails";
 import IssueStoryPointsModal from "./IssueStoryPointsModal";
+import Tooltip from "@mui/material/Tooltip";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 type Props = {
   room: IRoom;
@@ -59,18 +60,12 @@ function IssuesCard(props: Props) {
   } = props;
   const ref = useRef<HTMLDivElement>(null);
   const { activeIssue, setActiveIssue } = useContext(IssueContext);
-  const [isMiniDropDownOpen, setIsMiniDropDownOpen] = useState<boolean>(false);
   const [isCardDetailsOpen, setIsCardDetailsOpen] = useState<boolean>(false);
   const [isStoryPointsDropDownOpen, setIsStoryPointsDropDownOpen] =
     useState<boolean>(false);
   const cardValues = CardType(room.votingSystem);
 
-  const miniDropDownRef = useRef<HTMLDivElement>(null);
   const storyPointsDropDownRef = useRef<HTMLDivElement>(null);
-
-  useClickAway(miniDropDownRef, () => {
-    setIsMiniDropDownOpen(false);
-  });
 
   useClickAway(storyPointsDropDownRef, () => {
     setIsStoryPointsDropDownOpen(false);
@@ -258,62 +253,32 @@ function IssuesCard(props: Props) {
             <Typography variant="h6">{issue.name}</Typography>
           </Grid>
 
-          <Grid>
-            <BiDotsHorizontal
-              onClick={(event) => {
-                setIsMiniDropDownOpen(!isMiniDropDownOpen);
-                event.stopPropagation();
-              }}
-              size={20}
-            />
-          </Grid>
-        </Grid>
-
-        <Grid
-          sx={{
-            position: "absolute",
-            right: 55,
-            marginTop: "30px",
-            zIndex: 400
-          }}
-          ref={miniDropDownRef}
-        >
-          {isMiniDropDownOpen && (
-            <Grid
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "flex-start",
-                width: "200px",
-                height: "auto",
-                borderRadius: "10px",
-                zIndex: 100,
-                py: 2,
-                cursor: "pointer",
-                background: (theme) => theme.palette.secondary.main,
-                boxShadow: (theme) =>
-                  theme.palette.mode === "dark"
-                    ? "0px 0px 10px 2px rgba(255, 255, 255, 0.2)"
-                    : "0px 0px 10px 2px rgba(0, 0, 0, 0.2)"
-              }}
-            >
-              <Grid
+          <Grid
+            sx={{
+              position: "absolute",
+              right: 30,
+              zIndex: 400,
+              "&:hover": {
+                color: "red"
+              }
+            }}
+          >
+            <Tooltip title="Delete Issue">
+              <DeleteIcon
                 sx={{
                   px: 2,
                   width: "100%",
-                  background: (theme) => theme.palette.secondary.main,
                   "&:hover": {
-                    background: "darkGray",
-                    color: "black",
-                    opacity: 0.8
+                    color: "red"
                   }
                 }}
-                onClick={() => handleDeleteIssue(index)}
-              >
-                Delete Issue
-              </Grid>
-            </Grid>
-          )}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  handleDeleteIssue(index);
+                }}
+              />
+            </Tooltip>
+          </Grid>
         </Grid>
 
         <Grid

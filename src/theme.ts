@@ -15,6 +15,16 @@ export const getDesignTokens = (mode: PaletteMode) => ({
           backgroundColor: mode === "light" ? "#edf2f4" : "#151e22"
         }
       }
+    },
+    MuiButton: {
+      variants: [
+        {
+          props: { variant: undefined },
+          style: {
+            textTransform: "none"
+          } as const
+        }
+      ]
     }
   },
   palette: {

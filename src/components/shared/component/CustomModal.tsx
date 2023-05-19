@@ -8,16 +8,17 @@ type Props = {
   children: JSX.Element;
   size?: "sm" | "md" | "lg";
   modalWidth?: string;
+  customLeftPosition?: string;
 };
 
 const sizeList: { [key: string]: string } = {
   sm: "300px",
-  md: "700px",
+  md: "800px",
   lg: "900px"
 };
 
 function CustomModal(props: Props) {
-  const { isOpen, children, size, modalWidth } = props;
+  const { isOpen, children, size, modalWidth, customLeftPosition } = props;
   return (
     <div>
       {isOpen ? (
@@ -32,7 +33,7 @@ function CustomModal(props: Props) {
               sx={{
                 position: "absolute" as "absolute",
                 top: "50%",
-                left: "50%",
+                left: !!customLeftPosition ? customLeftPosition : "50%",
                 transform: "translate(-50%, -50%)",
                 width: { md: modalWidth, xs: "80%" },
                 height: { md: !!size ? sizeList[size] : "auto", xs: "sm" },

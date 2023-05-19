@@ -16,7 +16,7 @@ const createIssues = async (issues: IIssue[]) => {
     const requestBody = { issues };
     const body = JSON.stringify(requestBody);
     const response = await apiClient.post<IIssue[]>("createIssues", body);
-    return response.status;
+    return response.data;
   } catch (err: any) {
     console.error(err.message);
   }

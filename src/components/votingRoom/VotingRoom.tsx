@@ -27,6 +27,7 @@ import RoomUsersService, {
   RoomUsersUpdate
 } from "api/RoomUsersService";
 import { IssueContext } from "utility/providers/IssuesProvider";
+import JiraService from "api/JiraService";
 
 const useStyles = makeStyles((theme) => ({
   "@keyframes glowing": {
@@ -90,6 +91,8 @@ function VotingRoom(props: Props) {
   const [votesCasted, setVotesCasted] = useState<IRoomUsers[] | undefined>();
   const [isVoted, setIsVoted] = useState<boolean>(false);
   const [showActiveIssue, setShowActiveIssue] = useState<boolean>(false);
+  const [isJiraTokenValid, setIsJiraTokenValid] = useState<boolean>(false);
+  const [validityText, setValidityText] = useState<string>("");
   const getRoomId = useParams();
   const getUserId = localStorage.getItem("userId");
   const userId = getUserId ? JSON.parse(getUserId) : null;
@@ -144,17 +147,35 @@ function VotingRoom(props: Props) {
     return activeIssue;
   }, [roomId, setActiveIssue]);
 
+  const checkTokenValidity = useCallback(async () => {
+    try {
+      const response = await JiraService.jiraAccessibleResources(user?._id!);
+
+      if (response?.status === 200) {
+        setIsJiraTokenValid(true);
+      }
+      if (user?.jiraAccessToken && !response) {
+        await JiraService.jiraAuthenticationAutoRefresh(user?._id!);
+        setIsJiraTokenValid(true);
+      }
+      return response;
+    } catch (err) {
+      setIsJiraTokenValid(false);
+      setValidityText("Jira token has expired");
+    }
+  }, [user?._id, user?.jiraAccessToken]);
+
   useEffect(() => {
     const newSocket = io(getBaseUrlWithoutRoute());
     setSocket(newSocket);
-
+    checkTokenValidity();
     joinRoom();
     getActiveIssue();
 
     return () => {
       newSocket.disconnect();
     };
-  }, [joinRoom, getActiveIssue]);
+  }, [joinRoom, getActiveIssue, checkTokenValidity]);
 
   useEffect(() => {
     if (!socket) return;
@@ -502,6 +523,8 @@ function VotingRoom(props: Props) {
               room={room}
               issues={issues || []}
               refetchIssues={refetchIssues}
+              isJiraTokenValid={isJiraTokenValid}
+              validityText={validityText}
               isLoading={isLoading}
               error={error}
             />
