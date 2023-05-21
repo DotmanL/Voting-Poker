@@ -213,7 +213,7 @@ function IssuesCard(props: Props) {
           px: 1,
           py: 2,
           m: 0,
-          width: { md: "400px", xs: "300px" },
+          width: { md: "400px", xs: "85vw" },
           height: "auto",
           border: canDrop
             ? "1px solid green"
@@ -256,7 +256,8 @@ function IssuesCard(props: Props) {
           <Grid
             sx={{
               position: "absolute",
-              right: 30,
+              // right: { md: "60%", xs: 20 },
+              left: "80%",
               zIndex: 400,
               "&:hover": {
                 color: "red"

@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useEffect, useState } from "react";
-import { Button, Checkbox, Grid, Link } from "@mui/material";
+import { Button, Checkbox, Grid, Link, Typography } from "@mui/material";
 import CustomModal from "components/shared/component/CustomModal";
 import { AiOutlineClose } from "react-icons/ai";
 import { userContext } from "App";
@@ -39,6 +39,7 @@ function JiraManagementModal(props: Props) {
   const [jiraIssues, setJiraIssues] = useState<any[]>([]);
   const [issueArray, setIssueArray] = useState<IIssue[]>([]);
   const [checkedIssues, setCheckedIssues] = useState<any[]>([]);
+  const [projects, setProjects] = useState<any[]>();
   const user = useContext(userContext);
   const { isSidebarOpen, setIsSidebarOpen } = useContext(SidebarContext);
   const { roomId } = useParams<RoomRouteParams>();
@@ -54,34 +55,99 @@ function JiraManagementModal(props: Props) {
       setSiteDetails(response?.data.data[0]);
     }
 
-    return;
+    return response?.data.data[0].url;
   }, [user?._id, user?.jiraAccessToken]);
 
-  const handleBasicSearch = useCallback(async () => {
-    const jqlQuery = "order by created";
-    const fields = ["summary", "status", "assignee", "description", "priority"];
+  const convertIssues = useCallback((issues: any[], siteUrl: string) => {
+    return issues.map((issue, index) => {
+      const localIssue: IIssue = {
+        name: issue.fields.summary,
+        link: `${siteUrl}/browse/${issue.key}`,
+        summary:
+          issue?.fields?.description?.content?.[0]?.content?.[0]?.text ?? ""
+      };
+      return localIssue;
+    });
+  }, []);
 
-    const response = await JiraService.jiraBasicSearch(
-      user?._id!,
-      jqlQuery,
-      fields
-    );
+  function removeDuplicates(
+    fetchedJiraIssues: IIssue[],
+    roomIssues: IIssue[],
+    field: string
+  ) {
+    const uniqueArray: any[] = [];
+
+    fetchedJiraIssues.forEach((obj1) => {
+      const fieldValue = obj1[field];
+      const isDuplicate = roomIssues.some((obj2) => obj2[field] === fieldValue);
+      if (!isDuplicate) {
+        uniqueArray.push(obj1);
+      }
+    });
+
+    return uniqueArray;
+  }
+
+  const handleBasicSearch = useCallback(
+    async (siteUrl: string) => {
+      const jqlQuery = "order by created";
+      const fields = [
+        "summary",
+        "status",
+        "assignee",
+        "description",
+        "priority"
+      ];
+
+      const response = await JiraService.jiraBasicSearch(
+        user?._id!,
+        jqlQuery,
+        fields
+      );
+
+      if (user?.jiraAccessToken && !response) {
+        await JiraService.jiraAuthenticationAutoRefresh(user?._id!);
+      }
+
+      if (response) {
+        const roomIssues = await IssueService.getAllIssues(roomId!);
+        const issuesResponse = convertIssues(response?.data.issues, siteUrl);
+
+        const filteredissues = removeDuplicates(
+          issuesResponse,
+          roomIssues!,
+          "name"
+        );
+        setJiraIssues(filteredissues);
+      }
+    },
+    [user?.jiraAccessToken, user?._id, convertIssues, roomId]
+  );
+
+  const handleGetProjects = useCallback(async () => {
+    const response = await JiraService.jiraProjects(user?._id!);
 
     if (user?.jiraAccessToken && !response) {
       await JiraService.jiraAuthenticationAutoRefresh(user?._id!);
     }
 
     if (response) {
-      setJiraIssues(response?.data.issues);
+      setProjects(response.data.values);
     }
-
-    // console.log(response);
   }, [user?.jiraAccessToken, user?._id]);
 
   useEffect(() => {
-    getSite();
-    handleBasicSearch(); // use react query
-  }, [getSite, handleBasicSearch]);
+    async function getStatus() {
+      const siteUrl = await getSite();
+      if (!!siteUrl) {
+        handleBasicSearch(siteUrl); // use react query
+        handleGetProjects();
+      }
+    }
+    getStatus();
+  }, [getSite, handleBasicSearch, handleGetProjects]);
+
+  console.log(projects); ///show in a dropdown
 
   async function handleAddIssue(issue: any) {
     let currentOrder = issuesLength + 1;
@@ -90,9 +156,9 @@ function JiraManagementModal(props: Props) {
     }
 
     const localIssue: IIssue = {
-      name: issue.fields.summary,
-      link: `${siteDetails.url}/browse/${issue.key}`,
-      summary: issue.fields.description.content[0].content[0].text,
+      name: issue.name,
+      link: issue.link,
+      summary: issue.summary ?? "",
       order: currentOrder,
       roomId: roomId!
     };
@@ -103,9 +169,10 @@ function JiraManagementModal(props: Props) {
 
   async function importIssues() {
     const issuesCreated = await IssueService.createIssues(issueArray);
-    //TODO: FIX ORDER
     if (issuesCreated) {
-      // setIsJiraManagementModalOpen(false);
+      setIsJiraManagementModalOpen(false);
+      setCheckedIssues([]);
+      setIssueArray([]);
       refetchIssues();
     }
     if (!isSidebarOpen) {
@@ -115,10 +182,9 @@ function JiraManagementModal(props: Props) {
   }
 
   async function handleToggleIssue(issueToUpdate: any) {
-    if (checkedIssues.includes(issueToUpdate)) {
+    if (checkedIssues.some((issue) => issue.link === issueToUpdate.link)) {
       const updatedIssues = issueArray.filter(
-        (issue) =>
-          issue.link !== `${siteDetails.url}/browse/${issueToUpdate.key}`
+        (issue) => issue.link !== issueToUpdate.link
       );
       setCheckedIssues(updatedIssues);
       setIssueArray(updatedIssues);
@@ -169,7 +235,7 @@ function JiraManagementModal(props: Props) {
             Issue Management for {!!siteDetails ? siteDetails.url : ""}
           </Grid>
           <Grid
-            onClick={handleBasicSearch}
+            onClick={() => handleBasicSearch(siteDetails.url)}
             sx={{
               mt: 2,
               cursor: "pointer",
@@ -240,11 +306,12 @@ function JiraManagementModal(props: Props) {
                   sx={{
                     display: "flex",
                     flexDirection: "column",
+                    position: "relative",
                     px: 2,
                     py: 1,
                     m: 0,
                     width: { md: "300px", xs: "200px" },
-                    height: "auto",
+                    height: "150px",
                     borderRadius: "12px",
                     my: "15px",
                     background: (theme) =>
@@ -262,21 +329,40 @@ function JiraManagementModal(props: Props) {
                       justifyContent: "space-between"
                     }}
                   >
-                    <Grid>{jiraIssue.key}</Grid>
+                    <Grid>{jiraIssue.name}</Grid>
                     <Checkbox
-                      checked={checkedIssues.includes(jiraIssue)}
+                      checked={checkedIssues.some(
+                        (issue) => issue.name === jiraIssue.name
+                      )}
+                      // checked={checkedIssues.includes(jiraIssue)}
                       onChange={() => {
                         handleToggleIssue(jiraIssue);
                       }}
                     />
                   </Grid>
-                  <Grid>{jiraIssue.fields.summary}</Grid>
+                  <Grid sx={{ width: "90%", my: 1 }}>
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        wordBreak: "break-word",
+                        fontSize: { md: "14px", xs: "12px" }
+                      }}
+                    >
+                      {jiraIssue.summary?.length! > 40
+                        ? jiraIssue.summary?.slice(0, 40) + "..."
+                        : jiraIssue.summary}
+                    </Typography>
+                  </Grid>
 
                   <Link
-                    href={`${siteDetails.url}/browse/${jiraIssue.key}`}
+                    href={jiraIssue.link}
                     target="_blank"
                     rel="noreferrer"
-                    sx={{ wordBreak: "break-word" }}
+                    sx={{
+                      wordBreak: "break-word",
+                      position: "absolute",
+                      bottom: 1.5
+                    }}
                   >
                     <LaunchIcon
                       sx={{

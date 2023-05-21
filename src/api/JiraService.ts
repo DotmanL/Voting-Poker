@@ -51,11 +51,21 @@ const jiraBasicSearch = async (
   }
 };
 
+const jiraProjects = async (userId: string) => {
+  try {
+    const response = await apiClient.get(`getProjects/${userId}`);
+    return response;
+  } catch (err: any) {
+    console.error(err.message);
+  }
+};
+
 export const JiraService = {
   jiraAuthentication,
   jiraAuthenticationAutoRefresh,
   jiraAccessibleResources,
-  jiraBasicSearch
+  jiraBasicSearch,
+  jiraProjects
 };
 
 export default JiraService;

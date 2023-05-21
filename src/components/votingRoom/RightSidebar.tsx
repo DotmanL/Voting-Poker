@@ -251,28 +251,40 @@ function RightSidebar(props: Props) {
           width: { md: "100%", xs: "100vw" }
         }}
       >
-        {options.map((option, i) => (
-          <Grid
-            sx={{
-              py: 1,
-              cursor: "pointer"
-            }}
-            key={i}
-          >
-            <Tooltip title={option.toolTip}>
-              <Button
-                variant="outlined"
-                sx={{
-                  fontSize: { md: "14px", xs: "12px" },
-                  mx: 1
-                }}
-                onClick={() => handleOptionClick(option.value)}
-              >
-                {option.label}
-              </Button>
-            </Tooltip>
-          </Grid>
-        ))}
+        <Grid
+          sx={{
+            display: { md: "flex", xs: "none" },
+            flexDirection: "row",
+            alignItems: "center",
+            mt: 1,
+            px: 0.5,
+            justifyContent: { md: "space-between", xs: "flex-end" },
+            width: { md: "100%", xs: "100vw" }
+          }}
+        >
+          {options.map((option, i) => (
+            <Grid
+              sx={{
+                py: 1,
+                cursor: "pointer"
+              }}
+              key={i}
+            >
+              <Tooltip title={option.toolTip}>
+                <Button
+                  variant="outlined"
+                  sx={{
+                    fontSize: { md: "14px", xs: "12px" },
+                    mx: 1
+                  }}
+                  onClick={() => handleOptionClick(option.value)}
+                >
+                  {option.label}
+                </Button>
+              </Tooltip>
+            </Grid>
+          ))}
+        </Grid>
         <MultipleUrlsModal
           cardsLength={cards.length}
           isAddMultipleModalOpen={isAddMultipleModalOpen}
@@ -294,33 +306,20 @@ function RightSidebar(props: Props) {
         )}
 
         <Grid sx={{ cursor: "pointer", display: { md: "flex", xs: "none" } }}>
-          <Grid
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "flex-start",
-              width: "auto",
-              height: "auto",
-              borderRadius: "10px",
-              zIndex: 100,
-              py: 2,
-              cursor: "pointer",
-              background: (theme) => theme.palette.secondary.main
-            }}
-          >
-            <Tooltip title="Delete All Issues">
-              <DeleteIcon
-                sx={{
-                  px: 2,
-                  width: "100%",
-                  "&:hover": {
-                    color: "red"
-                  }
-                }}
-                onClick={handleDeleteAllIssues}
-              />
-            </Tooltip>
-          </Grid>
+          <Tooltip title="Delete All Issues">
+            <DeleteIcon
+              sx={{
+                px: 1,
+                mt: 1,
+                height: "32px",
+                width: "100%",
+                "&:hover": {
+                  color: "red"
+                }
+              }}
+              onClick={handleDeleteAllIssues}
+            />
+          </Tooltip>
         </Grid>
       </Grid>
 
