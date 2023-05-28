@@ -60,12 +60,42 @@ const jiraProjects = async (userId: string) => {
   }
 };
 
+const jiraIssueTypes = async (userId: string) => {
+  try {
+    const response = await apiClient.get(`getIssueTypes/${userId}`);
+    return response;
+  } catch (err: any) {
+    console.error(err.message);
+  }
+};
+
+const jiraFilters = async (userId: string) => {
+  try {
+    const response = await apiClient.get(`getMyFilters/${userId}`);
+    return response;
+  } catch (err: any) {
+    console.error(err.message);
+  }
+};
+
+const jiraFields = async (userId: string) => {
+  try {
+    const response = await apiClient.get(`getFields/${userId}`);
+    return response;
+  } catch (err: any) {
+    console.error(err.message);
+  }
+};
+
 export const JiraService = {
   jiraAuthentication,
   jiraAuthenticationAutoRefresh,
   jiraAccessibleResources,
   jiraBasicSearch,
-  jiraProjects
+  jiraProjects,
+  jiraIssueTypes,
+  jiraFilters,
+  jiraFields
 };
 
 export default JiraService;

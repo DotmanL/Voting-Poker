@@ -49,6 +49,7 @@ type Props = {
     options?: (RefetchOptions & RefetchQueryFilters<TPageData>) | undefined
   ) => Promise<QueryObserverResult<IIssue[] | undefined, Error>>;
   isJiraTokenValid: boolean;
+  setIsJiraTokenValid: React.Dispatch<React.SetStateAction<boolean>>;
   validityText: string;
 };
 
@@ -61,6 +62,7 @@ function RightSidebar(props: Props) {
     room,
     socket,
     isJiraTokenValid,
+    setIsJiraTokenValid,
     validityText
   } = props;
   const user = useContext(userContext);
@@ -299,6 +301,7 @@ function RightSidebar(props: Props) {
         {isJiraTokenValid && isJiraManagementModalOpen && (
           <JiraManagementModal
             issuesLength={cards.length}
+            setIsJiraTokenValid={setIsJiraTokenValid}
             isJiraManagementModalOpen={isJiraManagementModalOpen}
             setIsJiraManagementModalOpen={setIsJiraManagementModalOpen}
             refetchIssues={refetchIssues}

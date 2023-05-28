@@ -72,6 +72,15 @@ const resetVote = async (_id: string) => {
   }
 };
 
+const revokeJiraAccess = async (_id: string) => {
+  try {
+    const response = await apiClient.put(`revokeJiraAccess/${_id}`);
+    return response.data;
+  } catch (err: any) {
+    console.error(err.message);
+  }
+};
+
 const deleteUser = async (_id: string | undefined) => {
   try {
     const response = await apiClient.delete<IUser>(`deleteUser/${_id}`);
@@ -88,6 +97,7 @@ export const UserService = {
   getRoomUsers,
   updateUser,
   resetVote,
+  revokeJiraAccess,
   deleteUser
 };
 

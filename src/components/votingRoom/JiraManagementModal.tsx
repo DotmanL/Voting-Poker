@@ -1,5 +1,12 @@
 import React, { useCallback, useContext, useEffect, useState } from "react";
-import { Button, Checkbox, Grid, Link, Typography } from "@mui/material";
+import {
+  Button,
+  Checkbox,
+  Grid,
+  Link,
+  Typography,
+  Switch
+} from "@mui/material";
 import CustomModal from "components/shared/component/CustomModal";
 import { AiOutlineClose } from "react-icons/ai";
 import { userContext } from "App";
@@ -9,11 +16,17 @@ import { IIssue } from "interfaces/Issues";
 import { useParams } from "react-router-dom";
 import IssueService from "api/IssueService";
 import { SidebarContext } from "utility/providers/SideBarProvider";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import Select, { SelectChangeEvent } from "@mui/material/Select";
 import {
   QueryObserverResult,
   RefetchOptions,
   RefetchQueryFilters
 } from "react-query/types/core/types";
+import Spinner from "components/shared/component/Spinner";
+import UserService from "api/UserService";
 
 type Props = {
   isJiraManagementModalOpen: boolean;
@@ -22,7 +35,14 @@ type Props = {
   refetchIssues: <TPageData>(
     options?: (RefetchOptions & RefetchQueryFilters<TPageData>) | undefined
   ) => Promise<QueryObserverResult<IIssue[] | undefined, Error>>;
+  setIsJiraTokenValid: React.Dispatch<React.SetStateAction<boolean>>;
 };
+
+enum QueryType {
+  Project = 1,
+  IssueType = 2,
+  Filters = 3
+}
 
 type RoomRouteParams = {
   roomId: string;
@@ -33,13 +53,27 @@ function JiraManagementModal(props: Props) {
     isJiraManagementModalOpen,
     setIsJiraManagementModalOpen,
     refetchIssues,
-    issuesLength
+    issuesLength,
+    setIsJiraTokenValid
   } = props;
   const [siteDetails, setSiteDetails] = useState<any>();
   const [jiraIssues, setJiraIssues] = useState<any[]>([]);
   const [issueArray, setIssueArray] = useState<IIssue[]>([]);
   const [checkedIssues, setCheckedIssues] = useState<any[]>([]);
-  const [projects, setProjects] = useState<any[]>();
+  const [userJqlQuery, setUserJqlQuery] = useState<string>("order by created");
+  const [projectJqlQuery, setProjectJqlQuery] = useState<string>("");
+  const [selectedProject, setSelectedProject] = useState<string>("");
+  const [selectedIssueType, setSelectedIssueType] = useState<string>("");
+  const [selectedFilter, setSelectedFilter] = useState<string>();
+  const [projects, setProjects] = useState<any[]>([]);
+  const [issueTypes, setIssueTypes] = useState<any[]>([]);
+  const [fields, setFields] = useState<any[]>([]);
+  const [selectedField, setSelectedField] =
+    useState<string>("customfield_10031");
+  const [filters, setFilters] = useState<any[]>();
+  const [isConfigurationMode, setIsConfigurationMode] =
+    useState<boolean>(false);
+  const [isLoadingIssues, setIsLoadingIssues] = useState<boolean>(false);
   const user = useContext(userContext);
   const { isSidebarOpen, setIsSidebarOpen } = useContext(SidebarContext);
   const { roomId } = useParams<RoomRouteParams>();
@@ -47,6 +81,10 @@ function JiraManagementModal(props: Props) {
   const getSite = useCallback(async () => {
     const response = await JiraService.jiraAccessibleResources(user?._id!);
 
+    if (!response) {
+      setIsJiraTokenValid(false);
+      return;
+    }
     if (user?.jiraAccessToken && !response) {
       await JiraService.jiraAuthenticationAutoRefresh(user?._id!);
     }
@@ -56,10 +94,10 @@ function JiraManagementModal(props: Props) {
     }
 
     return response?.data.data[0].url;
-  }, [user?._id, user?.jiraAccessToken]);
+  }, [user?._id, user?.jiraAccessToken, setIsJiraTokenValid]);
 
   const convertIssues = useCallback((issues: any[], siteUrl: string) => {
-    return issues.map((issue, index) => {
+    return issues.map((issue) => {
       const localIssue: IIssue = {
         name: issue.fields.summary,
         link: `${siteUrl}/browse/${issue.key}`,
@@ -89,8 +127,9 @@ function JiraManagementModal(props: Props) {
   }
 
   const handleBasicSearch = useCallback(
-    async (siteUrl: string) => {
-      const jqlQuery = "order by created";
+    async (generatedQuery?: string) => {
+      const siteUrl = await getSite();
+      const jqlQuery = !!generatedQuery ? generatedQuery : userJqlQuery;
       const fields = [
         "summary",
         "status",
@@ -98,6 +137,8 @@ function JiraManagementModal(props: Props) {
         "description",
         "priority"
       ];
+
+      setIsLoadingIssues(true);
 
       const response = await JiraService.jiraBasicSearch(
         user?._id!,
@@ -107,6 +148,7 @@ function JiraManagementModal(props: Props) {
 
       if (user?.jiraAccessToken && !response) {
         await JiraService.jiraAuthenticationAutoRefresh(user?._id!);
+        setIsLoadingIssues(false);
       }
 
       if (response) {
@@ -118,10 +160,49 @@ function JiraManagementModal(props: Props) {
           roomIssues!,
           "name"
         );
+        setIsLoadingIssues(false);
         setJiraIssues(filteredissues);
       }
     },
-    [user?.jiraAccessToken, user?._id, convertIssues, roomId]
+    [
+      user?.jiraAccessToken,
+      user?._id,
+      convertIssues,
+      getSite,
+      roomId,
+      userJqlQuery
+    ]
+  );
+
+  const handleGenerateJqlQuery = useCallback(
+    async (queryType: QueryType, queryParameter: string) => {
+      let generatedQueryParameter = "";
+      let generatedQuery = "";
+      const orderBy = "Order by RANK";
+
+      switch (queryType) {
+        case QueryType.Project:
+          generatedQueryParameter = `(project = ${queryParameter})`;
+          setProjectJqlQuery(`(project = ${queryParameter})`);
+          generatedQuery = `${generatedQueryParameter} ${orderBy}`;
+          setUserJqlQuery(generatedQuery);
+          handleBasicSearch(generatedQuery);
+          break;
+        case QueryType.IssueType:
+          generatedQueryParameter = `${projectJqlQuery} AND (issuetype = '${queryParameter}')`;
+          generatedQuery = `${generatedQueryParameter} ${orderBy}`;
+          handleBasicSearch(generatedQuery);
+          break;
+        case QueryType.Filters:
+          generatedQuery = queryParameter;
+          handleBasicSearch(generatedQuery);
+          break;
+        default:
+          generatedQuery = "order by created";
+          break;
+      }
+    },
+    [handleBasicSearch, projectJqlQuery]
   );
 
   const handleGetProjects = useCallback(async () => {
@@ -136,18 +217,65 @@ function JiraManagementModal(props: Props) {
     }
   }, [user?.jiraAccessToken, user?._id]);
 
+  const handleGetIssueTypes = useCallback(async () => {
+    const response = await JiraService.jiraIssueTypes(user?._id!);
+
+    if (user?.jiraAccessToken && !response) {
+      await JiraService.jiraAuthenticationAutoRefresh(user?._id!);
+    }
+    if (response) {
+      setIssueTypes(response.data);
+    }
+  }, [user?.jiraAccessToken, user?._id]);
+
+  const handleGetFilters = useCallback(async () => {
+    const response = await JiraService.jiraFilters(user?._id!);
+
+    if (user?.jiraAccessToken && !response) {
+      await JiraService.jiraAuthenticationAutoRefresh(user?._id!);
+    }
+    if (response) {
+      setFilters(response.data);
+    }
+  }, [user?.jiraAccessToken, user?._id]);
+
+  const handleGetFields = useCallback(async () => {
+    const response = await JiraService.jiraFields(user?._id!);
+
+    if (user?.jiraAccessToken && !response) {
+      await JiraService.jiraAuthenticationAutoRefresh(user?._id!);
+    }
+    if (response) {
+      setFields(response.data);
+    }
+  }, [user?.jiraAccessToken, user?._id]);
+
   useEffect(() => {
     async function getStatus() {
-      const siteUrl = await getSite();
-      if (!!siteUrl) {
-        handleBasicSearch(siteUrl); // use react query
-        handleGetProjects();
+      if (selectedProject && !selectedIssueType) {
+        await handleBasicSearch();
       }
+      if (!selectedProject) {
+        setJiraIssues([]);
+      }
+      await getSite();
+      await handleGetProjects();
+      await handleGetIssueTypes();
+      await handleGetFilters();
+      await handleGetFields();
     }
     getStatus();
-  }, [getSite, handleBasicSearch, handleGetProjects]);
-
-  console.log(projects); ///show in a dropdown
+  }, [
+    selectedProject,
+    selectedIssueType,
+    selectedFilter,
+    getSite,
+    handleBasicSearch,
+    handleGetProjects,
+    handleGetFilters,
+    handleGetIssueTypes,
+    handleGetFields
+  ]);
 
   async function handleAddIssue(issue: any) {
     let currentOrder = issuesLength + 1;
@@ -196,6 +324,49 @@ function JiraManagementModal(props: Props) {
     }
   }
 
+  function handleOnClickProject(project: any) {
+    if (selectedProject === project.id) {
+      setSelectedProject("");
+      setSelectedIssueType("");
+    } else {
+      setSelectedProject(project.id);
+      handleGenerateJqlQuery(QueryType.Project, project.id);
+    }
+    setSelectedFilter("");
+  }
+
+  function handleOnClickIssueType(issue: any) {
+    if (selectedIssueType === issue.name) {
+      setSelectedIssueType("");
+    } else {
+      if (selectedProject) {
+        setSelectedIssueType(issue.name);
+        handleGenerateJqlQuery(QueryType.IssueType, issue.name);
+      }
+    }
+    setSelectedFilter("");
+  }
+
+  function handleOnClickFliter(filter: any) {
+    if (selectedFilter === filter.name) {
+      setSelectedFilter("");
+    } else {
+      setSelectedFilter(filter.name);
+      handleGenerateJqlQuery(QueryType.Filters, filter.jql);
+    }
+    setSelectedProject("");
+    setSelectedIssueType("");
+  }
+
+  function handleSelectField(event: SelectChangeEvent) {
+    setSelectedField(event.target.value as string);
+  }
+
+  async function handleRevokeJiraAcccess() {
+    await UserService.revokeJiraAccess(user?._id!);
+    setIsJiraManagementModalOpen(false);
+  }
+
   return (
     <Grid>
       <CustomModal
@@ -207,9 +378,11 @@ function JiraManagementModal(props: Props) {
         <Grid
           sx={{
             diplay: "flex",
+            background: "#151e22",
+            color: "white",
             flexDirection: "column",
             justifyContent: "center",
-            height: "100%",
+            height: "90%",
             alignItems: "center",
             borderRadius: "10px",
             px: 2
@@ -231,154 +404,494 @@ function JiraManagementModal(props: Props) {
           >
             <AiOutlineClose size={32} />
           </Grid>
-          <Grid sx={{ fontSize: { md: "24px", xs: "16px" }, mt: 1 }}>
-            Issue Management for {!!siteDetails ? siteDetails.url : ""}
-          </Grid>
-          <Grid
-            onClick={() => handleBasicSearch(siteDetails.url)}
-            sx={{
-              mt: 2,
-              cursor: "pointer",
-              p: 2,
-              height: "30%",
-              borderRadius: "10px",
-              border: "2px solid #FFFFFF"
-            }}
-          >
-            Basic Search with Controls
-          </Grid>
           <Grid
             sx={{
-              mt: 4,
-              diplay: "flex",
-              flexDirection: "column",
-              height: "50%",
-              borderRadius: "10px",
-              border: "2px solid #67A3EE",
-              overflowY: "auto"
-            }}
-          >
-            <Grid
-              sx={{
-                px: 5,
-                py: 0.5,
-                borderRadius: "10px",
+              fontSize: {
+                md: "24px",
+                xs: "16px",
                 display: "flex",
                 flexDirection: "row",
-                alignItems: "center",
-                background: "green",
-                cursor: "pointer",
-                justifyContent: "space-between",
-                position: "sticky",
-                zIndex: 10000,
-                top: -2
-              }}
-            >
-              <Grid>Search Results</Grid>
+                alignItems: "ceneter"
+              },
+              mt: 1.5
+            }}
+          >
+            <Typography variant="h6"> Issue Management for </Typography>
+            <Typography variant="h6" sx={{ ml: 0.5 }}>
+              {" "}
+              {!!siteDetails ? siteDetails.url : ""}
+            </Typography>
+          </Grid>
 
-              <Button
-                variant="outlined"
-                sx={{
-                  px: 2,
-                  py: 0.5,
-                  borderRadius: "8px",
-                  fontSize: "18px",
-                  cursor: "pointer"
-                }}
-                disabled={issueArray.length === 0}
-                onClick={importIssues}
-              >
-                Import Issues
-              </Button>
-            </Grid>
+          <Grid
+            sx={{
+              alignSelf: "flex-end",
+              cursor: "pointer",
+              position: "absolute",
+              color: "white",
+              right: "60px",
+              top: "24px"
+            }}
+          >
+            {isConfigurationMode ? "Search" : "Configuration"}
+            <Switch
+              color="success"
+              checked={isConfigurationMode}
+              onClick={() => setIsConfigurationMode(!isConfigurationMode)}
+              sx={{
+                color: "red",
+                background: (theme) => theme.palette.secondary.main
+              }}
+            />
+          </Grid>
+
+          {isConfigurationMode && (
             <Grid
               sx={{
-                mt: 2,
                 display: "flex",
-                flexDirection: "row",
-                justifyContent: "space-evenly",
-                flexWrap: "wrap"
+                flexDirection: "column",
+                width: "98%",
+                height: "100%",
+                borderRadius: "10px",
+                px: 4,
+                mt: 2,
+                border: "2px solid #FFFFFF"
               }}
             >
-              {jiraIssues?.map((jiraIssue, i) => (
-                <Grid
-                  key={i}
+              <Grid
+                sx={{
+                  mt: 5,
+                  width: "100%",
+                  height: "auto",
+                  py: 2,
+                  borderRadius: "10px",
+                  px: 4,
+                  border: "2px solid red"
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  fontWeight="bold"
+                  color="red"
+                  sx={{ textTransform: "uppercase" }}
+                >
+                  Still working on saving story points to JIRA Feature!!!
+                </Typography>
+                <Typography variant="h5">Select Story Points Field</Typography>
+
+                <FormControl sx={{ width: "90%", mt: 2 }}>
+                  <InputLabel>Issue Fields</InputLabel>
+                  <Select
+                    labelId="demo-simple-select-label"
+                    id="demo-simple-select"
+                    sx={{ height: "60%" }}
+                    value={selectedField}
+                    label={
+                      fields[
+                        fields.findIndex(
+                          (field) => field.id === "customfield_10031"
+                        )
+                      ]?.name
+                    }
+                    onChange={handleSelectField}
+                  >
+                    {fields.map((field, i) => (
+                      <MenuItem key={i} value={field.id}>
+                        {field.name} ({field.id})
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              <Grid
+                sx={{
+                  mt: 5,
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: "98%",
+                  height: "auto"
+                }}
+              >
+                <Button
+                  variant="contained"
+                  onClick={handleRevokeJiraAcccess}
                   sx={{
                     display: "flex",
-                    flexDirection: "column",
-                    position: "relative",
-                    px: 2,
-                    py: 1,
-                    m: 0,
-                    width: { md: "300px", xs: "200px" },
-                    height: "150px",
-                    borderRadius: "12px",
-                    my: "15px",
-                    background: (theme) =>
-                      theme.palette.mode === "dark" ? "#000814" : "#fdf0d5",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "white",
+                    background: "red",
+                    border: "2px solid",
+                    cursor: "pointer",
+                    borderRadius: "10px",
+                    fontSize: "18px",
+                    height: "20px",
+                    textTransform: "uppercase",
+                    width: "auto",
+                    ml: 1,
+                    px: 1.5,
+                    py: 2,
                     "&:hover": {
-                      border: "1px solid #FFFFFF"
+                      opacity: 0.7
                     }
                   }}
                 >
-                  <Grid
-                    sx={{
-                      display: "flex",
-                      flexDirection: "row",
-                      alignItems: "center",
-                      justifyContent: "space-between"
-                    }}
-                  >
-                    <Grid>{jiraIssue.name}</Grid>
-                    <Checkbox
-                      checked={checkedIssues.some(
-                        (issue) => issue.name === jiraIssue.name
-                      )}
-                      // checked={checkedIssues.includes(jiraIssue)}
-                      onChange={() => {
-                        handleToggleIssue(jiraIssue);
-                      }}
-                    />
-                  </Grid>
-                  <Grid sx={{ width: "90%", my: 1 }}>
-                    <Typography
-                      variant="h6"
-                      sx={{
-                        wordBreak: "break-word",
-                        fontSize: { md: "14px", xs: "12px" }
-                      }}
-                    >
-                      {jiraIssue.summary?.length! > 40
-                        ? jiraIssue.summary?.slice(0, 40) + "..."
-                        : jiraIssue.summary}
-                    </Typography>
-                  </Grid>
+                  Revoke JIRA Access
+                </Button>
+              </Grid>
+            </Grid>
+          )}
 
-                  <Link
-                    href={jiraIssue.link}
-                    target="_blank"
-                    rel="noreferrer"
-                    sx={{
-                      wordBreak: "break-word",
-                      position: "absolute",
-                      bottom: 1.5
-                    }}
-                  >
-                    <LaunchIcon
+          {!isConfigurationMode && (
+            <Grid
+              sx={{
+                flexDirection: "column",
+                mt: 2,
+                px: 2,
+                py: 1.5,
+                height: "30%",
+                borderRadius: "10px",
+                border: "2px solid #FFFFFF"
+              }}
+            >
+              <Typography variant="h6" sx={{ cursor: "pointer" }}>
+                Basic Search with Controls
+              </Typography>
+              <Grid
+                sx={{
+                  display: "flex",
+                  flexDirection: "row",
+                  flexWrap: "wrap",
+                  width: "90%",
+                  p: 0.5,
+                  height: "80%"
+                }}
+              >
+                <Grid
+                  sx={{
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    mt: 0,
+                    p: 0.5,
+                    height: "50px"
+                  }}
+                >
+                  <Grid>Projects - </Grid>
+                  {projects?.map((project, i) => (
+                    <Grid
+                      onClick={() => handleOnClickProject(project)}
+                      key={i}
                       sx={{
-                        mt: 1,
-                        mr: "10px",
+                        display: "flex",
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        background:
+                          selectedProject === project.id ? "green" : "",
+                        border: "2px solid white",
+                        cursor: "pointer",
+                        borderRadius: "10px",
+                        height: "20px",
+                        width: "auto",
+                        ml: 1,
+                        px: 2,
+                        py: 1.5,
                         "&:hover": {
-                          color: "green",
-                          opacity: 0.8
+                          opacity: 0.7
                         }
                       }}
-                    />
-                  </Link>
+                    >
+                      {project.name}
+                    </Grid>
+                  ))}
                 </Grid>
-              ))}
+                <Grid
+                  sx={{
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    mt: 0.5,
+                    p: 0.5,
+                    height: "50px"
+                  }}
+                >
+                  <Grid>Issue Types - </Grid>
+                  {issueTypes?.map((issue, i) => (
+                    <Button
+                      variant="contained"
+                      onClick={() => handleOnClickIssueType(issue)}
+                      disabled={!selectedProject}
+                      key={i}
+                      sx={{
+                        display: "flex",
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "white",
+                        background:
+                          selectedIssueType === issue.name ? "green" : "none",
+                        border: "2px solid white",
+                        cursor: "pointer",
+                        borderRadius: "10px",
+                        height: "20px",
+                        width: "auto",
+                        ml: 1,
+                        px: 2,
+                        py: 1.5,
+                        "&:hover": {
+                          background:
+                            selectedIssueType === issue.name ? "green" : "none",
+                          opacity: 0.7
+                        }
+                      }}
+                    >
+                      {issue.name}
+                    </Button>
+                  ))}
+                </Grid>
+
+                <Grid
+                  sx={{
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    mt: 0.5,
+                    p: 0.5,
+                    height: "45px"
+                  }}
+                >
+                  <Grid>My Filters - </Grid>
+                  {filters?.map((filter, i) => (
+                    <Grid
+                      onClick={() => handleOnClickFliter(filter)}
+                      key={i}
+                      sx={{
+                        display: "flex",
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        background:
+                          selectedFilter === filter.name ? "green" : "",
+                        border: "2px solid white",
+                        cursor: "pointer",
+                        borderRadius: "10px",
+                        height: "20px",
+                        width: "auto",
+                        ml: 1,
+                        px: 2,
+                        py: 1.5,
+                        "&:hover": {
+                          opacity: 0.7
+                        }
+                      }}
+                    >
+                      {filter.name}
+                    </Grid>
+                  ))}
+                </Grid>
+              </Grid>
             </Grid>
-          </Grid>
+          )}
+
+          {!isConfigurationMode && (
+            <Grid
+              sx={{
+                mt: 4,
+                diplay: "flex",
+                flexDirection: "column",
+                height: jiraIssues.length === 0 ? "60%" : "auto",
+                maxHeight: "60%",
+                borderRadius: "10px",
+                border: "2px solid #67A3EE",
+                overflowY: "auto"
+              }}
+            >
+              <Grid
+                sx={{
+                  px: 5,
+                  py: 1,
+                  borderRadius: "10px",
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  color: (theme) =>
+                    theme.palette.mode === "dark" ? "white" : "white",
+                  background: (theme) =>
+                    theme.palette.mode === "dark" ? "#151e22" : "green",
+                  borderBottom: "2px solid white",
+                  cursor: "pointer",
+                  justifyContent: "space-between",
+                  position: "sticky",
+                  zIndex: 10000,
+                  top: -2
+                }}
+              >
+                <Grid>Search Results</Grid>
+
+                <Button
+                  variant="contained"
+                  sx={{
+                    mt: 0.5,
+                    px: 2,
+                    py: 0.5,
+                    borderRadius: "8px",
+                    background: "green",
+                    color: "white",
+                    fontSize: "18px",
+                    cursor: "pointer"
+                  }}
+                  disabled={issueArray.length === 0}
+                  onClick={importIssues}
+                >
+                  Import Issues
+                </Button>
+              </Grid>
+
+              {isLoadingIssues ? (
+                <Grid
+                  sx={{
+                    height: "85%",
+                    width: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "center"
+                  }}
+                >
+                  <Spinner fullHeight={false} spinnerType="PuffLoader" />
+                  <Typography variant="h6" fontSize={14} sx={{ mt: 1 }}>
+                    Loading Issues.....
+                  </Typography>
+                </Grid>
+              ) : (
+                <Grid
+                  sx={{
+                    mt: 2,
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "space-evenly",
+                    flexWrap: "wrap"
+                  }}
+                >
+                  {jiraIssues?.map((jiraIssue, i) => (
+                    <Grid
+                      key={i}
+                      sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        position: "relative",
+                        px: 2,
+                        py: 1,
+                        m: 0,
+                        width: { md: "300px", xs: "200px" },
+                        color: (theme) =>
+                          theme.palette.mode === "dark" ? "white" : "black",
+                        fontWeight: "500",
+                        height: "150px",
+                        borderRadius: "12px",
+                        border: checkedIssues.some(
+                          (issue) => issue.name === jiraIssue.name
+                        )
+                          ? "1px solid green"
+                          : "",
+                        my: "15px",
+                        background: (theme) =>
+                          theme.palette.mode === "dark" ? "#000814" : "#fdf0d5",
+                        "&:hover": {
+                          border: "1px solid #green"
+                        }
+                      }}
+                    >
+                      <Grid
+                        sx={{
+                          display: "flex",
+                          flexDirection: "row",
+                          alignItems: "center",
+                          justifyContent: "space-between"
+                        }}
+                      >
+                        <Grid>{jiraIssue.name}</Grid>
+                        <Checkbox
+                          checked={checkedIssues.some(
+                            (issue) => issue.name === jiraIssue.name
+                          )}
+                          onChange={() => {
+                            handleToggleIssue(jiraIssue);
+                          }}
+                        />
+                      </Grid>
+                      <Grid sx={{ width: "90%", my: 1 }}>
+                        <Typography
+                          variant="h6"
+                          sx={{
+                            wordBreak: "break-word",
+                            fontSize: { md: "14px", xs: "12px" }
+                          }}
+                        >
+                          {jiraIssue.summary?.length! > 40
+                            ? jiraIssue.summary?.slice(0, 40) + "..."
+                            : jiraIssue.summary}
+                        </Typography>
+                      </Grid>
+
+                      <Link
+                        href={jiraIssue.link}
+                        target="_blank"
+                        rel="noreferrer"
+                        sx={{
+                          wordBreak: "break-word",
+                          position: "absolute",
+                          bottom: 2.5
+                        }}
+                      >
+                        <LaunchIcon
+                          sx={{
+                            mt: 1,
+                            mr: "10px",
+                            "&:hover": {
+                              color: "green",
+                              opacity: 0.8
+                            }
+                          }}
+                        />
+                      </Link>
+                    </Grid>
+                  ))}
+                </Grid>
+              )}
+              <Grid
+                sx={{
+                  width: "100%",
+                  height: "80%",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                  alignItems: "center"
+                }}
+              >
+                {jiraIssues.length === 0 && (
+                  <Grid
+                    sx={{
+                      width: "100%",
+                      height: "90%",
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "center",
+                      alignItems: "center"
+                    }}
+                  >
+                    <Typography variant="h5">No issues to display</Typography>
+                    <Typography variant="h6">Use the filters above</Typography>
+                  </Grid>
+                )}
+              </Grid>
+            </Grid>
+          )}
         </Grid>
       </CustomModal>
     </Grid>
