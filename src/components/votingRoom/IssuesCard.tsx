@@ -232,8 +232,7 @@ function IssuesCard(props: Props) {
               : activeIssue?._id === issue._id
               ? "0px 0px 10px 2px rgba(0, 0, 0, 0.4)"
               : "0px 0px 10px 2px rgba(0, 0, 0, 0.1)",
-          background: (theme) =>
-            theme.palette.mode === "dark" ? "#000814" : "#fdf0d5",
+          background: (theme) => theme.palette.secondary.main,
           "&:hover": {
             border: isStoryPointsDropDownOpen ? "" : "1px solid #FFFFFF",
             opacity: isDragging ? 0 : 1

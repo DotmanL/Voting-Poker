@@ -81,10 +81,6 @@ function JiraManagementModal(props: Props) {
   const getSite = useCallback(async () => {
     const response = await JiraService.jiraAccessibleResources(user?._id!);
 
-    if (!response) {
-      setIsJiraTokenValid(false);
-      return;
-    }
     if (user?.jiraAccessToken && !response) {
       await JiraService.jiraAuthenticationAutoRefresh(user?._id!);
     }
@@ -94,7 +90,7 @@ function JiraManagementModal(props: Props) {
     }
 
     return response?.data.data[0].url;
-  }, [user?._id, user?.jiraAccessToken, setIsJiraTokenValid]);
+  }, [user?._id, user?.jiraAccessToken]);
 
   const convertIssues = useCallback((issues: any[], siteUrl: string) => {
     return issues.map((issue) => {
@@ -364,6 +360,7 @@ function JiraManagementModal(props: Props) {
 
   async function handleRevokeJiraAcccess() {
     await UserService.revokeJiraAccess(user?._id!);
+    setIsJiraTokenValid(false);
     setIsJiraManagementModalOpen(false);
   }
 

@@ -150,10 +150,6 @@ function VotingRoom(props: Props) {
   const checkTokenValidity = useCallback(async () => {
     try {
       const response = await JiraService.jiraAccessibleResources(user?._id!);
-      if (!response) {
-        setIsJiraTokenValid(false);
-        return;
-      }
 
       if (response?.status === 200) {
         setIsJiraTokenValid(true);

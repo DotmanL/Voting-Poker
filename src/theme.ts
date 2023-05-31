@@ -36,7 +36,7 @@ export const getDesignTokens = (mode: PaletteMode) => ({
           },
           secondary: {
             // main: "#edf2f4"
-            main: "#fdf0d5"
+            main: "#edf2f4"
           },
           error: {
             main: red[500]

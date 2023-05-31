@@ -75,8 +75,7 @@ function IssueStoryPointsModal(props: Props) {
               zIndex: 700,
               py: { md: 1, xs: 0.5 },
               cursor: "pointer",
-              background: (theme) =>
-                theme.palette.mode === "dark" ? "#000814" : "#fdf0d5",
+              background: (theme) => theme.palette.secondary.main,
               boxShadow: (theme) =>
                 theme.palette.mode === "dark"
                   ? "0px 0px 10px 2px rgba(255, 255, 255, 0.1)"
@@ -105,8 +104,7 @@ function IssueStoryPointsModal(props: Props) {
                   sx={{
                     display: "flex",
                     flexDirection: "row",
-                    background: (theme) =>
-                      theme.palette.mode === "dark" ? "#000814" : "#fdf0d5",
+                    background: (theme) => theme.palette.secondary.main,
                     alignItems: "center",
                     justifyContent: "center",
                     color: (theme) =>
