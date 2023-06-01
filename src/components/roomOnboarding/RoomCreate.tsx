@@ -6,7 +6,7 @@ import { Formik, Form, Field, FormikHelpers } from "formik";
 import { InputTextField } from "../shared/component/InputTextField";
 import { IRoom } from "interfaces/Room/IRoom";
 import CircularProgress from "@mui/material/CircularProgress";
-import letsVote from "./assets/wevote.jpg";
+import letsVote from "./assets/letsvote.jpg";
 import { votingTypeData } from "api/VotingTypesData";
 import RoomsTable from "./RoomsTable";
 

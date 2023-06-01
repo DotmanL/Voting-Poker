@@ -20,6 +20,7 @@
     "@types/socket.io": "^3.0.2",
     "axios": "^1.1.2",
     "classnames": "^2.3.2",
+    "crypto-js": "^4.1.1",
     "formik": "^2.2.9",
     "formik-mui": "^5.0.0-alpha.0",
     "formik-mui-x-date-pickers": "^0.0.1",
@@ -70,6 +71,7 @@
     ]
   },
   "devDependencies": {
+    "@types/crypto-js": "^4.1.1",
     "@types/styled-components": "^5.1.26",
     "@types/uuid": "^8.3.4"
   }

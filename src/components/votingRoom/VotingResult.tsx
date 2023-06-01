@@ -20,7 +20,7 @@ function VotingResult(props: Props) {
   const { isSidebarOpen } = useContext(SidebarContext);
   const { votesCasted, room } = props;
   const [showCelebration, setShowCelebration] = useState<boolean>(false);
-  const [playPop] = useSound(popSound);
+  const [playPop, { stop }] = useSound(popSound);
 
   const animationProps = useSpring({
     from: { y: 0 },
@@ -42,13 +42,18 @@ function VotingResult(props: Props) {
   };
 
   useEffect(() => {
+    let celebrationTimeout: NodeJS.Timeout;
     if (checkEquality(votesCasted!, "currentVote")) {
       setShowCelebration(true);
-      setTimeout(() => {
+      celebrationTimeout = setTimeout(() => {
         setShowCelebration(false);
-      }, 20000);
+      }, 10000);
     }
-  }, [votesCasted]);
+    return () => {
+      stop();
+      clearTimeout(celebrationTimeout);
+    };
+  }, [votesCasted, stop]);
 
   return (
     <Grid

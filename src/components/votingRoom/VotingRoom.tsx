@@ -27,6 +27,7 @@ import RoomUsersService, {
   RoomUsersUpdate
 } from "api/RoomUsersService";
 import { IssueContext } from "utility/providers/IssuesProvider";
+import JiraService from "api/JiraService";
 
 const useStyles = makeStyles((theme) => ({
   "@keyframes glowing": {
@@ -90,6 +91,9 @@ function VotingRoom(props: Props) {
   const [votesCasted, setVotesCasted] = useState<IRoomUsers[] | undefined>();
   const [isVoted, setIsVoted] = useState<boolean>(false);
   const [showActiveIssue, setShowActiveIssue] = useState<boolean>(false);
+  const [isJiraTokenValid, setIsJiraTokenValid] = useState<boolean>(false);
+  const [isDisabled, setIsDisabled] = useState(true);
+  const [validityText, setValidityText] = useState<string>("");
   const getRoomId = useParams();
   const getUserId = localStorage.getItem("userId");
   const userId = getUserId ? JSON.parse(getUserId) : null;
@@ -144,17 +148,48 @@ function VotingRoom(props: Props) {
     return activeIssue;
   }, [roomId, setActiveIssue]);
 
+  const checkTokenValidity = useCallback(async () => {
+    try {
+      const response = await JiraService.jiraAccessibleResources(user?._id!);
+
+      if (response?.status === 200) {
+        setIsJiraTokenValid(true);
+      }
+      if (user?.jiraAccessToken && !response) {
+        await JiraService.jiraAuthenticationAutoRefresh(user?._id!);
+        setIsJiraTokenValid(true);
+      }
+      return response;
+    } catch (err) {
+      setIsJiraTokenValid(false);
+      setValidityText("Jira token has expired");
+    }
+  }, [user?._id, user?.jiraAccessToken]);
+
   useEffect(() => {
     const newSocket = io(getBaseUrlWithoutRoute());
     setSocket(newSocket);
-
+    checkTokenValidity();
     joinRoom();
     getActiveIssue();
 
     return () => {
       newSocket.disconnect();
     };
-  }, [joinRoom, getActiveIssue]);
+  }, [joinRoom, getActiveIssue, checkTokenValidity]);
+
+  useEffect(() => {
+    if (!roomUsers) {
+      setIsDisabled(true);
+    }
+
+    if (!!roomUsers && roomUsers?.length > 0 && !!user) {
+      const disabled =
+        roomUsers.filter((ru) => ru.votedState === true).length <
+        roomUsers.length;
+      setIsDisabled(disabled);
+    }
+  }, [roomUsers, user]);
 
   useEffect(() => {
     if (!socket) return;
@@ -266,24 +301,30 @@ function VotingRoom(props: Props) {
     issues
   ]);
 
-  const isDisabled = () => {
-    if (!roomUsers) {
-      return true;
-    }
-    if (!!roomUsers && !!user) {
-      return roomUsers.filter((ru) => ru.votedState === true).length <
-        roomUsers!.length
-        ? true
-        : false;
-    }
-  };
+  // Legacy
+  // const isDisabled = () => {
+  //   if (!roomUsers) {
+  //     return true;
+  //   }
+  //   if (!!roomUsers && !!user) {
+  //     return roomUsers.filter((ru) => ru.votedState === true).length <
+  //       roomUsers!.length
+  //       ? true
+  //       : false;
+  //   }
+  // };
 
   const handleVotesAverage = (roomUsersVotes: IRoomUsers[] | undefined) => {
+    const actualRoomUsersVotes = roomUsersVotes?.filter(
+      (ruv) => ruv.currentVote !== 0
+    );
+
     const totalVotes = roomUsersVotes!.reduce(
       (acc, curr) => acc + curr.currentVote!,
       0
     );
-    const averageVotes = Math.round(totalVotes / roomUsersVotes!.length);
+
+    const averageVotes = Math.round(totalVotes / actualRoomUsersVotes?.length!);
     return averageVotes;
   };
 
@@ -367,24 +408,26 @@ function VotingRoom(props: Props) {
       }
     }
 
-    if (getVoteValue() >= 0 && user) {
+    const userRoomVote = getVoteValue();
+
+    if (userRoomVote >= 0 && user) {
       const userVotingDetails: IVotingDetails = {
-        vote: getVoteValue(),
+        vote: userRoomVote,
         roomId: getRoomId.roomId!,
         sessionId: `${socket.id}${Math.random()}`,
         socketId: socket.id
       };
 
       const isVotedState =
-        (voteValue === userVote && !isVoted) ||
-        (voteValue !== userVote && true);
+        (userRoomVote === userVote && !isVoted) ||
+        (userRoomVote !== userVote && true);
 
       setIsVoted(isVotedState);
       user.currentVote = userVotingDetails.vote;
       user.currentRoomId = userVotingDetails.roomId;
       user.votedState =
-        (voteValue === userVote && !isVoted) ||
-        (voteValue !== userVote && true);
+        (userRoomVote === userVote && !isVoted) ||
+        (userRoomVote !== userVote && true);
       user!.currentVote = getVoteValue();
 
       socket.emit("isVotedState", {
@@ -495,12 +538,15 @@ function VotingRoom(props: Props) {
               room={room}
               issues={issues || []}
               refetchIssues={refetchIssues}
+              isJiraTokenValid={isJiraTokenValid}
+              setIsJiraTokenValid={setIsJiraTokenValid}
+              validityText={validityText}
               isLoading={isLoading}
               error={error}
             />
           </Grid>
         </Grid>
-        <Grid className={isDisabled() ? classes.pickCard : classes.glowingCard}>
+        <Grid className={isDisabled ? classes.pickCard : classes.glowingCard}>
           {!votesCasted ? (
             <Grid
               sx={{
@@ -509,7 +555,7 @@ function VotingRoom(props: Props) {
                 alignItems: "center"
               }}
             >
-              {isDisabled() ? (
+              {isDisabled ? (
                 <Grid>
                   <Typography
                     variant="h3"
@@ -521,7 +567,7 @@ function VotingRoom(props: Props) {
               ) : (
                 <Grid sx={{ mt: 2 }}>
                   <Button
-                    disabled={isDisabled()}
+                    disabled={isDisabled}
                     onClick={handleRevealVotes}
                     sx={[
                       {

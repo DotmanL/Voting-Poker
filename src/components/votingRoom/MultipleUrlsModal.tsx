@@ -126,7 +126,7 @@ function MultipleUrlsModal(props: Props) {
               name="issues"
               label="Issues url"
               multiline
-              rows={15}
+              rows={20}
               value={formik.values.issues.join("\n")}
               onChange={(event) => {
                 formik.setFieldValue(

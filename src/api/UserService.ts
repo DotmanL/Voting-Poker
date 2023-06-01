@@ -56,6 +56,7 @@ const updateUser = async (_id: string, userData: IUser) => {
   try {
     const body = JSON.stringify(userData);
     const response = await apiClient.put<IUser[]>(`updateUser/${_id}`, body);
+    toast.success("user updated");
     return response.data;
   } catch (err: any) {
     console.error(err.message);
@@ -65,6 +66,15 @@ const updateUser = async (_id: string, userData: IUser) => {
 const resetVote = async (_id: string) => {
   try {
     const response = await apiClient.put(`resetVote/${_id}`);
+    return response.data;
+  } catch (err: any) {
+    console.error(err.message);
+  }
+};
+
+const revokeJiraAccess = async (_id: string) => {
+  try {
+    const response = await apiClient.put(`revokeJiraAccess/${_id}`);
     return response.data;
   } catch (err: any) {
     console.error(err.message);
@@ -87,6 +97,7 @@ export const UserService = {
   getRoomUsers,
   updateUser,
   resetVote,
+  revokeJiraAccess,
   deleteUser
 };
 

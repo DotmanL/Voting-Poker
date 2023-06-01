@@ -1,20 +1,17 @@
 import React, { useContext, useState, useEffect, useRef } from "react";
 import Box from "@mui/material/Box";
 import SwipeableDrawer from "@mui/material/SwipeableDrawer";
-import { BsThreeDotsVertical } from "react-icons/bs";
-import { BiImport } from "react-icons/bi";
 import { AiOutlineClose } from "react-icons/ai";
-import { Divider, Grid, Tooltip, Typography } from "@mui/material";
-import Dropdown from "components/shared/component/DropDown";
+import { Button, Grid, Tooltip, Typography } from "@mui/material";
 import MultipleUrlsModal from "./MultipleUrlsModal";
 import SingleIssueTextbox from "./SingleIssueTextbox";
 import { IIssue } from "interfaces/Issues";
 import IssuesView from "./IssuesView";
 import { SidebarContext } from "utility/providers/SideBarProvider";
-import AddIcon from "@mui/icons-material/Add";
 import { useClickAway } from "react-use";
 import { toast } from "react-toastify";
 import IssueService from "api/IssueService";
+import AddTaskIcon from "@mui/icons-material/AddTask";
 import {
   QueryObserverResult,
   RefetchOptions,
@@ -22,25 +19,23 @@ import {
 } from "react-query/types/core/types";
 import { IRoom } from "interfaces/Room/IRoom";
 import { IssueContext } from "utility/providers/IssuesProvider";
+import JiraImportModal from "./JiraImportModal";
+import { userContext } from "App";
+import JiraManagementModal from "./JiraManagementModal";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 const options = [
+  {
+    label: "Import from JIRA",
+    value: "jiraImport",
+    toolTip: "Import your jira issues",
+    link: "https://example.com/option2"
+  },
   {
     label: "Add multiple urls",
     value: "addMultipleUrls",
     toolTip: "Add Multiple Urls",
     link: "https://example.com/option1"
-  },
-  {
-    label: "Import from JIRA",
-    value: "jiraImport",
-    toolTip: "Coming Soon...",
-    link: "https://example.com/option2"
-  },
-  {
-    label: "Import from CSV",
-    value: "csvImport",
-    toolTip: "Coming Soon...",
-    link: "https://example.com/option3"
   }
 ];
 
@@ -53,30 +48,36 @@ type Props = {
   refetchIssues: <TPageData>(
     options?: (RefetchOptions & RefetchQueryFilters<TPageData>) | undefined
   ) => Promise<QueryObserverResult<IIssue[] | undefined, Error>>;
+  isJiraTokenValid: boolean;
+  setIsJiraTokenValid: React.Dispatch<React.SetStateAction<boolean>>;
+  validityText: string;
 };
 
 function RightSidebar(props: Props) {
-  const { issues, isLoading, error, refetchIssues, room, socket } = props;
+  const {
+    issues,
+    isLoading,
+    error,
+    refetchIssues,
+    room,
+    socket,
+    isJiraTokenValid,
+    setIsJiraTokenValid,
+    validityText
+  } = props;
+  const user = useContext(userContext);
   const { isSidebarOpen, setIsSidebarOpen } = useContext(SidebarContext);
-  const [isDropDownOpen, setIsDropDownOpen] = useState<boolean>(false);
-  const [isMiniDropDownOpen, setIsMiniDropDownOpen] = useState<boolean>(false);
+  const [isJiraImportModalOpen, setIsJiraImportModalOpen] =
+    useState<boolean>(false);
+  const [isJiraManagementModalOpen, setIsJiraManagementModalOpen] =
+    useState<boolean>(false);
   const { activeIssue, setActiveIssue } = useContext(IssueContext);
   const [isSingleIssueTextBoxOpen, setIsSingleIssueTextBoxOpen] =
     useState<boolean>(false);
   const [isAddMultipleModalOpen, setIsAddMultipleModalOpen] =
     useState<boolean>(false);
   const [cards, setCards] = useState(issues);
-  const dropDownRef = useRef<HTMLDivElement>(null);
-  const miniDropDownRef = useRef<HTMLDivElement>(null);
   const singleIssueTextBoxRef = useRef<HTMLDivElement>(null);
-
-  useClickAway(dropDownRef, () => {
-    setIsDropDownOpen(false);
-  });
-
-  useClickAway(miniDropDownRef, () => {
-    setIsMiniDropDownOpen(false);
-  });
 
   useClickAway(singleIssueTextBoxRef, () => {
     setIsSingleIssueTextBoxOpen(false);
@@ -90,8 +91,6 @@ function RightSidebar(props: Props) {
     }
 
     if (!isSidebarOpen) {
-      setIsMiniDropDownOpen(false);
-      setIsDropDownOpen(false);
       setIsSingleIssueTextBoxOpen(false);
     }
     socket.on("isIssuesSidebarOpenResponse", (data: any) => {
@@ -135,9 +134,17 @@ function RightSidebar(props: Props) {
 
   function handleOptionClick(label: string) {
     if (label === "addMultipleUrls") {
-      setIsDropDownOpen(false);
       setIsAddMultipleModalOpen(true);
-      setIsMiniDropDownOpen(false);
+    }
+    if (label === "jiraImport") {
+      if (!user) {
+        return;
+      }
+      if (isJiraTokenValid) {
+        setIsJiraManagementModalOpen(true);
+      } else {
+        setIsJiraImportModalOpen(true);
+      }
     }
   }
 
@@ -169,7 +176,6 @@ function RightSidebar(props: Props) {
       isRefetchIssues: true,
       roomId: room.roomId
     });
-    setIsMiniDropDownOpen(false);
   }
 
   function cummulativePoints() {
@@ -210,192 +216,113 @@ function RightSidebar(props: Props) {
       >
         <Grid>
           <Typography variant="h5" sx={{ color: "primary.main", ml: 2 }}>
-            Issues
+            {issues.length} Issue{issues.length > 1 ? "s" : ""}
           </Typography>
         </Grid>
-        <Grid
-          sx={{
-            mr: 2,
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: { md: "space-between", xs: "flex-end" },
-            width: { md: "25%", xs: "100vw" }
-          }}
-        >
+
+        <Typography variant="h6" sx={{ mr: 2, mt: 0.2, color: "primary.main" }}>
+          {issuesStoryPoints} Story Point{issuesStoryPoints > 1 ? "s" : ""}
+        </Typography>
+
+        <Tooltip title="Close Sidebar">
           <Grid
             sx={{
-              display: { md: "flex", xs: "none" },
-              flexDirection: "column"
+              mr: 4,
+              cursor: "pointer",
+              "&:hover": {
+                color: "red"
+              }
             }}
-            ref={dropDownRef}
+            onClick={() => {
+              setIsSidebarOpen(false);
+            }}
           >
-            <Tooltip title="Import Issues">
-              <Grid
-                sx={{
-                  cursor: "pointer",
-                  p: 0.5,
-                  borderRadius: "50%",
-                  "&:hover": {
-                    transition: "box-shadow 0.3s ease-in-out",
-                    boxShadow: (theme) =>
-                      theme.palette.mode === "dark"
-                        ? "0px 0px 10px 2px rgba(255, 255, 255, 0.2)"
-                        : "0px 0px 10px 2px rgba(0, 0, 0, 0.2)"
-                  }
-                }}
-                onClick={() => {
-                  setIsDropDownOpen(!isDropDownOpen);
-                  setIsSingleIssueTextBoxOpen(false);
-                  setIsMiniDropDownOpen(false);
-                }}
-              >
-                <BiImport size={36} />
-              </Grid>
-            </Tooltip>
-
-            <Dropdown isDropDownOpen={isDropDownOpen}>
-              <>
-                {options.map((option, i) => (
-                  <Grid
-                    key={i}
-                    sx={{
-                      borderRadius: "10px"
-                    }}
-                  >
-                    <Grid
-                      sx={{
-                        py: 1,
-                        width: "100%",
-                        height: "100%",
-                        pl: "25px",
-                        pr: "50px",
-                        cursor: "pointer",
-                        boxShadow: (theme) =>
-                          theme.palette.mode === "dark"
-                            ? "0px 0px 10px 2px rgba(255, 255, 255, 0.2)"
-                            : "0px 0px 10px 2px rgba(0, 0, 0, 0.2)",
-                        background: (theme) => theme.palette.secondary.main,
-                        "&:hover": {
-                          background: "#67A3EE",
-                          color: "#FFFFFF",
-                          transition: "box-shadow 0.3s ease-in-out"
-                        }
-                      }}
-                      key={i}
-                    >
-                      <Tooltip title={option.toolTip} leaveDelay={10}>
-                        <Grid onClick={() => handleOptionClick(option.value)}>
-                          {option.label}
-                        </Grid>
-                      </Tooltip>
-                    </Grid>
-                  </Grid>
-                ))}
-              </>
-            </Dropdown>
-            <MultipleUrlsModal
-              cardsLength={cards.length}
-              isAddMultipleModalOpen={isAddMultipleModalOpen}
-              setIsAddMultipleModalOpen={setIsAddMultipleModalOpen}
-              onFormSubmitted={handleCreateIssues}
-            />
+            <AiOutlineClose size={32} />
           </Grid>
-
-          <Grid
-            ref={miniDropDownRef}
-            sx={{ cursor: "pointer", display: { md: "flex", xs: "none" } }}
-          >
-            {!!issues && (
-              <BsThreeDotsVertical
-                onClick={() => {
-                  setIsMiniDropDownOpen(!isMiniDropDownOpen);
-                  setIsDropDownOpen(false);
-                }}
-                size={20}
-              />
-            )}
-            {isMiniDropDownOpen && (
-              <Dropdown isDropDownOpen={isMiniDropDownOpen}>
-                <Grid
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "flex-start",
-                    width: "200px",
-                    height: "auto",
-                    borderRadius: "10px",
-                    zIndex: 100,
-                    py: 2,
-                    cursor: "pointer",
-                    background: (theme) => theme.palette.secondary.main
-                  }}
-                >
-                  <Grid
-                    sx={{
-                      px: 2,
-                      width: "100%",
-                      background: (theme) => theme.palette.secondary.main,
-                      "&:hover": {
-                        background: "darkGray",
-                        color: "black",
-                        opacity: 0.8
-                      }
-                    }}
-                    onClick={handleDeleteAllIssues}
-                  >
-                    Delete Issues
-                  </Grid>
-                </Grid>
-              </Dropdown>
-            )}
-          </Grid>
-          <Divider
-            sx={{ borderWidth: 2, display: { md: "flex", xs: "none" } }}
-            orientation="vertical"
-            flexItem
-          />
-          <Tooltip title="Close Sidebar">
-            <Grid
-              sx={{
-                cursor: "pointer",
-                "&:hover": {
-                  color: "red"
-                }
-              }}
-              onClick={() => {
-                setIsSidebarOpen(false);
-                setIsDropDownOpen(false);
-              }}
-            >
-              <AiOutlineClose size={32} />
-            </Grid>
-          </Tooltip>
-        </Grid>
+        </Tooltip>
       </Grid>
+
       <Grid
         sx={{
-          ml: 3,
           display: "flex",
           flexDirection: "row",
-          justifyContent: "flex-start"
+          alignItems: "center",
+          mt: 1,
+          px: 2,
+          justifyContent: { md: "space-between", xs: "flex-end" },
+          width: { md: "100%", xs: "100vw" }
         }}
       >
         <Grid
           sx={{
-            display: "flex",
+            display: { md: "flex", xs: "none" },
             flexDirection: "row",
             alignItems: "center",
-            justifyContent: "flexStart"
+            mt: 1,
+            px: 0.5,
+            justifyContent: { md: "space-between", xs: "flex-end" },
+            width: { md: "100%", xs: "100vw" }
           }}
         >
-          <Typography>
-            {issues.length} issue{issues.length > 1 ? "s" : ""}
-          </Typography>
-          <Typography sx={{ ml: 1, mt: 0.2 }}>•</Typography>
-          <Typography sx={{ ml: 1, mt: 0.2 }}>
-            {issuesStoryPoints} point{issuesStoryPoints > 1 ? "s" : ""}
-          </Typography>
+          {options.map((option, i) => (
+            <Grid
+              sx={{
+                py: 1,
+                cursor: "pointer"
+              }}
+              key={i}
+            >
+              <Tooltip title={option.toolTip}>
+                <Button
+                  variant="outlined"
+                  sx={{
+                    fontSize: { md: "14px", xs: "12px" },
+                    mx: 1
+                  }}
+                  onClick={() => handleOptionClick(option.value)}
+                >
+                  {option.label}
+                </Button>
+              </Tooltip>
+            </Grid>
+          ))}
+        </Grid>
+        <MultipleUrlsModal
+          cardsLength={cards.length}
+          isAddMultipleModalOpen={isAddMultipleModalOpen}
+          setIsAddMultipleModalOpen={setIsAddMultipleModalOpen}
+          onFormSubmitted={handleCreateIssues}
+        />
+        <JiraImportModal
+          isJiraImportModalOpen={isJiraImportModalOpen}
+          setIsJiraImportModalOpen={setIsJiraImportModalOpen}
+          validityText={validityText}
+        />
+        {isJiraTokenValid && isJiraManagementModalOpen && (
+          <JiraManagementModal
+            issuesLength={cards.length}
+            setIsJiraTokenValid={setIsJiraTokenValid}
+            isJiraManagementModalOpen={isJiraManagementModalOpen}
+            setIsJiraManagementModalOpen={setIsJiraManagementModalOpen}
+            refetchIssues={refetchIssues}
+          />
+        )}
+
+        <Grid sx={{ cursor: "pointer", display: { md: "flex", xs: "none" } }}>
+          <Tooltip title="Delete All Issues">
+            <DeleteIcon
+              sx={{
+                px: 1,
+                mt: 1,
+                height: "32px",
+                width: "100%",
+                "&:hover": {
+                  color: "red"
+                }
+              }}
+              onClick={handleDeleteAllIssues}
+            />
+          </Tooltip>
         </Grid>
       </Grid>
 
@@ -431,16 +358,16 @@ function RightSidebar(props: Props) {
                   cursor: "pointer",
                   mt: 0.5,
                   p: 0.5,
-                  borderRadius: "10px",
-                  "&:hover": {
-                    color: "primary.main",
-                    transition: "box-shadow 0.3s ease-in-out",
-                    boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.2)"
-                  }
+                  borderRadius: "10px"
+                  // "&:hover": {
+                  //   color: "primary.main",
+                  //   transition: "box-shadow 0.3s ease-in-out",
+                  //   boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.2)"
+                  // }
                 }}
                 onClick={() => setIsSingleIssueTextBoxOpen(true)}
               >
-                <AddIcon
+                <AddTaskIcon
                   sx={{
                     marginLeft: "15px",
                     color: (theme) => theme.palette.primary.main,

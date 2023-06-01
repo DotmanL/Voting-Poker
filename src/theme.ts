@@ -15,6 +15,16 @@ export const getDesignTokens = (mode: PaletteMode) => ({
           backgroundColor: mode === "light" ? "#edf2f4" : "#151e22"
         }
       }
+    },
+    MuiButton: {
+      variants: [
+        {
+          props: { variant: undefined },
+          style: {
+            textTransform: "none"
+          } as const
+        }
+      ]
     }
   },
   palette: {
@@ -25,7 +35,7 @@ export const getDesignTokens = (mode: PaletteMode) => ({
             main: "#67A3EE"
           },
           secondary: {
-            // main: "#FEFAE0",
+            // main: "#edf2f4"
             main: "#edf2f4"
           },
           error: {
@@ -35,7 +45,6 @@ export const getDesignTokens = (mode: PaletteMode) => ({
       : {
           primary: {
             main: "#FFFFFF"
-            // main: "#67A3EE"
           },
           secondary: {
             main: "#151e22"
