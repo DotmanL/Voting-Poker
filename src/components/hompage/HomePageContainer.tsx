@@ -1,12 +1,14 @@
 import { Grid } from "@mui/material";
 import LandingPage from "./LandingPage";
 import { NavBar } from "components/shared/component/NavBar";
+import Footer from "./Footer";
 
 function HomePageContainer() {
   return (
     <Grid>
       <NavBar appName="Dot Voting" isBorderBottom />
       <LandingPage />
+      <Footer />
     </Grid>
   );
 }
