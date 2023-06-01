@@ -329,7 +329,7 @@ function JiraManagementModal(props: Props) {
         isOpen={isJiraManagementModalOpen}
         customLeftPosition="40%"
         modalWidth="45vw"
-        size="md"
+        size="lg"
       >
         <Grid
           sx={{
@@ -506,10 +506,12 @@ function JiraManagementModal(props: Props) {
             <Grid
               sx={{
                 flexDirection: "column",
+                flexWrap: "wrap",
                 mt: 2,
                 px: 2,
                 py: 1.5,
-                height: "30%",
+                height: "auto",
+                overflowY: "auto",
                 borderRadius: "10px",
                 border: "2px solid #FFFFFF"
               }}
@@ -571,9 +573,10 @@ function JiraManagementModal(props: Props) {
                     display: "flex",
                     flexDirection: "row",
                     alignItems: "center",
+                    flexWrap: "wrap",
                     mt: 0.5,
                     p: 0.5,
-                    height: "50px"
+                    height: "auto"
                   }}
                 >
                   <Grid>Issue Types - </Grid>
@@ -595,7 +598,7 @@ function JiraManagementModal(props: Props) {
                         borderRadius: "10px",
                         height: "20px",
                         width: "auto",
-                        ml: 1,
+                        m: 0.8,
                         py: 1.5,
                         "&:hover": {
                           background:
@@ -620,7 +623,7 @@ function JiraManagementModal(props: Props) {
                   }}
                 >
                   <Grid>My Filters - </Grid>
-                  {filters?.data.map((filter: any, i: number) => (
+                  {filters?.data.values.map((filter: any, i: number) => (
                     <Grid
                       onClick={() => handleOnClickFliter(filter)}
                       key={i}
@@ -655,13 +658,13 @@ function JiraManagementModal(props: Props) {
           {!isConfigurationMode && (
             <Grid
               sx={{
-                mt: 4,
+                mt: 2,
                 diplay: "flex",
                 flexDirection: "column",
                 height: jiraIssues.length === 0 ? "60%" : "auto",
-                maxHeight: "60%",
+                maxHeight: "65%",
                 borderRadius: "10px",
-                border: "2px solid #67A3EE",
+                border: "1px solid #67A3EE",
                 overflowY: "auto"
               }}
             >
@@ -769,7 +772,15 @@ function JiraManagementModal(props: Props) {
                           justifyContent: "space-between"
                         }}
                       >
-                        <Grid>{jiraIssue.name}</Grid>
+                        <Typography
+                          variant="h6"
+                          sx={{
+                            wordBreak: "break-word",
+                            fontSize: { md: "14px", xs: "12px" }
+                          }}
+                        >
+                          {jiraIssue.name}
+                        </Typography>
                         <Checkbox
                           checked={checkedIssues.some(
                             (issue) => issue.name === jiraIssue.name
