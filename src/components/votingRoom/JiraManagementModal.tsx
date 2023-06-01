@@ -640,9 +640,8 @@ function JiraManagementModal(props: Props) {
                         borderRadius: "10px",
                         height: "auto",
                         width: "auto",
-                        ml: 1,
-                        px: 2,
-                        py: 1,
+                        m: 0.8,
+                        py: 1.5,
                         "&:hover": {
                           opacity: 0.7
                         }
