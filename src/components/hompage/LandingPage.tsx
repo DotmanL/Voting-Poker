@@ -2,7 +2,7 @@ import React from "react";
 import { Button, Grid, Typography } from "@mui/material";
 import bg1 from "./assets/bg1.svg";
 import teams from "./assets/teams.svg";
-import waveBottom from "./assets/wavesBottom.svg";
+// import waveBottom from "./assets/wavesBottom.svg";
 import { Link } from "../shared/component/Link";
 
 function LandingPage() {
@@ -12,7 +12,8 @@ function LandingPage() {
         flexDirection: { md: "row", xs: "column" },
         mt: "80px",
         p: 0,
-        height: "100vh",
+        mb: 0,
+        height: "85vh",
         overflow: "hidden",
         position: "relative",
         background: (theme) => theme.palette.secondary.main
@@ -146,13 +147,13 @@ function LandingPage() {
           </Grid>
         </Grid>
       </Grid>
-      <Grid sx={{ display: { md: "flex", xs: "none" } }}>
+      {/* <Grid sx={{ display: { md: "flex", xs: "none" } }}>
         <img
           src={waveBottom}
           alt="waves"
           style={{
             position: "absolute",
-            opacity: 0.7,
+            opacity: 0.9,
             bottom: 0,
             left: 0,
             right: 0,
@@ -160,7 +161,7 @@ function LandingPage() {
             width: "100%"
           }}
         />
-      </Grid>
+      </Grid> */}
     </Grid>
   );
 }

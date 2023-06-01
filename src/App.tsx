@@ -20,6 +20,7 @@ import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { getDesignTokens } from "theme";
 import IssuesProvider from "utility/providers/IssuesProvider";
 import JiraCallbackContainer from "components/votingRoom/JiraCallbackContainer";
+import PrivacyPolicy from "components/hompage/PrivacyPolicy";
 
 const queryClient = new QueryClient();
 export const userContext = createContext<IUser | null>(null);
@@ -87,6 +88,10 @@ function App() {
                         <Route
                           path="/room/jiraCallback"
                           element={<JiraCallbackContainer />}
+                        />
+                        <Route
+                          path="privacy-policy"
+                          element={<PrivacyPolicy />}
                         />
 
                         <Route path="*" element={<NotFoundContainer />} />
