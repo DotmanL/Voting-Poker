@@ -210,8 +210,6 @@ function JiraManagementModal(props: Props) {
     queryFn: async () => await JiraService.jiraFilters(user?._id!)
   });
 
-  console.log(filters);
-
   const { data: fields } = useQuery({
     queryKey: ["fields"],
     queryFn: async () => await JiraService.jiraFields(user?._id!)
