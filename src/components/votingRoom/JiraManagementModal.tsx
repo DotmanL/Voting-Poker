@@ -20,6 +20,7 @@ import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
+import { useQuery } from "react-query";
 import {
   QueryObserverResult,
   RefetchOptions,
@@ -56,7 +57,6 @@ function JiraManagementModal(props: Props) {
     issuesLength,
     setIsJiraTokenValid
   } = props;
-  const [siteDetails, setSiteDetails] = useState<any>();
   const [jiraIssues, setJiraIssues] = useState<any[]>([]);
   const [issueArray, setIssueArray] = useState<IIssue[]>([]);
   const [checkedIssues, setCheckedIssues] = useState<any[]>([]);
@@ -65,12 +65,8 @@ function JiraManagementModal(props: Props) {
   const [selectedProject, setSelectedProject] = useState<string>("");
   const [selectedIssueType, setSelectedIssueType] = useState<string>("");
   const [selectedFilter, setSelectedFilter] = useState<string>();
-  const [projects, setProjects] = useState<any[]>([]);
-  const [issueTypes, setIssueTypes] = useState<any[]>([]);
-  const [fields, setFields] = useState<any[]>([]);
   const [selectedField, setSelectedField] =
     useState<string>("customfield_10031");
-  const [filters, setFilters] = useState<any[]>();
   const [isConfigurationMode, setIsConfigurationMode] =
     useState<boolean>(false);
   const [isLoadingIssues, setIsLoadingIssues] = useState<boolean>(false);
@@ -86,10 +82,8 @@ function JiraManagementModal(props: Props) {
     }
 
     if (response) {
-      setSiteDetails(response?.data.data[0]);
+      return response?.data.data[0].url;
     }
-
-    return response?.data.data[0].url;
   }, [user?._id, user?.jiraAccessToken]);
 
   const convertIssues = useCallback((issues: any[], siteUrl: string) => {
@@ -201,50 +195,30 @@ function JiraManagementModal(props: Props) {
     [handleBasicSearch, projectJqlQuery]
   );
 
-  const handleGetProjects = useCallback(async () => {
-    const response = await JiraService.jiraProjects(user?._id!);
+  const { data: projects } = useQuery({
+    queryKey: ["projects"],
+    queryFn: async () => await JiraService.jiraProjects(user?._id!)
+  });
 
-    if (user?.jiraAccessToken && !response) {
-      await JiraService.jiraAuthenticationAutoRefresh(user?._id!);
-    }
+  const { data: issueTypes } = useQuery({
+    queryKey: ["issueTypes"],
+    queryFn: async () => await JiraService.jiraIssueTypes(user?._id!)
+  });
 
-    if (response) {
-      setProjects(response.data.values);
-    }
-  }, [user?.jiraAccessToken, user?._id]);
+  const { data: filters } = useQuery({
+    queryKey: ["filters"],
+    queryFn: async () => await JiraService.jiraFilters(user?._id!)
+  });
 
-  const handleGetIssueTypes = useCallback(async () => {
-    const response = await JiraService.jiraIssueTypes(user?._id!);
+  const { data: fields } = useQuery({
+    queryKey: ["fields"],
+    queryFn: async () => await JiraService.jiraFields(user?._id!)
+  });
 
-    if (user?.jiraAccessToken && !response) {
-      await JiraService.jiraAuthenticationAutoRefresh(user?._id!);
-    }
-    if (response) {
-      setIssueTypes(response.data);
-    }
-  }, [user?.jiraAccessToken, user?._id]);
-
-  const handleGetFilters = useCallback(async () => {
-    const response = await JiraService.jiraFilters(user?._id!);
-
-    if (user?.jiraAccessToken && !response) {
-      await JiraService.jiraAuthenticationAutoRefresh(user?._id!);
-    }
-    if (response) {
-      setFilters(response.data);
-    }
-  }, [user?.jiraAccessToken, user?._id]);
-
-  const handleGetFields = useCallback(async () => {
-    const response = await JiraService.jiraFields(user?._id!);
-
-    if (user?.jiraAccessToken && !response) {
-      await JiraService.jiraAuthenticationAutoRefresh(user?._id!);
-    }
-    if (response) {
-      setFields(response.data);
-    }
-  }, [user?.jiraAccessToken, user?._id]);
+  const { data: siteDetails } = useQuery({
+    queryKey: ["siteDetails"],
+    queryFn: async () => await JiraService.jiraAccessibleResources(user?._id!)
+  });
 
   useEffect(() => {
     async function getStatus() {
@@ -254,24 +228,9 @@ function JiraManagementModal(props: Props) {
       if (!selectedProject) {
         setJiraIssues([]);
       }
-      await getSite();
-      await handleGetProjects();
-      await handleGetIssueTypes();
-      await handleGetFilters();
-      await handleGetFields();
     }
     getStatus();
-  }, [
-    selectedProject,
-    selectedIssueType,
-    selectedFilter,
-    getSite,
-    handleBasicSearch,
-    handleGetProjects,
-    handleGetFilters,
-    handleGetIssueTypes,
-    handleGetFields
-  ]);
+  }, [selectedProject, selectedIssueType, handleBasicSearch]);
 
   async function handleAddIssue(issue: any) {
     let currentOrder = issuesLength + 1;
@@ -416,7 +375,7 @@ function JiraManagementModal(props: Props) {
             <Typography variant="h6"> Issue Management for </Typography>
             <Typography variant="h6" sx={{ ml: 0.5 }}>
               {" "}
-              {!!siteDetails ? siteDetails.url : ""}
+              {!!siteDetails ? siteDetails?.data.data[0].url : ""}
             </Typography>
           </Grid>
 
@@ -484,15 +443,15 @@ function JiraManagementModal(props: Props) {
                     sx={{ height: "60%" }}
                     value={selectedField}
                     label={
-                      fields[
-                        fields.findIndex(
-                          (field) => field.id === "customfield_10031"
+                      fields?.data[
+                        fields?.data.findIndex(
+                          (field: any) => field.id === "customfield_10031"
                         )
                       ]?.name
                     }
                     onChange={handleSelectField}
                   >
-                    {fields.map((field, i) => (
+                    {fields?.data.map((field: any, i: number) => (
                       <MenuItem key={i} value={field.id}>
                         {field.name} ({field.id})
                       </MenuItem>
@@ -579,7 +538,7 @@ function JiraManagementModal(props: Props) {
                   }}
                 >
                   <Grid>Projects - </Grid>
-                  {projects?.map((project, i) => (
+                  {projects?.data.values.map((project: any, i: number) => (
                     <Grid
                       onClick={() => handleOnClickProject(project)}
                       key={i}
@@ -618,9 +577,8 @@ function JiraManagementModal(props: Props) {
                   }}
                 >
                   <Grid>Issue Types - </Grid>
-                  {issueTypes?.map((issue, i) => (
+                  {issueTypes?.data.map((issue: any, i: number) => (
                     <Button
-                      variant="contained"
                       onClick={() => handleOnClickIssueType(issue)}
                       disabled={!selectedProject}
                       key={i}
@@ -638,7 +596,6 @@ function JiraManagementModal(props: Props) {
                         height: "20px",
                         width: "auto",
                         ml: 1,
-                        px: 2,
                         py: 1.5,
                         "&:hover": {
                           background:
@@ -663,7 +620,7 @@ function JiraManagementModal(props: Props) {
                   }}
                 >
                   <Grid>My Filters - </Grid>
-                  {filters?.map((filter, i) => (
+                  {filters?.data.map((filter: any, i: number) => (
                     <Grid
                       onClick={() => handleOnClickFliter(filter)}
                       key={i}

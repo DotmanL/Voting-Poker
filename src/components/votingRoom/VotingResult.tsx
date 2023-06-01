@@ -49,10 +49,9 @@ function VotingResult(props: Props) {
         setShowCelebration(false);
       }, 10000);
     }
-
     return () => {
-      clearTimeout(celebrationTimeout);
       stop();
+      clearTimeout(celebrationTimeout);
     };
   }, [votesCasted, stop]);
 

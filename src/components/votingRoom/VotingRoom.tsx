@@ -92,6 +92,7 @@ function VotingRoom(props: Props) {
   const [isVoted, setIsVoted] = useState<boolean>(false);
   const [showActiveIssue, setShowActiveIssue] = useState<boolean>(false);
   const [isJiraTokenValid, setIsJiraTokenValid] = useState<boolean>(false);
+  const [isDisabled, setIsDisabled] = useState(true);
   const [validityText, setValidityText] = useState<string>("");
   const getRoomId = useParams();
   const getUserId = localStorage.getItem("userId");
@@ -176,6 +177,19 @@ function VotingRoom(props: Props) {
       newSocket.disconnect();
     };
   }, [joinRoom, getActiveIssue, checkTokenValidity]);
+
+  useEffect(() => {
+    if (!roomUsers) {
+      setIsDisabled(true);
+    }
+
+    if (!!roomUsers && roomUsers?.length > 0 && !!user) {
+      const disabled =
+        roomUsers.filter((ru) => ru.votedState === true).length <
+        roomUsers.length;
+      setIsDisabled(disabled);
+    }
+  }, [roomUsers, user]);
 
   useEffect(() => {
     if (!socket) return;
@@ -287,17 +301,18 @@ function VotingRoom(props: Props) {
     issues
   ]);
 
-  const isDisabled = () => {
-    if (!roomUsers) {
-      return true;
-    }
-    if (!!roomUsers && !!user) {
-      return roomUsers.filter((ru) => ru.votedState === true).length <
-        roomUsers!.length
-        ? true
-        : false;
-    }
-  };
+  // Legacy
+  // const isDisabled = () => {
+  //   if (!roomUsers) {
+  //     return true;
+  //   }
+  //   if (!!roomUsers && !!user) {
+  //     return roomUsers.filter((ru) => ru.votedState === true).length <
+  //       roomUsers!.length
+  //       ? true
+  //       : false;
+  //   }
+  // };
 
   const handleVotesAverage = (roomUsersVotes: IRoomUsers[] | undefined) => {
     const actualRoomUsersVotes = roomUsersVotes?.filter(
@@ -531,7 +546,7 @@ function VotingRoom(props: Props) {
             />
           </Grid>
         </Grid>
-        <Grid className={isDisabled() ? classes.pickCard : classes.glowingCard}>
+        <Grid className={isDisabled ? classes.pickCard : classes.glowingCard}>
           {!votesCasted ? (
             <Grid
               sx={{
@@ -540,7 +555,7 @@ function VotingRoom(props: Props) {
                 alignItems: "center"
               }}
             >
-              {isDisabled() ? (
+              {isDisabled ? (
                 <Grid>
                   <Typography
                     variant="h3"
@@ -552,7 +567,7 @@ function VotingRoom(props: Props) {
               ) : (
                 <Grid sx={{ mt: 2 }}>
                   <Button
-                    disabled={isDisabled()}
+                    disabled={isDisabled}
                     onClick={handleRevealVotes}
                     sx={[
                       {
