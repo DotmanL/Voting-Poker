@@ -641,7 +641,8 @@ function JiraManagementModal(props: Props) {
                         height: "auto",
                         width: "auto",
                         m: 0.8,
-                        py: 1.5,
+                        py: 1,
+                        px: 0.8,
                         "&:hover": {
                           opacity: 0.7
                         }
