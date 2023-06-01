@@ -510,7 +510,7 @@ function JiraManagementModal(props: Props) {
                 mt: 2,
                 px: 2,
                 py: 1.5,
-                height: "auto",
+                height: "300px",
                 overflowY: "auto",
                 borderRadius: "10px",
                 border: "2px solid #FFFFFF"
@@ -617,9 +617,10 @@ function JiraManagementModal(props: Props) {
                     display: "flex",
                     flexDirection: "row",
                     alignItems: "center",
+                    flexWrap: "wrap",
                     mt: 0.5,
                     p: 0.5,
-                    height: "45px"
+                    height: "auto"
                   }}
                 >
                   <Grid>My Filters - </Grid>
@@ -637,11 +638,11 @@ function JiraManagementModal(props: Props) {
                         border: "2px solid white",
                         cursor: "pointer",
                         borderRadius: "10px",
-                        height: "20px",
+                        height: "auto",
                         width: "auto",
                         ml: 1,
                         px: 2,
-                        py: 1.5,
+                        py: 1,
                         "&:hover": {
                           opacity: 0.7
                         }
@@ -661,11 +662,12 @@ function JiraManagementModal(props: Props) {
                 mt: 2,
                 diplay: "flex",
                 flexDirection: "column",
-                height: jiraIssues.length === 0 ? "60%" : "auto",
-                maxHeight: "65%",
+                // height: jiraIssues.length === 0 ? "60%" : "auto",
+                // maxHeight: "65%",
+                height: "500px",
                 borderRadius: "10px",
                 border: "1px solid #67A3EE",
-                overflowY: "auto"
+                overflow: "auto"
               }}
             >
               <Grid
