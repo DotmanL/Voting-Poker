@@ -7,6 +7,7 @@ import { useDrag, useDrop } from "react-dnd";
 import Typography from "@mui/material/Typography";
 import Link from "@mui/material/Link";
 import { IRoom } from "interfaces/Room/IRoom";
+import { userContext } from "App";
 import CardType from "utility/CardType";
 import IssueService from "api/IssueService";
 import { IIssue } from "interfaces/Issues";
@@ -21,7 +22,11 @@ import { useClickAway } from "react-use";
 import IssueCardDetails from "./IssueCardDetails";
 import IssueStoryPointsModal from "./IssueStoryPointsModal";
 import Tooltip from "@mui/material/Tooltip";
+import SaveIcon from "@mui/icons-material/Save";
 import DeleteIcon from "@mui/icons-material/Delete";
+import JiraService from "api/JiraService";
+import { toast } from "react-toastify";
+import Spinner from "components/shared/component/Spinner";
 
 type Props = {
   room: IRoom;
@@ -59,12 +64,15 @@ function IssuesCard(props: Props) {
     handleDeleteIssue
   } = props;
   const ref = useRef<HTMLDivElement>(null);
+  const user = useContext(userContext);
   const { activeIssue, setActiveIssue } = useContext(IssueContext);
   const [isCardDetailsOpen, setIsCardDetailsOpen] = useState<boolean>(false);
   const [isStoryPointsDropDownOpen, setIsStoryPointsDropDownOpen] =
     useState<boolean>(false);
-  const cardValues = CardType(room.votingSystem);
+  const [isAddingStoryPoints, setIsAddingStoryPoints] =
+    useState<boolean>(false);
 
+  const cardValues = CardType(room.votingSystem);
   const storyPointsDropDownRef = useRef<HTMLDivElement>(null);
 
   useClickAway(storyPointsDropDownRef, () => {
@@ -183,6 +191,31 @@ function IssuesCard(props: Props) {
     event.stopPropagation();
   };
 
+  async function handleSaveToJira(issue: IIssue) {
+    if (!issue) {
+      return;
+    }
+
+    const fieldValue = issue.storyPoints!;
+
+    setIsAddingStoryPoints(true);
+    const response = await JiraService.jiraUpdateStoryPoints(
+      user?._id!,
+      issue.jiraIssueId!,
+      fieldValue
+    );
+    setIsAddingStoryPoints(false);
+    if (response?.status === 200) {
+      toast.success("Story points added to jira successfully", {
+        autoClose: 1000
+      });
+      return;
+    } else if (response?.status === 400) {
+      //Note: show modal and say how to set up storypoints in screens
+      //https://support.atlassian.com/jira-cloud-administration/docs/add-a-custom-field-to-a-screen/
+    }
+  }
+
   async function handleonFormSubmitted(formData: IIssue) {
     await IssueService.updateIssue(issue._id!, formData);
     refetchIssues();
@@ -215,6 +248,7 @@ function IssuesCard(props: Props) {
           m: 0,
           width: { md: "400px", xs: "85vw" },
           height: "auto",
+          maxHeight: "220px",
           border: canDrop
             ? "1px solid green"
             : activeIssue?._id === issue._id
@@ -249,14 +283,61 @@ function IssuesCard(props: Props) {
           }}
         >
           <Grid>
-            <Typography variant="h6">{issue.name}</Typography>
+            <Typography variant="h6">
+              {issue.name?.length! > 30
+                ? issue.name?.slice(0, 30) + "..."
+                : issue.name}
+            </Typography>
           </Grid>
 
           <Grid
             sx={{
+              display: "flex",
+              flexDirection: "row",
+              width: "auto",
+              px: 0.5,
               position: "absolute",
-              // right: { md: "60%", xs: 20 },
-              left: "80%",
+              left: "75%",
+              zIndex: 400,
+              "&:hover": {
+                color: "red"
+              }
+            }}
+          >
+            {isAddingStoryPoints ? (
+              <Spinner fullHeight={false} spinnerType="PuffLoader" size={50} />
+            ) : (
+              <>
+                {!!issue.jiraIssueId && (
+                  <Tooltip title="Save StoryPoint to Jira">
+                    <SaveIcon
+                      sx={{
+                        mx: 0.5,
+                        height: "30px",
+                        width: "80%",
+                        "&:hover": {
+                          color: "green"
+                        }
+                      }}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        handleSaveToJira(issue);
+                      }}
+                    />
+                  </Tooltip>
+                )}
+              </>
+            )}
+          </Grid>
+
+          <Grid
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              width: "auto",
+              px: 0.5,
+              position: "absolute",
+              left: "85%",
               zIndex: 400,
               "&:hover": {
                 color: "red"
@@ -266,8 +347,8 @@ function IssuesCard(props: Props) {
             <Tooltip title="Delete Issue">
               <DeleteIcon
                 sx={{
-                  px: 2,
-                  width: "100%",
+                  height: "32px",
+                  width: "80%",
                   "&:hover": {
                     color: "red"
                   }
@@ -303,8 +384,8 @@ function IssuesCard(props: Props) {
               fontSize: { md: "18px", xs: "14px" }
             }}
           >
-            {issue.summary?.length! > 40
-              ? issue.summary?.slice(0, 40) + "..."
+            {issue.summary?.length! > 30
+              ? issue.summary?.slice(0, 30) + "..."
               : issue.summary}
           </Typography>
         </Grid>

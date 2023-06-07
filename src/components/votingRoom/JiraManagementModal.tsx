@@ -57,6 +57,7 @@ function JiraManagementModal(props: Props) {
     issuesLength,
     setIsJiraTokenValid
   } = props;
+  const user = useContext(userContext);
   const [jiraIssues, setJiraIssues] = useState<any[]>([]);
   const [issueArray, setIssueArray] = useState<IIssue[]>([]);
   const [checkedIssues, setCheckedIssues] = useState<any[]>([]);
@@ -65,12 +66,12 @@ function JiraManagementModal(props: Props) {
   const [selectedProject, setSelectedProject] = useState<string>("");
   const [selectedIssueType, setSelectedIssueType] = useState<string>("");
   const [selectedFilter, setSelectedFilter] = useState<string>();
-  const [selectedField, setSelectedField] =
-    useState<string>("customfield_10031");
+  const [selectedField, setSelectedField] = useState<string>(
+    !!user?.storyPointsField ? user.storyPointsField : ""
+  );
   const [isConfigurationMode, setIsConfigurationMode] =
     useState<boolean>(false);
   const [isLoadingIssues, setIsLoadingIssues] = useState<boolean>(false);
-  const user = useContext(userContext);
   const { isSidebarOpen, setIsSidebarOpen } = useContext(SidebarContext);
   const { roomId } = useParams<RoomRouteParams>();
 
@@ -86,13 +87,32 @@ function JiraManagementModal(props: Props) {
     }
   }, [user?._id, user?.jiraAccessToken]);
 
+  const checkTokenValidity = useCallback(async () => {
+    try {
+      const response = await JiraService.jiraAccessibleResources(user?._id!);
+
+      if (response?.status === 200) {
+        setIsJiraTokenValid(true);
+        return;
+      }
+      if (user?.jiraAccessToken && !response) {
+        await JiraService.jiraAuthenticationAutoRefresh(user?._id!);
+        setIsJiraTokenValid(true);
+      }
+      return response;
+    } catch (err) {
+      setIsJiraTokenValid(false);
+    }
+  }, [user?._id, user?.jiraAccessToken, setIsJiraTokenValid]);
+
   const convertIssues = useCallback((issues: any[], siteUrl: string) => {
     return issues.map((issue) => {
       const localIssue: IIssue = {
         name: issue.fields.summary,
         link: `${siteUrl}/browse/${issue.key}`,
         summary:
-          issue?.fields?.description?.content?.[0]?.content?.[0]?.text ?? ""
+          issue?.fields?.description?.content?.[0]?.content?.[0]?.text ?? "",
+        jiraIssueId: issue.id
       };
       return localIssue;
     });
@@ -125,7 +145,8 @@ function JiraManagementModal(props: Props) {
         "status",
         "assignee",
         "description",
-        "priority"
+        "priority",
+        !!user?.storyPointsField ? user?.storyPointsField : ""
       ];
 
       setIsLoadingIssues(true);
@@ -156,6 +177,7 @@ function JiraManagementModal(props: Props) {
     },
     [
       user?.jiraAccessToken,
+      user?.storyPointsField,
       user?._id,
       convertIssues,
       getSite,
@@ -221,6 +243,7 @@ function JiraManagementModal(props: Props) {
   });
 
   useEffect(() => {
+    checkTokenValidity();
     async function getStatus() {
       if (selectedProject && !selectedIssueType) {
         await handleBasicSearch();
@@ -230,7 +253,12 @@ function JiraManagementModal(props: Props) {
       }
     }
     getStatus();
-  }, [selectedProject, selectedIssueType, handleBasicSearch]);
+  }, [
+    selectedProject,
+    selectedIssueType,
+    handleBasicSearch,
+    checkTokenValidity
+  ]);
 
   async function handleAddIssue(issue: any) {
     let currentOrder = issuesLength + 1;
@@ -243,6 +271,7 @@ function JiraManagementModal(props: Props) {
       link: issue.link,
       summary: issue.summary ?? "",
       order: currentOrder,
+      jiraIssueId: issue.jiraIssueId,
       roomId: roomId!
     };
 
@@ -313,8 +342,10 @@ function JiraManagementModal(props: Props) {
     setSelectedIssueType("");
   }
 
-  function handleSelectField(event: SelectChangeEvent) {
+  async function handleSelectField(event: SelectChangeEvent) {
     setSelectedField(event.target.value as string);
+    user!.storyPointsField = event.target.value;
+    await UserService.updateUser(user?._id!, user!);
   }
 
   async function handleRevokeJiraAcccess() {
@@ -334,8 +365,9 @@ function JiraManagementModal(props: Props) {
         <Grid
           sx={{
             diplay: "flex",
-            background: "#151e22",
-            color: "white",
+            background: "secondary.main",
+            color: (theme) =>
+              theme.palette.mode === "dark" ? "white" : "black",
             flexDirection: "column",
             justifyContent: "center",
             height: "90%",
@@ -384,7 +416,8 @@ function JiraManagementModal(props: Props) {
               alignSelf: "flex-end",
               cursor: "pointer",
               position: "absolute",
-              color: "white",
+              color: (theme) =>
+                theme.palette.mode === "dark" ? "white" : "black",
               right: "60px",
               top: "24px"
             }}
@@ -411,7 +444,10 @@ function JiraManagementModal(props: Props) {
                 borderRadius: "10px",
                 px: 4,
                 mt: 2,
-                border: "2px solid #FFFFFF"
+                border: (theme) =>
+                  theme.palette.mode === "dark"
+                    ? "2px solid white"
+                    : "2px solid #67A3EE"
               }}
             >
               <Grid
@@ -445,7 +481,7 @@ function JiraManagementModal(props: Props) {
                     label={
                       fields?.data[
                         fields?.data.findIndex(
-                          (field: any) => field.id === "customfield_10031"
+                          (field: any) => field.id === user?.storyPointsField
                         )
                       ]?.name
                     }
@@ -513,7 +549,10 @@ function JiraManagementModal(props: Props) {
                 height: "300px",
                 overflowY: "auto",
                 borderRadius: "10px",
-                border: "2px solid #FFFFFF"
+                border: (theme) =>
+                  theme.palette.mode === "dark"
+                    ? "2px solid white"
+                    : "2px solid #67A3EE"
               }}
             >
               <Typography variant="h6" sx={{ cursor: "pointer" }}>
@@ -551,7 +590,10 @@ function JiraManagementModal(props: Props) {
                         justifyContent: "center",
                         background:
                           selectedProject === project.id ? "green" : "",
-                        border: "2px solid white",
+                        border: (theme) =>
+                          theme.palette.mode === "dark"
+                            ? "2px solid white"
+                            : "2px solid #67A3EE",
                         cursor: "pointer",
                         borderRadius: "10px",
                         height: "20px",
@@ -593,7 +635,10 @@ function JiraManagementModal(props: Props) {
                         color: "white",
                         background:
                           selectedIssueType === issue.name ? "green" : "none",
-                        border: "2px solid white",
+                        border: (theme) =>
+                          theme.palette.mode === "dark"
+                            ? "2px solid white"
+                            : "2px solid #67A3EE",
                         cursor: "pointer",
                         borderRadius: "10px",
                         height: "20px",
@@ -635,7 +680,10 @@ function JiraManagementModal(props: Props) {
                         justifyContent: "center",
                         background:
                           selectedFilter === filter.name ? "green" : "",
-                        border: "2px solid white",
+                        border: (theme) =>
+                          theme.palette.mode === "dark"
+                            ? "2px solid white"
+                            : "2px solid #67A3EE",
                         cursor: "pointer",
                         borderRadius: "10px",
                         height: "auto",
@@ -662,11 +710,12 @@ function JiraManagementModal(props: Props) {
                 mt: 2,
                 diplay: "flex",
                 flexDirection: "column",
-                // height: jiraIssues.length === 0 ? "60%" : "auto",
-                // maxHeight: "65%",
-                height: "500px",
+                maxHeight: "500px",
                 borderRadius: "10px",
-                border: "1px solid #67A3EE",
+                border: (theme) =>
+                  theme.palette.mode === "dark"
+                    ? "2px solid white"
+                    : "2px solid #67A3EE",
                 overflow: "auto"
               }}
             >
@@ -678,8 +727,9 @@ function JiraManagementModal(props: Props) {
                   display: "flex",
                   flexDirection: "row",
                   alignItems: "center",
+                  fontSize: "22px",
                   color: (theme) =>
-                    theme.palette.mode === "dark" ? "white" : "white",
+                    theme.palette.mode === "dark" ? "white" : "black",
                   background: (theme) =>
                     theme.palette.mode === "dark" ? "#151e22" : "green",
                   borderBottom: "2px solid white",
@@ -733,6 +783,7 @@ function JiraManagementModal(props: Props) {
                     mt: 2,
                     display: "flex",
                     flexDirection: "row",
+                    height: "auto",
                     justifyContent: "space-evenly",
                     flexWrap: "wrap"
                   }}
@@ -759,8 +810,12 @@ function JiraManagementModal(props: Props) {
                           ? "1px solid green"
                           : "",
                         my: "15px",
-                        background: (theme) =>
-                          theme.palette.mode === "dark" ? "#000814" : "#fdf0d5",
+
+                        boxShadow: (theme) =>
+                          theme.palette.mode === "dark"
+                            ? "0px 0px 10px 2px rgba(255, 255, 255, 0.1)"
+                            : "0px 0px 10px 2px rgba(0, 0, 0, 0.1)",
+                        background: "secondary.main",
                         "&:hover": {
                           border: "1px solid #green"
                         }
@@ -781,7 +836,9 @@ function JiraManagementModal(props: Props) {
                             fontSize: { md: "14px", xs: "12px" }
                           }}
                         >
-                          {jiraIssue.name}
+                          {jiraIssue.name?.length! > 30
+                            ? jiraIssue.name?.slice(0, 30) + "..."
+                            : jiraIssue.name}
                         </Typography>
                         <Checkbox
                           checked={checkedIssues.some(

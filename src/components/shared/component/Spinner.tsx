@@ -13,10 +13,11 @@ const override: CSSProperties = {
 type Props = {
   fullHeight?: boolean;
   spinnerType?: string;
+  size?: number;
 };
 
 function Spinner(props: Props) {
-  const { fullHeight = true, spinnerType = "RingLoader" } = props;
+  const { fullHeight = true, spinnerType = "RingLoader", size = 100 } = props;
   return (
     <div
       style={{
@@ -27,10 +28,10 @@ function Spinner(props: Props) {
       }}
     >
       {spinnerType === "RingLoader" && (
-        <RingLoader cssOverride={override} size={100} color="#67A3EE" />
+        <RingLoader cssOverride={override} size={size} color="#67A3EE" />
       )}
       {spinnerType === "PuffLoader" && (
-        <PuffLoader cssOverride={override} size={100} color="#67A3EE" />
+        <PuffLoader cssOverride={override} size={size} color="#67A3EE" />
       )}
     </div>
   );

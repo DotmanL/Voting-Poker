@@ -23,6 +23,9 @@ import JiraImportModal from "./JiraImportModal";
 import { userContext } from "App";
 import JiraManagementModal from "./JiraManagementModal";
 import DeleteIcon from "@mui/icons-material/Delete";
+import SaveIcon from "@mui/icons-material/Save";
+import JiraService from "api/JiraService";
+import Spinner from "components/shared/component/Spinner";
 
 const options = [
   {
@@ -77,6 +80,8 @@ function RightSidebar(props: Props) {
   const [isAddMultipleModalOpen, setIsAddMultipleModalOpen] =
     useState<boolean>(false);
   const [cards, setCards] = useState(issues);
+  const [isAddingStoryPoints, setIsAddingStoryPoints] =
+    useState<boolean>(false);
   const singleIssueTextBoxRef = useRef<HTMLDivElement>(null);
 
   useClickAway(singleIssueTextBoxRef, () => {
@@ -178,6 +183,38 @@ function RightSidebar(props: Props) {
     });
   }
 
+  async function handleSaveAllJiraIssues() {
+    const jiraIssues = issues.filter((issue) => issue.jiraIssueId !== null);
+
+    let showToast = false;
+    for (const issue of jiraIssues) {
+      const fieldValue = issue.storyPoints!;
+      setIsAddingStoryPoints(true);
+      const response = await JiraService.jiraUpdateStoryPoints(
+        user?._id!,
+        issue.jiraIssueId!,
+        fieldValue
+      );
+
+      setIsAddingStoryPoints(false);
+      if (response?.status === 200) {
+        showToast = true;
+      } else if (response?.status === 400) {
+        // Note: show modal and say how to set up storypoints in screens
+        // https://support.atlassian.com/jira-cloud-administration/docs/add-a-custom-field-to-a-screen/
+      }
+    }
+
+    if (showToast) {
+      toast.success(
+        `Story points added to ${jiraIssues.length} Jira Issues successfully`,
+        {
+          autoClose: 1800
+        }
+      );
+    }
+  }
+
   function cummulativePoints() {
     const totalStoryPoints = issues.reduce(
       (acc, issue) => acc + issue?.storyPoints!,
@@ -261,7 +298,7 @@ function RightSidebar(props: Props) {
             mt: 1,
             px: 0.5,
             justifyContent: { md: "space-between", xs: "flex-end" },
-            width: { md: "100%", xs: "100vw" }
+            width: { md: "75%", xs: "100vw" }
           }}
         >
           {options.map((option, i) => (
@@ -276,7 +313,7 @@ function RightSidebar(props: Props) {
                 <Button
                   variant="outlined"
                   sx={{
-                    fontSize: { md: "14px", xs: "12px" },
+                    fontSize: { md: "12px", xs: "12px" },
                     mx: 1
                   }}
                   onClick={() => handleOptionClick(option.value)}
@@ -308,14 +345,35 @@ function RightSidebar(props: Props) {
           />
         )}
 
-        <Grid sx={{ cursor: "pointer", display: { md: "flex", xs: "none" } }}>
+        <Grid sx={{ display: { md: "flex", xs: "none" } }}>
+          {isAddingStoryPoints ? (
+            <Spinner fullHeight={false} spinnerType="PuffLoader" size={50} />
+          ) : (
+            <Tooltip title="Save All Jira Issues StoryPoints">
+              <SaveIcon
+                sx={{
+                  px: 1,
+                  mt: 1,
+                  cursor: !user?.storyPointsField ? "not-allowed" : "pointer",
+                  pointerEvents: !user?.storyPointsField ? "none" : "auto",
+                  height: "32px",
+                  width: "50%",
+                  "&:hover": {
+                    color: "green"
+                  }
+                }}
+                onClick={handleSaveAllJiraIssues}
+              />
+            </Tooltip>
+          )}
           <Tooltip title="Delete All Issues">
             <DeleteIcon
               sx={{
+                cursor: "pointer",
                 px: 1,
                 mt: 1,
                 height: "32px",
-                width: "100%",
+                width: "50%",
                 "&:hover": {
                   color: "red"
                 }
