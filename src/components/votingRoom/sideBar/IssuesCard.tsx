@@ -261,7 +261,7 @@ function IssuesCard(props: Props) {
           m: 0,
           width: { md: "400px", xs: "85vw" },
           height: "auto",
-          maxHeight: "215px",
+          maxHeight: "218px",
           border: canDrop
             ? "1px solid green"
             : activeIssue?._id === issue._id
@@ -296,7 +296,7 @@ function IssuesCard(props: Props) {
           }}
         >
           <Grid>
-            <Typography variant="h4" fontSize={18}>
+            <Typography variant="h4" fontSize={18} fontWeight={"bold"}>
               {issue.name?.length! > 30
                 ? issue.name?.slice(0, 30) + "..."
                 : issue.name}
