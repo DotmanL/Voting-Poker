@@ -411,7 +411,7 @@ function IssuesCard(props: Props) {
             alignItems: "center",
             justifyContent: "space-between",
             px: 1,
-            mt: 2
+            mt: 1
           }}
         >
           <Grid
