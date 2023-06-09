@@ -296,7 +296,7 @@ function IssuesCard(props: Props) {
           }}
         >
           <Grid>
-            <Typography variant="h6">
+            <Typography variant="h4" fontSize={18}>
               {issue.name?.length! > 30
                 ? issue.name?.slice(0, 30) + "..."
                 : issue.name}
