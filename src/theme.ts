@@ -12,7 +12,7 @@ export const getDesignTokens = (mode: PaletteMode) => ({
       styleOverrides: {
         colorPrimary: {
           // backgroundColor: "#FEFAE0",
-          backgroundColor: mode === "light" ? "#edf2f4" : "#151e22"
+          backgroundColor: mode === "light" ? "#e9ecef" : "#151e22"
         }
       }
     },
@@ -36,7 +36,7 @@ export const getDesignTokens = (mode: PaletteMode) => ({
           },
           secondary: {
             // main: "#edf2f4"
-            main: "#edf2f4"
+            main: "#e9ecef"
           },
           error: {
             main: red[500]

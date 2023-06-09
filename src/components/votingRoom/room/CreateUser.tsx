@@ -5,7 +5,7 @@ import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import * as yup from "yup";
 import { Formik, Form, Field, FormikHelpers } from "formik";
-import { InputTextField } from "../shared/component/InputTextField";
+import { InputTextField } from "components/shared/component/InputTextField";
 import Spinner from "components/shared/component/Spinner";
 import { IUser } from "interfaces/User/IUser";
 

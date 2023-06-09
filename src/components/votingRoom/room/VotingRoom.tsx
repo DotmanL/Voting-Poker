@@ -10,14 +10,14 @@ import { IVotingDetails } from "interfaces/User/IVotingDetails";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import { io } from "socket.io-client";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 // import { toast } from "react-toastify";
 import { IRoomUsers } from "interfaces/RoomUsers";
 import { makeStyles } from "@mui/styles";
 import { Button, Link } from "@mui/material";
 import { getBaseUrlWithoutRoute } from "api";
 import VotingResultsContainer from "./VotingResultsContainer";
-import RightSidebar from "./RightSidebar";
+import RightSidebar from "../sideBar/RightSidebar";
 import { IIssue } from "interfaces/Issues";
 import { SidebarContext } from "utility/providers/SideBarProvider";
 import IssueService from "api/IssueService";
@@ -84,20 +84,30 @@ function VotingRoom(props: Props) {
   const classes = useStyles();
   const user = useContext(userContext);
   const { isSidebarOpen } = useContext(SidebarContext);
+  const { activeIssue, setActiveIssue } = useContext(IssueContext);
+
   const [socket, setSocket] = useState<any>(null);
   const [roomUsers, setRoomUsers] = useState<IRoomUsers[]>();
   const [userVote, setUserVote] = useState<number | undefined>();
-  const { activeIssue, setActiveIssue } = useContext(IssueContext);
   const [votesCasted, setVotesCasted] = useState<IRoomUsers[] | undefined>();
   const [isVoted, setIsVoted] = useState<boolean>(false);
   const [showActiveIssue, setShowActiveIssue] = useState<boolean>(false);
   const [isJiraTokenValid, setIsJiraTokenValid] = useState<boolean>(false);
   const [isDisabled, setIsDisabled] = useState(true);
   const [validityText, setValidityText] = useState<string>("");
+  const [isJiraManagementModalOpen, setIsJiraManagementModalOpen] =
+    useState<boolean>(false);
+  const [isFirstLauchJiraModalOpen, setIsFirstLaunchJiraModalOpen] =
+    useState<boolean>(false);
+
   const getRoomId = useParams();
   const getUserId = localStorage.getItem("userId");
   const userId = getUserId ? JSON.parse(getUserId) : null;
   const roomId = Object.values(getRoomId)[0];
+  const { search } = useLocation();
+  const navigate = useNavigate();
+  const params = new URLSearchParams(search);
+  const jiraAuthenticate = params.get("jiraAuthenticate");
 
   const {
     isLoading,
@@ -172,11 +182,23 @@ function VotingRoom(props: Props) {
     checkTokenValidity();
     joinRoom();
     getActiveIssue();
+    if (jiraAuthenticate) {
+      setIsJiraManagementModalOpen(true);
+      setIsFirstLaunchJiraModalOpen(true);
+      navigate(`/room/${roomId}`);
+    }
 
     return () => {
       newSocket.disconnect();
     };
-  }, [joinRoom, getActiveIssue, checkTokenValidity]);
+  }, [
+    joinRoom,
+    getActiveIssue,
+    checkTokenValidity,
+    jiraAuthenticate,
+    navigate,
+    roomId
+  ]);
 
   useEffect(() => {
     if (!roomUsers) {
@@ -267,6 +289,9 @@ function VotingRoom(props: Props) {
       const currentActiveIssue = issues?.find(
         (issue) => issue._id === data.activeIssueId
       );
+      if (!data.isActiveCardSelected) {
+        setActiveIssue(undefined);
+      }
       if (!currentActiveIssue) {
         setShowActiveIssue(data.isActiveCardSelected);
         return;
@@ -538,10 +563,14 @@ function VotingRoom(props: Props) {
               room={room}
               issues={issues || []}
               refetchIssues={refetchIssues}
+              isFirstLauchJiraModalOpen={isFirstLauchJiraModalOpen}
+              setIsFirstLaunchJiraModalOpen={setIsFirstLaunchJiraModalOpen}
               isJiraTokenValid={isJiraTokenValid}
               setIsJiraTokenValid={setIsJiraTokenValid}
               validityText={validityText}
               isLoading={isLoading}
+              isJiraManagementModalOpen={isJiraManagementModalOpen}
+              setIsJiraManagementModalOpen={setIsJiraManagementModalOpen}
               error={error}
             />
           </Grid>

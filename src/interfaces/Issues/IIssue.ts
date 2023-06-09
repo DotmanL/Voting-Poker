@@ -9,5 +9,6 @@ export interface IIssue extends IBase {
   order?: number;
   isVoted?: boolean;
   isActive?: boolean;
+  jiraIssueId?: string;
   [key: string]: any;
 }

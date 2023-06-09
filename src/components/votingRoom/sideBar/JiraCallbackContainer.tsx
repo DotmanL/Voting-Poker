@@ -19,7 +19,7 @@ function JiraCallbackContainer() {
     if (code && user) {
       const response = await JiraService.jiraAuthentication(user?._id!, code);
       if (response) {
-        navigate(`/room/${roomId}`);
+        navigate(`/room/${roomId}?jiraAuthenticate=true`);
         return true;
       }
     }

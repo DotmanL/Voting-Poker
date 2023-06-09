@@ -11,6 +11,7 @@ import {
 } from "react-query/types/core/types";
 import { IRoom } from "interfaces/Room/IRoom";
 import { IssueContext } from "utility/providers/IssuesProvider";
+import { IUser } from "interfaces/User/IUser";
 
 type Props = {
   socket: any;
@@ -20,10 +21,24 @@ type Props = {
   refetchIssues: <TPageData>(
     options?: (RefetchOptions & RefetchQueryFilters<TPageData>) | undefined
   ) => Promise<QueryObserverResult<IIssue[] | undefined, Error>>;
+  currentUser: IUser | undefined;
+  setIsJiraErrorManagementModalOpen: React.Dispatch<
+    React.SetStateAction<boolean>
+  >;
+  setIsInvalidStoryPointsField: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 function IssuesView(props: Props) {
-  const { cards, setCards, refetchIssues, socket, room } = props;
+  const {
+    cards,
+    setCards,
+    refetchIssues,
+    socket,
+    room,
+    currentUser,
+    setIsJiraErrorManagementModalOpen,
+    setIsInvalidStoryPointsField
+  } = props;
   const { activeIssue, setActiveIssue } = useContext(IssueContext);
 
   useEffect(() => {
@@ -93,8 +108,11 @@ function IssuesView(props: Props) {
         socket={socket}
         refetchIssues={refetchIssues}
         room={room}
+        currentUser={currentUser}
         moveCard={moveCard}
+        setIsJiraErrorManagementModalOpen={setIsJiraErrorManagementModalOpen}
         handleDeleteIssue={handleDeleteIssue}
+        setIsInvalidStoryPointsField={setIsInvalidStoryPointsField}
       />
     );
   };

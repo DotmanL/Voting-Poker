@@ -51,6 +51,21 @@ const jiraBasicSearch = async (
   }
 };
 
+const jiraUpdateStoryPoints = async (
+  userId: string,
+  issueId: string,
+  fieldValue: number
+) => {
+  try {
+    const response = await apiClient.get(
+      `updateStoryPoints/${userId}/${issueId}?fieldValue=${fieldValue}`
+    );
+    return response;
+  } catch (err: any) {
+    console.error(err.message);
+  }
+};
+
 const jiraProjects = async (userId: string) => {
   try {
     const response = await apiClient.get(`getProjects/${userId}`);
@@ -91,6 +106,7 @@ export const JiraService = {
   jiraAuthentication,
   jiraAuthenticationAutoRefresh,
   jiraAccessibleResources,
+  jiraUpdateStoryPoints,
   jiraBasicSearch,
   jiraProjects,
   jiraIssueTypes,
