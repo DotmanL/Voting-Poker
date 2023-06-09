@@ -396,7 +396,7 @@ function IssuesCard(props: Props) {
             variant="h6"
             sx={{
               wordBreak: "break-word",
-              fontSize: { md: "18px", xs: "14px" }
+              fontSize: { md: "14px", xs: "14px" }
             }}
           >
             {issue.summary?.length! > 30
