@@ -15,11 +15,11 @@ import LaunchIcon from "@mui/icons-material/Launch";
 import { IIssue } from "interfaces/Issues";
 import { useParams } from "react-router-dom";
 import IssueService from "api/IssueService";
-import { SidebarContext } from "utility/providers/SideBarProvider";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
+import { SidebarContext } from "utility/providers/SideBarProvider";
 import { useQuery } from "react-query";
 import {
   QueryObserverResult,
@@ -28,15 +28,26 @@ import {
 } from "react-query/types/core/types";
 import Spinner from "components/shared/component/Spinner";
 import UserService from "api/UserService";
+import { IUser } from "interfaces/User/IUser";
 
 type Props = {
   isJiraManagementModalOpen: boolean;
+  isFirstLaunch?: boolean;
   issuesLength: number;
+  isInvalidStoryPointsField: boolean;
   setIsJiraManagementModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   refetchIssues: <TPageData>(
     options?: (RefetchOptions & RefetchQueryFilters<TPageData>) | undefined
   ) => Promise<QueryObserverResult<IIssue[] | undefined, Error>>;
   setIsJiraTokenValid: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsFirstLaunchJiraModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  refetchCurrentUser: <TPageData>(
+    options?: (RefetchOptions & RefetchQueryFilters<TPageData>) | undefined
+  ) => Promise<QueryObserverResult<IUser | undefined, unknown>>;
+  setIsJiraErrorManagementModalOpen: React.Dispatch<
+    React.SetStateAction<boolean>
+  >;
+  setIsInvalidStoryPointsField: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 enum QueryType {
@@ -52,10 +63,16 @@ type RoomRouteParams = {
 function JiraManagementModal(props: Props) {
   const {
     isJiraManagementModalOpen,
+    isInvalidStoryPointsField,
     setIsJiraManagementModalOpen,
+    refetchCurrentUser,
     refetchIssues,
     issuesLength,
-    setIsJiraTokenValid
+    setIsJiraTokenValid,
+    isFirstLaunch,
+    setIsFirstLaunchJiraModalOpen,
+    setIsJiraErrorManagementModalOpen,
+    setIsInvalidStoryPointsField
   } = props;
   const user = useContext(userContext);
   const [jiraIssues, setJiraIssues] = useState<any[]>([]);
@@ -69,8 +86,9 @@ function JiraManagementModal(props: Props) {
   const [selectedField, setSelectedField] = useState<string>(
     !!user?.storyPointsField ? user.storyPointsField : ""
   );
-  const [isConfigurationMode, setIsConfigurationMode] =
-    useState<boolean>(false);
+  const [isConfigurationMode, setIsConfigurationMode] = useState<boolean>(
+    isFirstLaunch || isInvalidStoryPointsField ? true : false
+  );
   const [isLoadingIssues, setIsLoadingIssues] = useState<boolean>(false);
   const { isSidebarOpen, setIsSidebarOpen } = useContext(SidebarContext);
   const { roomId } = useParams<RoomRouteParams>();
@@ -251,12 +269,16 @@ function JiraManagementModal(props: Props) {
       if (!selectedProject) {
         setJiraIssues([]);
       }
+      if (!user?.storyPointsField) {
+        setIsConfigurationMode(true);
+      }
     }
     getStatus();
   }, [
     selectedProject,
     selectedIssueType,
     handleBasicSearch,
+    user?.storyPointsField,
     checkTokenValidity
   ]);
 
@@ -346,12 +368,15 @@ function JiraManagementModal(props: Props) {
     setSelectedField(event.target.value as string);
     user!.storyPointsField = event.target.value;
     await UserService.updateUser(user?._id!, user!);
+    setIsInvalidStoryPointsField(false);
+    refetchCurrentUser();
   }
 
   async function handleRevokeJiraAcccess() {
     await UserService.revokeJiraAccess(user?._id!);
     setIsJiraTokenValid(false);
     setIsJiraManagementModalOpen(false);
+    refetchCurrentUser();
   }
 
   return (
@@ -388,6 +413,7 @@ function JiraManagementModal(props: Props) {
             }}
             onClick={() => {
               setIsJiraManagementModalOpen(!isJiraManagementModalOpen);
+              setIsJiraErrorManagementModalOpen(false);
             }}
           >
             <AiOutlineClose size={32} />
@@ -439,6 +465,7 @@ function JiraManagementModal(props: Props) {
               sx={{
                 display: "flex",
                 flexDirection: "column",
+                alignItems: "center",
                 width: "98%",
                 height: "100%",
                 borderRadius: "10px",
@@ -455,28 +482,25 @@ function JiraManagementModal(props: Props) {
                   mt: 5,
                   width: "100%",
                   height: "auto",
-                  py: 2,
-                  borderRadius: "10px",
+                  py: 4,
                   px: 4,
-                  border: "2px solid red"
+                  borderRadius: "10px",
+                  border: (theme) =>
+                    theme.palette.mode === "dark"
+                      ? "2px solid white"
+                      : "2px solid #67A3EE"
                 }}
               >
-                <Typography
-                  variant="h6"
-                  fontWeight="bold"
-                  color="red"
-                  sx={{ textTransform: "uppercase" }}
-                >
-                  Still working on saving story points to JIRA Feature!!!
-                </Typography>
                 <Typography variant="h5">Select Story Points Field</Typography>
+                <Typography variant="h6" sx={{ mt: 1 }} paragraph>
+                  You need to select the field used in Jira for your story
+                  points in order to be able to save story points back to jira
+                  after estimating
+                </Typography>
 
                 <FormControl sx={{ width: "90%", mt: 2 }}>
                   <InputLabel>Issue Fields</InputLabel>
                   <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    sx={{ height: "60%" }}
                     value={selectedField}
                     label={
                       fields?.data[
@@ -495,14 +519,37 @@ function JiraManagementModal(props: Props) {
                   </Select>
                 </FormControl>
               </Grid>
+              <Grid sx={{ mt: 4 }}>
+                <Button
+                  onClick={() => {
+                    setIsConfigurationMode(false);
+                    setIsFirstLaunchJiraModalOpen(false);
+                  }}
+                  disabled={!selectedField}
+                  variant="contained"
+                  sx={{
+                    px: 1,
+                    py: 1,
+                    background: "green",
+                    color: "white",
+                    borderRadius: "8px",
+                    "&:hover": {
+                      opacity: 0.9,
+                      background: "green"
+                    }
+                  }}
+                >
+                  <Typography>Filter Through your Issues</Typography>
+                </Button>
+              </Grid>
 
               <Grid
                 sx={{
-                  mt: 5,
+                  mt: 15,
                   display: "flex",
                   flexDirection: "row",
                   alignItems: "center",
-                  justifyContent: "center",
+                  justifyContent: "flex-end",
                   width: "98%",
                   height: "auto"
                 }}

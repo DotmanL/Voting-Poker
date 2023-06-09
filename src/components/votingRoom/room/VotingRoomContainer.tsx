@@ -6,10 +6,10 @@ import { IRoom } from "interfaces/Room/IRoom";
 import { io } from "socket.io-client";
 import { useParams } from "react-router-dom";
 import { NavBar } from "components/shared/component/NavBar";
-import { userContext } from "../../App";
+import { userContext } from "App";
 import VotingRoom from "./VotingRoom";
-import RoomService from "../../api/RoomService";
-import UserService from "../../api/UserService";
+import RoomService from "api/RoomService";
+import UserService from "api/UserService";
 import Spinner from "components/shared/component/Spinner";
 
 const getBaseUrl = () => {

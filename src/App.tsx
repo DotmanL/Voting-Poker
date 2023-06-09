@@ -8,7 +8,7 @@ import { QueryClient, QueryClientProvider } from "react-query";
 import { ToastContainer, Zoom } from "react-toastify";
 import HomePageContainer from "components/hompage/HomePageContainer";
 import NotFoundContainer from "components/shared/NotFoundContainer";
-import VotingRoomContainer from "components/votingRoom/VotingRoomContainer";
+import VotingRoomContainer from "components/votingRoom/room/VotingRoomContainer";
 import RoomOnboardingContainer from "components/roomOnboarding/RoomOnboardingContainer";
 import { ColorModeContext } from "utility/providers/ColorContext";
 import UserService from "api/UserService";
@@ -19,7 +19,7 @@ import SidebarProvider from "utility/providers/SideBarProvider";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { getDesignTokens } from "theme";
 import IssuesProvider from "utility/providers/IssuesProvider";
-import JiraCallbackContainer from "components/votingRoom/JiraCallbackContainer";
+import JiraCallbackContainer from "components/votingRoom/sideBar/JiraCallbackContainer";
 import PrivacyPolicy from "components/hompage/PrivacyPolicy";
 
 const queryClient = new QueryClient();

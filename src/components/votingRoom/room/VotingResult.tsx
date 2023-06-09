@@ -6,8 +6,8 @@ import { IRoom } from "interfaces/Room/IRoom";
 import Typography from "@mui/material/Typography";
 import { SidebarContext } from "utility/providers/SideBarProvider";
 import { useSpring, animated } from "react-spring";
-import PartyPopper from "./assets/partyPopper.gif";
-import popSound from "./assets/cheers.mp3";
+import PartyPopper from "../assets/partyPopper.gif";
+import popSound from "../assets/cheers.mp3";
 import useSound from "use-sound";
 
 type Props = {

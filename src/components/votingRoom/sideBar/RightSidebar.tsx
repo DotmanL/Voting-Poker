@@ -26,6 +26,9 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import SaveIcon from "@mui/icons-material/Save";
 import JiraService from "api/JiraService";
 import Spinner from "components/shared/component/Spinner";
+import JiraErrorManagementModal from "./JiraErrorManagementModal";
+import { useQuery } from "react-query";
+import UserService from "api/UserService";
 
 const options = [
   {
@@ -54,6 +57,10 @@ type Props = {
   isJiraTokenValid: boolean;
   setIsJiraTokenValid: React.Dispatch<React.SetStateAction<boolean>>;
   validityText: string;
+  isJiraManagementModalOpen: boolean;
+  setIsJiraManagementModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsFirstLaunchJiraModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  isFirstLauchJiraModalOpen: boolean;
 };
 
 function RightSidebar(props: Props) {
@@ -66,23 +73,34 @@ function RightSidebar(props: Props) {
     socket,
     isJiraTokenValid,
     setIsJiraTokenValid,
+    isJiraManagementModalOpen,
+    setIsJiraManagementModalOpen,
+    isFirstLauchJiraModalOpen,
+    setIsFirstLaunchJiraModalOpen,
     validityText
   } = props;
   const user = useContext(userContext);
   const { isSidebarOpen, setIsSidebarOpen } = useContext(SidebarContext);
   const [isJiraImportModalOpen, setIsJiraImportModalOpen] =
     useState<boolean>(false);
-  const [isJiraManagementModalOpen, setIsJiraManagementModalOpen] =
-    useState<boolean>(false);
   const { activeIssue, setActiveIssue } = useContext(IssueContext);
   const [isSingleIssueTextBoxOpen, setIsSingleIssueTextBoxOpen] =
+    useState<boolean>(false);
+  const [isJiraErrorManagementModalOpen, setIsJiraErrorManagementModalOpen] =
     useState<boolean>(false);
   const [isAddMultipleModalOpen, setIsAddMultipleModalOpen] =
     useState<boolean>(false);
   const [cards, setCards] = useState(issues);
   const [isAddingStoryPoints, setIsAddingStoryPoints] =
     useState<boolean>(false);
+  const [isInvalidStoryPointsField, setIsInvalidStoryPointsField] =
+    useState<boolean>(false);
   const singleIssueTextBoxRef = useRef<HTMLDivElement>(null);
+
+  const { data: currentUser, refetch: refetchCurrentUser } = useQuery({
+    queryKey: ["currentUser"],
+    queryFn: async () => await UserService.loadUser(user?._id!)
+  });
 
   useClickAway(singleIssueTextBoxRef, () => {
     setIsSingleIssueTextBoxOpen(false);
@@ -195,13 +213,18 @@ function RightSidebar(props: Props) {
         issue.jiraIssueId!,
         fieldValue
       );
-
       setIsAddingStoryPoints(false);
       if (response?.status === 200) {
         showToast = true;
-      } else if (response?.status === 400) {
-        // Note: show modal and say how to set up storypoints in screens
-        // https://support.atlassian.com/jira-cloud-administration/docs/add-a-custom-field-to-a-screen/
+        setIsInvalidStoryPointsField(false);
+      } else {
+        toast.error(
+          "Could not add story points to jira, ensure story points field is configured properly",
+          { autoClose: 1000, position: "bottom-right" }
+        );
+        setIsInvalidStoryPointsField(true);
+        setIsJiraErrorManagementModalOpen(true);
+        return;
       }
     }
 
@@ -338,10 +361,27 @@ function RightSidebar(props: Props) {
         {isJiraTokenValid && isJiraManagementModalOpen && (
           <JiraManagementModal
             issuesLength={cards.length}
+            isFirstLaunch={isFirstLauchJiraModalOpen}
+            refetchCurrentUser={refetchCurrentUser}
             setIsJiraTokenValid={setIsJiraTokenValid}
             isJiraManagementModalOpen={isJiraManagementModalOpen}
             setIsJiraManagementModalOpen={setIsJiraManagementModalOpen}
+            setIsFirstLaunchJiraModalOpen={setIsFirstLaunchJiraModalOpen}
+            isInvalidStoryPointsField={isInvalidStoryPointsField}
             refetchIssues={refetchIssues}
+            setIsJiraErrorManagementModalOpen={
+              setIsJiraErrorManagementModalOpen
+            }
+            setIsInvalidStoryPointsField={setIsInvalidStoryPointsField}
+          />
+        )}
+        {isJiraErrorManagementModalOpen && (
+          <JiraErrorManagementModal
+            isJiraErrorManagementModalOpen={isJiraErrorManagementModalOpen}
+            setIsJiraErrorManagementModalOpen={
+              setIsJiraErrorManagementModalOpen
+            }
+            setIsJiraManagementModalOpen={setIsJiraManagementModalOpen}
           />
         )}
 
@@ -349,22 +389,28 @@ function RightSidebar(props: Props) {
           {isAddingStoryPoints ? (
             <Spinner fullHeight={false} spinnerType="PuffLoader" size={50} />
           ) : (
-            <Tooltip title="Save All Jira Issues StoryPoints">
-              <SaveIcon
-                sx={{
-                  px: 1,
-                  mt: 1,
-                  cursor: !user?.storyPointsField ? "not-allowed" : "pointer",
-                  pointerEvents: !user?.storyPointsField ? "none" : "auto",
-                  height: "32px",
-                  width: "50%",
-                  "&:hover": {
-                    color: "green"
-                  }
-                }}
-                onClick={handleSaveAllJiraIssues}
-              />
-            </Tooltip>
+            <Grid>
+              {issues.filter((issue: IIssue) => issue.jiraIssueId !== null)
+                .length > 0 &&
+                !!currentUser?.jiraAccessToken &&
+                !!currentUser?.storyPointsField && (
+                  <Tooltip arrow title="Saves All Jira Issues StoryPoints">
+                    <SaveIcon
+                      sx={{
+                        px: 1,
+                        mt: 1,
+                        cursor: "pointer",
+                        height: "32px",
+                        width: "100%",
+                        "&:hover": {
+                          color: "green"
+                        }
+                      }}
+                      onClick={handleSaveAllJiraIssues}
+                    />
+                  </Tooltip>
+                )}
+            </Grid>
           )}
           <Tooltip title="Delete All Issues">
             <DeleteIcon
@@ -373,7 +419,13 @@ function RightSidebar(props: Props) {
                 px: 1,
                 mt: 1,
                 height: "32px",
-                width: "50%",
+                width:
+                  issues.filter((issue: IIssue) => issue.jiraIssueId !== null)
+                    .length > 0 &&
+                  !!currentUser?.jiraAccessToken &&
+                  !!currentUser.storyPointsField
+                    ? "50%"
+                    : "100%",
                 "&:hover": {
                   color: "red"
                 }
@@ -396,11 +448,16 @@ function RightSidebar(props: Props) {
         >
           {cards && (
             <IssuesView
+              currentUser={currentUser}
+              setIsJiraErrorManagementModalOpen={
+                setIsJiraErrorManagementModalOpen
+              }
               room={room}
               socket={socket}
               cards={cards}
               setCards={setCards}
               refetchIssues={refetchIssues}
+              setIsInvalidStoryPointsField={setIsInvalidStoryPointsField}
             />
           )}
           <Grid sx={{ ml: 2, mb: 2 }} ref={singleIssueTextBoxRef}>
@@ -417,11 +474,6 @@ function RightSidebar(props: Props) {
                   mt: 0.5,
                   p: 0.5,
                   borderRadius: "10px"
-                  // "&:hover": {
-                  //   color: "primary.main",
-                  //   transition: "box-shadow 0.3s ease-in-out",
-                  //   boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.2)"
-                  // }
                 }}
                 onClick={() => setIsSingleIssueTextBoxOpen(true)}
               >

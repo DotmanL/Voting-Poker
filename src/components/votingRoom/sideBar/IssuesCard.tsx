@@ -7,7 +7,6 @@ import { useDrag, useDrop } from "react-dnd";
 import Typography from "@mui/material/Typography";
 import Link from "@mui/material/Link";
 import { IRoom } from "interfaces/Room/IRoom";
-import { userContext } from "App";
 import CardType from "utility/CardType";
 import IssueService from "api/IssueService";
 import { IIssue } from "interfaces/Issues";
@@ -27,6 +26,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import JiraService from "api/JiraService";
 import { toast } from "react-toastify";
 import Spinner from "components/shared/component/Spinner";
+import { IUser } from "interfaces/User/IUser";
 
 type Props = {
   room: IRoom;
@@ -40,6 +40,11 @@ type Props = {
   handleDeleteIssue(index: number): Promise<void>;
   handleNewVotingSession?: () => Promise<void>;
   socket: any;
+  currentUser: IUser | undefined;
+  setIsJiraErrorManagementModalOpen: React.Dispatch<
+    React.SetStateAction<boolean>
+  >;
+  setIsInvalidStoryPointsField: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const ItemTypes = {
@@ -59,12 +64,14 @@ function IssuesCard(props: Props) {
     issue,
     socket,
     refetchIssues,
+    currentUser,
     moveCard,
     id,
-    handleDeleteIssue
+    handleDeleteIssue,
+    setIsJiraErrorManagementModalOpen,
+    setIsInvalidStoryPointsField
   } = props;
   const ref = useRef<HTMLDivElement>(null);
-  const user = useContext(userContext);
   const { activeIssue, setActiveIssue } = useContext(IssueContext);
   const [isCardDetailsOpen, setIsCardDetailsOpen] = useState<boolean>(false);
   const [isStoryPointsDropDownOpen, setIsStoryPointsDropDownOpen] =
@@ -200,19 +207,25 @@ function IssuesCard(props: Props) {
 
     setIsAddingStoryPoints(true);
     const response = await JiraService.jiraUpdateStoryPoints(
-      user?._id!,
+      currentUser?._id!,
       issue.jiraIssueId!,
       fieldValue
     );
     setIsAddingStoryPoints(false);
     if (response?.status === 200) {
       toast.success("Story points added to jira successfully", {
-        autoClose: 1000
+        autoClose: 1000,
+        position: "bottom-right"
       });
+      setIsInvalidStoryPointsField(false);
       return;
-    } else if (response?.status === 400) {
-      //Note: show modal and say how to set up storypoints in screens
-      //https://support.atlassian.com/jira-cloud-administration/docs/add-a-custom-field-to-a-screen/
+    } else {
+      toast.error(
+        "Could not add story points to jira, ensure story points field is configured properly",
+        { autoClose: 1000, position: "bottom-right" }
+      );
+      setIsInvalidStoryPointsField(true);
+      setIsJiraErrorManagementModalOpen(true);
     }
   }
 
@@ -248,7 +261,7 @@ function IssuesCard(props: Props) {
           m: 0,
           width: { md: "400px", xs: "85vw" },
           height: "auto",
-          maxHeight: "220px",
+          maxHeight: "215px",
           border: canDrop
             ? "1px solid green"
             : activeIssue?._id === issue._id
@@ -305,27 +318,29 @@ function IssuesCard(props: Props) {
             }}
           >
             {isAddingStoryPoints ? (
-              <Spinner fullHeight={false} spinnerType="PuffLoader" size={50} />
+              <Spinner fullHeight={false} spinnerType="PuffLoader" size={40} />
             ) : (
               <>
-                {!!issue.jiraIssueId && (
-                  <Tooltip title="Save StoryPoint to Jira">
-                    <SaveIcon
-                      sx={{
-                        mx: 0.5,
-                        height: "30px",
-                        width: "80%",
-                        "&:hover": {
-                          color: "green"
-                        }
-                      }}
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        handleSaveToJira(issue);
-                      }}
-                    />
-                  </Tooltip>
-                )}
+                {!!issue.jiraIssueId &&
+                  !!currentUser?.jiraAccessToken &&
+                  !!currentUser.storyPointsField && (
+                    <Tooltip title="Saves StoryPoint to Jira">
+                      <SaveIcon
+                        sx={{
+                          mx: 0.5,
+                          height: "30px",
+                          width: "80%",
+                          "&:hover": {
+                            color: "green"
+                          }
+                        }}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleSaveToJira(issue);
+                        }}
+                      />
+                    </Tooltip>
+                  )}
               </>
             )}
           </Grid>

@@ -14,7 +14,7 @@ function Footer() {
         py: { md: 2, xs: 3 },
         width: "100%",
         backgroundColor: (theme) =>
-          theme.palette.mode === "dark" ? "#001219" : "#1e6091",
+          theme.palette.mode === "dark" ? "#001219" : "#67A3EE",
         height: "250px"
       }}
     >
