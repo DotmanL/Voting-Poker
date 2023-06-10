@@ -305,7 +305,7 @@ function IssuesCard(props: Props) {
 
           <Grid
             sx={{
-              display: "flex",
+              display: { md: "flex", xs: "none" },
               flexDirection: "row",
               width: "auto",
               px: 0.5,
@@ -352,7 +352,7 @@ function IssuesCard(props: Props) {
               width: "auto",
               px: 0.5,
               position: "absolute",
-              left: "85%",
+              left: { md: "85%", xs: "80%" },
               zIndex: 400,
               "&:hover": {
                 color: "red"
