@@ -139,7 +139,7 @@ function LandingPage() {
               sx={{
                 width: { md: "70%", xs: "90%" },
                 height: { md: "70%", xs: "70%" },
-                mb: { md: "10px", xs: "5px" }
+                mb: { md: "10px", xs: "10px" }
               }}
               src={bg1}
               alt="work planning"
