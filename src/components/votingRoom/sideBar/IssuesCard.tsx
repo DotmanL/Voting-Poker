@@ -27,6 +27,7 @@ import JiraService from "api/JiraService";
 import { toast } from "react-toastify";
 import Spinner from "components/shared/component/Spinner";
 import { IUser } from "interfaces/User/IUser";
+import PromptModal from "components/shared/component/PromptModal";
 
 type Props = {
   room: IRoom;
@@ -78,7 +79,8 @@ function IssuesCard(props: Props) {
     useState<boolean>(false);
   const [isAddingStoryPoints, setIsAddingStoryPoints] =
     useState<boolean>(false);
-
+  const [isConfirmPromptModalOpen, setIsConfirmPromptModalOpen] =
+    useState<boolean>(false);
   const cardValues = CardType(room.votingSystem);
   const storyPointsDropDownRef = useRef<HTMLDivElement>(null);
 
@@ -217,6 +219,7 @@ function IssuesCard(props: Props) {
         autoClose: 1000,
         position: "bottom-right"
       });
+      setIsConfirmPromptModalOpen(false);
       setIsInvalidStoryPointsField(false);
       return;
     } else {
@@ -336,7 +339,7 @@ function IssuesCard(props: Props) {
                         }}
                         onClick={(event) => {
                           event.stopPropagation();
-                          handleSaveToJira(issue);
+                          setIsConfirmPromptModalOpen(true);
                         }}
                       />
                     </Tooltip>
@@ -344,6 +347,18 @@ function IssuesCard(props: Props) {
               </>
             )}
           </Grid>
+          {isConfirmPromptModalOpen && (
+            <PromptModal
+              isModalOpen={isConfirmPromptModalOpen}
+              setIsModalOpen={setIsConfirmPromptModalOpen}
+              promptMessage="Are you sure you want to save the story points of 
+                to JIRA?"
+              onClickConfirm={(event) => {
+                event?.stopPropagation();
+                handleSaveToJira(issue);
+              }}
+            />
+          )}
 
           <Grid
             sx={{

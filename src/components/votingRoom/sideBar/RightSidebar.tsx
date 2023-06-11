@@ -29,6 +29,7 @@ import Spinner from "components/shared/component/Spinner";
 import JiraErrorManagementModal from "./JiraErrorManagementModal";
 import { useQuery } from "react-query";
 import UserService from "api/UserService";
+import PromptModal from "components/shared/component/PromptModal";
 
 const options = [
   {
@@ -96,6 +97,8 @@ function RightSidebar(props: Props) {
   const [isInvalidStoryPointsField, setIsInvalidStoryPointsField] =
     useState<boolean>(false);
   const singleIssueTextBoxRef = useRef<HTMLDivElement>(null);
+  const [isConfirmPromptModalOpen, setIsConfirmPromptModalOpen] =
+    useState<boolean>(false);
 
   const { data: currentUser, refetch: refetchCurrentUser } = useQuery({
     queryKey: ["currentUser"],
@@ -216,6 +219,7 @@ function RightSidebar(props: Props) {
       setIsAddingStoryPoints(false);
       if (response?.status === 200) {
         showToast = true;
+        setIsConfirmPromptModalOpen(false);
         setIsInvalidStoryPointsField(false);
       } else {
         toast.error(
@@ -247,6 +251,9 @@ function RightSidebar(props: Props) {
   }
 
   const issuesStoryPoints = cummulativePoints();
+  const jiraIssuesLength = issues.filter(
+    (issue) => issue.jiraIssueId !== null
+  ).length;
 
   if (error) {
     return <p>{(error as Error)?.message}</p>;
@@ -406,7 +413,7 @@ function RightSidebar(props: Props) {
                           color: "green"
                         }
                       }}
-                      onClick={handleSaveAllJiraIssues}
+                      onClick={() => setIsConfirmPromptModalOpen(true)}
                     />
                   </Tooltip>
                 )}
@@ -499,6 +506,16 @@ function RightSidebar(props: Props) {
                   setIsSingleIssueTextBoxOpen={setIsSingleIssueTextBoxOpen}
                 />
               </Grid>
+            )}
+            {isConfirmPromptModalOpen && (
+              <PromptModal
+                isModalOpen={isConfirmPromptModalOpen}
+                setIsModalOpen={setIsConfirmPromptModalOpen}
+                promptMessage={`Are you sure you want to save the story points of ${jiraIssuesLength} ${
+                  jiraIssuesLength > 1 ? "issues" : "issue"
+                } to JIRA?`}
+                onClickConfirm={handleSaveAllJiraIssues}
+              />
             )}
           </Grid>
         </Grid>
