@@ -306,8 +306,8 @@ function JiraManagementModal(props: Props) {
   async function importIssues() {
     const issuesCreated = await IssueService.createIssues(issueArray);
     if (issuesCreated) {
-      socket.emit("triggerRefetchIssues", {
-        isRefetchIssues: true,
+      socket.emit("isIssuesSidebarOpen", {
+        isIssuesSidebarOpen: true,
         roomId: roomId
       });
       setIsJiraManagementModalOpen(false);
