@@ -31,6 +31,7 @@ import UserService from "api/UserService";
 import { IUser } from "interfaces/User/IUser";
 
 type Props = {
+  socket: any;
   isJiraManagementModalOpen: boolean;
   isFirstLaunch?: boolean;
   issuesLength: number;
@@ -62,6 +63,7 @@ type RoomRouteParams = {
 
 function JiraManagementModal(props: Props) {
   const {
+    socket,
     isJiraManagementModalOpen,
     isInvalidStoryPointsField,
     setIsJiraManagementModalOpen,
@@ -304,6 +306,10 @@ function JiraManagementModal(props: Props) {
   async function importIssues() {
     const issuesCreated = await IssueService.createIssues(issueArray);
     if (issuesCreated) {
+      socket.emit("triggerRefetchIssues", {
+        isRefetchIssues: true,
+        roomId: roomId
+      });
       setIsJiraManagementModalOpen(false);
       setCheckedIssues([]);
       setIssueArray([]);

@@ -367,6 +367,7 @@ function RightSidebar(props: Props) {
         />
         {isJiraTokenValid && isJiraManagementModalOpen && (
           <JiraManagementModal
+            socket={socket}
             issuesLength={cards.length}
             isFirstLaunch={isFirstLauchJiraModalOpen}
             refetchCurrentUser={refetchCurrentUser}
