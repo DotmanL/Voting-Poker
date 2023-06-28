@@ -22,11 +22,13 @@ type Props = {
   visible?: boolean;
   isSubmitting: boolean;
   onFormSubmitted: (room: IRoom) => void;
+  isRoomsTableVisible: boolean;
   allRooms: IRoom[];
 };
 
 function RoomCreate(props: Props) {
-  const { onFormSubmitted, isSubmitting, allRooms } = props;
+  const { onFormSubmitted, isSubmitting, allRooms, isRoomsTableVisible } =
+    props;
   const roomId = uuidv4();
 
   const initialValues = {
@@ -63,7 +65,10 @@ function RoomCreate(props: Props) {
         <Typography
           variant="h4"
           sx={{
-            mt: { md: 12, xs: 5 },
+            mt: {
+              md: !isRoomsTableVisible ? "45%" : 12,
+              xs: !isRoomsTableVisible ? "50%" : 5
+            },
             px: 6,
             fontSize: { md: "24px", xs: "18px" },
             fontWeigth: "bolder",
@@ -160,9 +165,11 @@ function RoomCreate(props: Props) {
                 </Grid>
               </Form>
 
-              <Grid sx={{ mt: 5, mb: { xs: 3 } }}>
-                <RoomsTable allRooms={allRooms} />
-              </Grid>
+              {isRoomsTableVisible && (
+                <Grid sx={{ mt: 5, mb: { xs: 3 } }}>
+                  <RoomsTable allRooms={allRooms} />
+                </Grid>
+              )}
             </Grid>
           )}
         </Formik>

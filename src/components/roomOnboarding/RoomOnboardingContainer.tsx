@@ -8,7 +8,12 @@ import { useNavigate } from "react-router-dom";
 import { RoomService } from "../../api/RoomService";
 import Spinner from "components/shared/component/Spinner";
 
-function RoomOnboardingContainer() {
+type Props = {
+  isRoomsTableVisible?: boolean;
+};
+
+function RoomOnboardingContainer(props: Props) {
+  const { isRoomsTableVisible = false } = props;
   const navigate = useNavigate();
   const {
     isLoading: isRoomsLoading,
@@ -49,6 +54,7 @@ function RoomOnboardingContainer() {
                 isSubmitting={isLoading}
                 onFormSubmitted={handleCreateRoom}
                 allRooms={allRooms}
+                isRoomsTableVisible={isRoomsTableVisible}
               />
             )}
           </Grid>

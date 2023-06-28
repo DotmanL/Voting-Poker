@@ -82,6 +82,12 @@ function App() {
                           element={<RoomOnboardingContainer />}
                         />
                         <Route
+                          path="bindyStreet"
+                          element={
+                            <RoomOnboardingContainer isRoomsTableVisible />
+                          }
+                        />
+                        <Route
                           path="room/:roomId"
                           element={<VotingRoomContainer />}
                         />
