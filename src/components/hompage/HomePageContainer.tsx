@@ -6,7 +6,7 @@ import Footer from "./Footer";
 function HomePageContainer() {
   return (
     <Grid>
-      <NavBar appName="Dot Voting" isBorderBottom />
+      <NavBar appName="Virtual Planning Poker" isBorderBottom />
       <LandingPage />
       <Footer />
     </Grid>

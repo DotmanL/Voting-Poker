@@ -82,6 +82,12 @@ function App() {
                           element={<RoomOnboardingContainer />}
                         />
                         <Route
+                          path="bindyStreet"
+                          element={
+                            <RoomOnboardingContainer isRoomsTableVisible />
+                          }
+                        />
+                        <Route
                           path="room/:roomId"
                           element={<VotingRoomContainer />}
                         />
@@ -93,7 +99,6 @@ function App() {
                           path="privacy-policy"
                           element={<PrivacyPolicy />}
                         />
-
                         <Route path="*" element={<NotFoundContainer />} />
                       </Routes>
                     </ScrollToTop>

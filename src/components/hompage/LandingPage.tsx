@@ -13,7 +13,7 @@ function LandingPage() {
         mt: "80px",
         p: 0,
         mb: 0,
-        height: "85vh",
+        height: "100vh",
         overflow: "hidden",
         position: "relative",
         background: (theme) => theme.palette.secondary.main
@@ -36,7 +36,7 @@ function LandingPage() {
             width: { md: "40%", xs: "100%" }
           }}
         >
-          <Grid sx={{ mt: { md: 15, xs: 2 } }}>
+          <Grid sx={{ mt: { md: 20, xs: 2 } }}>
             <Typography
               variant="h3"
               sx={{
@@ -86,7 +86,7 @@ function LandingPage() {
                   }
                 ]}
               >
-                Start/Join Room
+                Create Room
               </Button>
             </Link>
           </Grid>
@@ -100,7 +100,7 @@ function LandingPage() {
             justifyContent: "flex-start",
             alignItems: { md: "flex-start", xs: "center" },
             width: { md: "60%", xs: "100%" },
-            mt: { md: -7, xs: 3 }
+            mt: { md: 0.5, xs: 3 }
           }}
         >
           <Grid
@@ -108,7 +108,6 @@ function LandingPage() {
               width: "100%",
               display: "flex",
               flexDirection: { md: "row", xs: "column" },
-              alignItems: { xs: "center" },
               justifyContent: { md: "flex-start" }
             }}
           >
@@ -128,10 +127,10 @@ function LandingPage() {
               display: "flex",
               backgorund: "red",
               flexDirection: { md: "row", xs: "column" },
-              justifyContent: "flex-end",
+              justifyContent: { md: "flex-end", xs: "flex-start" },
               alignItems: { md: "flex-start", xs: "center" },
-              mt: { md: -15, xs: -10 },
-              ml: { md: 10, xs: 0 }
+              mt: { md: -8, xs: 0 },
+              ml: { md: 8, xs: 0 }
             }}
           >
             <Grid
@@ -139,7 +138,7 @@ function LandingPage() {
               sx={{
                 width: { md: "70%", xs: "90%" },
                 height: { md: "70%", xs: "70%" },
-                mb: { md: "10px", xs: "10px" }
+                mb: { md: "10px", xs: "0px" }
               }}
               src={bg1}
               alt="work planning"

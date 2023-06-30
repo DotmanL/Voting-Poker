@@ -17,20 +17,23 @@ import ViewSidebarIcon from "@mui/icons-material/ViewSidebar";
 import { SidebarContext } from "utility/providers/SideBarProvider";
 import DarkModeToggle from "./DarkModeToggle";
 import { IssueContext } from "utility/providers/IssuesProvider";
+import dotvotingLogo from "../assets/dotvotingLogo.png";
 import MobileNavBar from "./MobileNavBar";
 import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
 import CustomModal from "./CustomModal";
 import { AiOutlineClose } from "react-icons/ai";
+import Tooltip from "@mui/material/Tooltip";
 
 type Props = {
   appName: string;
+  companyName?: string;
   currentUser?: IUser;
   isBorderBottom?: boolean;
   currentRoomLink?: string;
 };
 
 export const NavBar = (props: Props) => {
-  const { appName, currentUser, currentRoomLink } = props;
+  const { appName, currentUser, currentRoomLink, companyName } = props;
   const navigate = useNavigate();
   const userData = useContext(userContext);
   const { activeIssue } = useContext(IssueContext);
@@ -54,20 +57,25 @@ export const NavBar = (props: Props) => {
   }
 
   async function handleLeaveRoom() {
-    navigate("/new-room");
+    if (companyName) {
+      navigate(`/${companyName}`);
+    } else {
+      navigate("/new-room");
+    }
     handleClose();
-    // toast.info("Kindly join a room");
   }
 
   async function handleSignOut() {
     localStorage.removeItem("userId");
     await UserService.deleteUser(user._id);
+    handleClose();
     navigate("/");
     window.location.reload();
     toast.success("Sign Out Succesful and Account Deleted");
   }
 
   async function handleSignUp() {
+    handleClose();
     navigate("/new-room");
   }
 
@@ -147,14 +155,33 @@ export const NavBar = (props: Props) => {
               isSidebarOpen && urlPath.indexOf("/room") >= 0 ? "380px" : "0"
           }}
         >
-          <Link to="/">
+          <Link
+            to="/"
+            sx={{
+              display: { md: "flex", xs: "none" },
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+          >
+            <Grid>
+              <Grid
+                component={"img"}
+                src={dotvotingLogo}
+                alt="waves"
+                sx={{
+                  height: { md: "60px", xs: "60px" },
+                  width: { md: "60px", xs: "60px" }
+                }}
+              />
+            </Grid>
             <Grid>
               <Typography
-                variant="h5"
+                variant="h6"
                 sx={{
                   fontFamily: "Jost",
                   fontWeight: "bold",
-                  fontSize: { md: "40px", xs: "24px" },
+                  fontSize: { md: "24px", xs: "18px" },
                   color: "primary.main"
                 }}
               >
@@ -198,28 +225,31 @@ export const NavBar = (props: Props) => {
               alignItems: "center"
             }}
           >
-            <Grid
-              sx={{
-                display: "flex",
-                flexDirection: "row",
-                justifyContent: "center",
-                alignItems: "center",
-                px: 1,
-                mr: { md: 2, xs: 0 },
-                ml: { md: 0, xs: 2 },
-                mt: { md: 1, xs: 0.5 },
-                "&:hover": {
+            {user && (
+              <Grid
+                sx={{
+                  display: "flex",
+                  flexDirection: "row",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  px: 1,
+                  mr: { md: 2, xs: 0 },
+                  ml: { md: 0, xs: 2 },
+                  mt: { md: 1, xs: 0.5 },
                   borderRadius: "6px",
-                  borderColor: (theme) => theme.palette.primary.main,
-                  transition: "box-shadow 0.3s ease-in-out",
-                  boxShadow: (theme) =>
-                    theme.palette.mode === "dark"
-                      ? "0px 0px 10px 2px rgba(255, 255, 255, 0.1)"
-                      : "0px 0px 10px 2px rgba(0, 0, 0, 0.1)"
-                }
-              }}
-            >
-              {user && (
+                  border: "2px solid",
+                  borderColor: "#67A3EE",
+                  "&:hover": {
+                    borderRadius: "6px",
+                    borderColor: (theme) => theme.palette.primary.main,
+                    transition: "box-shadow 0.3s ease-in-out",
+                    boxShadow: (theme) =>
+                      theme.palette.mode === "dark"
+                        ? "0px 0px 10px 2px rgba(255, 255, 255, 0.4)"
+                        : "0px 0px 10px 2px rgba(0, 0, 0, 0.4)"
+                  }
+                }}
+              >
                 <Grid
                   sx={{
                     display: "flex",
@@ -230,7 +260,7 @@ export const NavBar = (props: Props) => {
                   }}
                 >
                   <Typography
-                    variant="h5"
+                    variant="h6"
                     sx={{
                       fontSize: { md: "24px", xs: "14px" }
                     }}
@@ -286,16 +316,19 @@ export const NavBar = (props: Props) => {
                       >
                         Leave Room
                       </MenuItem>
-                      <MenuItem onClick={handleClose}>
-                        <Grid onClick={!user ? handleSignUp : handleSignOut}>
-                          {!user ? "Sign Up" : "Sign Out"}
-                        </Grid>
+                      <MenuItem onClick={!user ? handleSignUp : handleSignOut}>
+                        <Tooltip
+                          arrow
+                          title="This deletes your current username and signs you out of the room"
+                        >
+                          <Grid>{!user ? "Sign Up" : "Sign Out"}</Grid>
+                        </Tooltip>
                       </MenuItem>
                     </Menu>
                   </Grid>
                 </Grid>
-              )}
-            </Grid>
+              </Grid>
+            )}
 
             <Grid
               sx={{
@@ -312,7 +345,7 @@ export const NavBar = (props: Props) => {
                 px: 1.5,
                 py: 0.5,
                 background: (theme) => theme.palette.secondary.main,
-                borderColor: (theme) => theme.palette.primary.main,
+                borderColor: "#67A3EE",
                 "&:hover": {
                   opacity: 0.8
                 }
@@ -330,7 +363,7 @@ export const NavBar = (props: Props) => {
                   }}
                 >
                   <PersonAddAlt1Icon sx={{ mr: 1 }} />
-                  <Typography variant="h5">Invite Players</Typography>
+                  <Typography variant="h5">Invite Team Members</Typography>
                 </Grid>
               )}
             </Grid>
@@ -434,7 +467,7 @@ export const NavBar = (props: Props) => {
                 borderRadius: "10px",
                 borderWidth: "1px",
                 border: "2px solid",
-                borderColor: (theme) => theme.palette.primary.main,
+                borderColor: "#67A3EE",
                 mr: { md: 2, xs: 0 },
                 mt: { md: 1, xs: 0.5 },
                 p: { md: 1, xs: 0.5 },

@@ -7,30 +7,23 @@ import Typography from "@mui/material/Typography";
 import { SidebarContext } from "utility/providers/SideBarProvider";
 import { useSpring, animated } from "react-spring";
 import PartyPopper from "../assets/partyPopper.gif";
-import popSound from "../assets/cheers.mp3";
-import useSound from "use-sound";
 
 type Props = {
   votesCasted?: IRoomUsers[];
   room: IRoom;
+  userCardColor: string;
 };
 
 function VotingResult(props: Props) {
   const user = useContext(userContext);
   const { isSidebarOpen } = useContext(SidebarContext);
-  const { votesCasted, room } = props;
+  const { votesCasted, room, userCardColor } = props;
   const [showCelebration, setShowCelebration] = useState<boolean>(false);
-  const [playPop, { stop }] = useSound(popSound);
 
   const animationProps = useSpring({
     from: { y: 0 },
     to: { y: showCelebration ? 50 : 0 },
-    config: { mass: 1, tension: 120, friction: 14 },
-    onRest: () => {
-      if (showCelebration) {
-        playPop();
-      }
-    }
+    config: { mass: 1, tension: 120, friction: 14 }
   });
 
   const checkEquality = (votesCasted: IRoomUsers[], currentVote: string) => {
@@ -50,10 +43,9 @@ function VotingResult(props: Props) {
       }, 10000);
     }
     return () => {
-      stop();
       clearTimeout(celebrationTimeout);
     };
-  }, [votesCasted, stop]);
+  }, [votesCasted]);
 
   return (
     <Grid
@@ -63,6 +55,7 @@ function VotingResult(props: Props) {
         width: "100vw",
         justifyContent: "center",
         alignItems: "center",
+        backgroundColor: `${userCardColor}`,
         position: "relative",
         marginRight: isSidebarOpen ? "400px" : ""
       }}

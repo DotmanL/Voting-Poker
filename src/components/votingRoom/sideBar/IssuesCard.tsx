@@ -186,7 +186,10 @@ function IssuesCard(props: Props) {
 
     const response = await IssueService.updateIssue(id, issueToUpdate);
     if (response) {
-      refetchIssues();
+      socket.emit("triggerRefetchIssues", {
+        isRefetchIssues: true,
+        roomId: room.roomId
+      });
       setIsStoryPointsDropDownOpen(false);
     }
   }

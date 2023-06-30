@@ -26,11 +26,13 @@ const getBaseUrl = () => {
   return url;
 };
 
+type RoomRouteParams = {
+  roomId: string;
+};
 const socket = io(getBaseUrl());
 
 function VotingRoomContainer() {
-  const getRoomId = useParams();
-  const roomId = Object.values(getRoomId)[0];
+  const { roomId } = useParams<RoomRouteParams>();
   const currentUrl = window.location.href;
   const {
     isLoading,
@@ -84,6 +86,7 @@ function VotingRoomContainer() {
         isBorderBottom={false}
         currentUser={currentUser!}
         currentRoomLink={currentUrl}
+        companyName={roomDetails?.companyName}
       />
       {isLoading ? (
         <Spinner />

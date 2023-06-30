@@ -4,18 +4,27 @@ import { NavBar } from "components/shared/component/NavBar";
 import RoomCreate from "./RoomCreate";
 import { IRoom } from "interfaces/Room/IRoom";
 import { useQuery } from "react-query";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { RoomService } from "../../api/RoomService";
 import Spinner from "components/shared/component/Spinner";
 
-function RoomOnboardingContainer() {
+type Props = {
+  isRoomsTableVisible?: boolean;
+};
+
+function RoomOnboardingContainer(props: Props) {
+  const { isRoomsTableVisible = false } = props;
   const navigate = useNavigate();
+  const location = useLocation();
+  const companyName =
+    location.pathname.charAt(1).toUpperCase() + location.pathname.slice(2);
+
   const {
     isLoading: isRoomsLoading,
     error,
     data: allRooms
   } = useQuery<IRoom[] | undefined, Error>("getRooms", async () =>
-    RoomService.getRooms()
+    RoomService.getRooms(companyName)
   );
 
   const [isLoading, setIsLoading] = useState(false);
@@ -38,7 +47,11 @@ function RoomOnboardingContainer() {
         backgroundColor: "secondary.main"
       }}
     >
-      <NavBar appName="Dot Voting" isBorderBottom />
+      <NavBar
+        appName="Virtual Planning Poker"
+        companyName={companyName}
+        isBorderBottom
+      />
       <Grid>
         {isRoomsLoading ? (
           <Spinner />
@@ -49,6 +62,7 @@ function RoomOnboardingContainer() {
                 isSubmitting={isLoading}
                 onFormSubmitted={handleCreateRoom}
                 allRooms={allRooms}
+                isRoomsTableVisible={isRoomsTableVisible}
               />
             )}
           </Grid>

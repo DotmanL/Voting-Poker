@@ -3,13 +3,15 @@ import { SidebarContext } from "utility/providers/SideBarProvider";
 import Box from "@mui/material/Box";
 import SwipeableDrawer from "@mui/material/SwipeableDrawer";
 import { Grid, IconButton, Typography } from "@mui/material";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
+import { Link } from "./Link";
 import MenuIcon from "@mui/icons-material/Menu";
 import { AiOutlineClose } from "react-icons/ai";
 import { IUser } from "interfaces/User/IUser";
 import ViewSidebarIcon from "@mui/icons-material/ViewSidebar";
 import DarkModeToggle from "./DarkModeToggle";
 import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
+import dotvotingLogo from "../assets/dotvotingLogo.png";
 
 type Props = {
   user: IUser;
@@ -192,15 +194,34 @@ function MobileNavBar(props: Props) {
             <MenuIcon sx={{ width: "30px", height: "30px" }} />
           </IconButton>
         </Grid>
-        <Link to="/" style={{ textDecoration: "none" }}>
+        <Link
+          to="/"
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            textDecoration: "none"
+          }}
+        >
+          <Grid>
+            <Grid
+              component={"img"}
+              src={dotvotingLogo}
+              alt="waves"
+              sx={{
+                height: { md: "60px", xs: "40px" },
+                width: { md: "60px", xs: "40px" }
+              }}
+            />
+          </Grid>
           <Grid>
             <Typography
               variant="h5"
               sx={{
                 fontFamily: "Jost",
                 fontWeight: "bold",
-                mt: 1,
-                fontSize: { md: "40px", xs: "22px" },
+                fontSize: { xs: "18px" },
                 color: "primary.main"
               }}
             >

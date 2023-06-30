@@ -14,7 +14,7 @@ function Footer() {
         py: { md: 2, xs: 3 },
         width: "100%",
         backgroundColor: (theme) =>
-          theme.palette.mode === "dark" ? "#001219" : "#67A3EE",
+          theme.palette.mode === "dark" ? "#67A3EE" : "#67A3EE",
         height: "250px"
       }}
     >
@@ -51,7 +51,7 @@ function Footer() {
               }
             }}
           >
-            Dot Voting
+            Virtual Planning Poker
           </Typography>
         </Link>
       </Grid>

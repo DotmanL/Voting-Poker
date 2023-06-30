@@ -7,5 +7,6 @@ export interface IRoomUsers extends IBase {
   currentVote?: number;
   activeIssueId?: string;
   votedState?: boolean;
+  cardColor?: string;
   [key: string]: any;
 }

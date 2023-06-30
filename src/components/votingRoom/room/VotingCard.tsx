@@ -6,12 +6,13 @@ import Typography from "@mui/material/Typography";
 import CardType from "utility/CardType";
 
 type Props = {
+  userCardColor: string;
   votingSystem: number;
   handleClickCard: (value: number | string) => void;
 };
 
 function VotingCard(props: Props) {
-  const { votingSystem, handleClickCard } = props;
+  const { votingSystem, handleClickCard, userCardColor } = props;
 
   const cardValues = CardType(votingSystem);
 
@@ -36,7 +37,7 @@ function VotingCard(props: Props) {
               minWidth: { md: 60, xs: 50 },
               minHeight: { md: 80, xs: 60 },
               mx: { md: 1, xs: 1 },
-              border: "1px solid #67A3EE",
+              border: `1px solid ${userCardColor}`,
               cursor: "pointer",
               borderRadius: { md: "8px", xs: "4px" },
               display: "flex",
@@ -52,7 +53,7 @@ function VotingCard(props: Props) {
                 borderRadius: "8px",
                 opacity: "0.9",
                 transform: "translate(0, -5px)",
-                backgroundColor: "#67A3EE"
+                backgroundColor: `${userCardColor}`
               }
             }
           ]}
