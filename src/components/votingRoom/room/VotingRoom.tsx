@@ -39,7 +39,6 @@ import { IssueContext } from "utility/providers/IssuesProvider";
 import FormatColorResetIcon from "@mui/icons-material/FormatColorReset";
 import JiraService from "api/JiraService";
 import { useClickAway } from "react-use";
-import { produce } from "immer";
 
 const useStyles = makeStyles((theme) => ({
   "@keyframes glowing": {
@@ -503,17 +502,19 @@ function VotingRoom(props: Props) {
     setColor(newColor);
     user!.cardColor = newColor;
     await UserService.updateUser(userId, user!);
+    const updatedRoomUsers = [...roomUsers!];
 
-    const updatedRoomUsers = produce(roomUsers!, (draftRoomUsers) => {
-      const currentRoomUserIndex = draftRoomUsers.findIndex(
-        (ru) => ru._id === userId
-      );
-      if (currentRoomUserIndex !== -1) {
-        draftRoomUsers[currentRoomUserIndex].cardColor = newColor;
-      }
-    });
-
-    setRoomUsers(updatedRoomUsers);
+    const currentRoomUserIndex = updatedRoomUsers.findIndex(
+      (ru) => ru._id === userId
+    );
+    if (currentRoomUserIndex !== -1) {
+      const updatedCurrentRoomUser = {
+        ...updatedRoomUsers[currentRoomUserIndex],
+        cardColor: newColor
+      };
+      updatedRoomUsers[currentRoomUserIndex] = updatedCurrentRoomUser;
+      setRoomUsers(updatedRoomUsers);
+    }
   }
 
   const pickCardStyle = {
