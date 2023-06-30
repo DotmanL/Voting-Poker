@@ -99,7 +99,6 @@ function App() {
                           path="privacy-policy"
                           element={<PrivacyPolicy />}
                         />
-
                         <Route path="*" element={<NotFoundContainer />} />
                       </Routes>
                     </ScrollToTop>

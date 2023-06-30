@@ -51,7 +51,7 @@ function Footer() {
               }
             }}
           >
-            Dot Voting
+            Virtual Planning Poker
           </Typography>
         </Link>
       </Grid>

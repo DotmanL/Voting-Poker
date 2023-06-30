@@ -1,4 +1,10 @@
-import React, { useCallback, useContext, useEffect, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+  useRef
+} from "react";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import { userContext } from "App";
@@ -14,12 +20,15 @@ import { useParams, useLocation, useNavigate } from "react-router-dom";
 // import { toast } from "react-toastify";
 import { IRoomUsers } from "interfaces/RoomUsers";
 import { makeStyles } from "@mui/styles";
-import { Button, Link } from "@mui/material";
+import { Button, Link, Tooltip } from "@mui/material";
 import { getBaseUrlWithoutRoute } from "api";
 import VotingResultsContainer from "./VotingResultsContainer";
 import RightSidebar from "../sideBar/RightSidebar";
+import PaletteIcon from "@mui/icons-material/Palette";
+import { HexColorPicker } from "react-colorful";
 import { IIssue } from "interfaces/Issues";
 import { SidebarContext } from "utility/providers/SideBarProvider";
+import UserService from "api/UserService";
 import IssueService from "api/IssueService";
 import { useQuery } from "react-query";
 import RoomUsersService, {
@@ -27,15 +36,18 @@ import RoomUsersService, {
   RoomUsersUpdate
 } from "api/RoomUsersService";
 import { IssueContext } from "utility/providers/IssuesProvider";
+import FormatColorResetIcon from "@mui/icons-material/FormatColorReset";
 import JiraService from "api/JiraService";
+import { useClickAway } from "react-use";
+import { produce } from "immer";
 
 const useStyles = makeStyles((theme) => ({
   "@keyframes glowing": {
     from: {
-      boxShadow: "0px 0px 10px 3px #67a3ee"
+      boxShadow: `0px 0px 10px 3px #67a3ee`
     },
     to: {
-      boxShadow: "0px 0px 20px 5px #67a3ee"
+      boxShadow: `0px 0px 20px 5px  #67a3ee`
     }
   },
 
@@ -46,7 +58,6 @@ const useStyles = makeStyles((theme) => ({
     alignItems: "center",
     marginTop: "25vh",
     borderRadius: "20px",
-    border: "2px solid #67A3EE",
     width: "400px",
     height: "200px",
     [theme.breakpoints.down("md")]: {
@@ -81,8 +92,8 @@ type Props = {
 
 function VotingRoom(props: Props) {
   const { room, handleCreateUser, isModalOpen } = props;
-  const classes = useStyles();
   const user = useContext(userContext);
+  const classes = useStyles({ cardColor: user?.cardColor });
   const { isSidebarOpen } = useContext(SidebarContext);
   const { activeIssue, setActiveIssue } = useContext(IssueContext);
 
@@ -100,6 +111,9 @@ function VotingRoom(props: Props) {
   const [isFirstLauchJiraModalOpen, setIsFirstLaunchJiraModalOpen] =
     useState<boolean>(false);
 
+  const [isColorPalleteOpen, setIsColorPalleteOpen] = useState<boolean>(false);
+  const [color, setColor] = useState("#67A3EE");
+
   const getRoomId = useParams();
   const getUserId = localStorage.getItem("userId");
   const userId = getUserId ? JSON.parse(getUserId) : null;
@@ -108,6 +122,12 @@ function VotingRoom(props: Props) {
   const navigate = useNavigate();
   const params = new URLSearchParams(search);
   const jiraAuthenticate = params.get("jiraAuthenticate");
+
+  const colorPalleteRef = useRef<HTMLDivElement>(null);
+
+  useClickAway(colorPalleteRef, () => {
+    setIsColorPalleteOpen(false);
+  });
 
   const {
     isLoading,
@@ -222,7 +242,8 @@ function VotingRoom(props: Props) {
       socketId: socket.id && socket.id,
       roomId: getRoomId.roomId,
       votedState: user?.votedState,
-      currentVote: user?.currentVote
+      currentVote: user?.currentVote,
+      cardColor: user?.cardColor
     });
 
     socket.on("userResponse", async (data: IRoomUsers[]) => {
@@ -478,6 +499,31 @@ function VotingRoom(props: Props) {
     }
   };
 
+  async function handleChangeColor(newColor: string, userId: string) {
+    setColor(newColor);
+    user!.cardColor = newColor;
+    await UserService.updateUser(userId, user!);
+
+    const updatedRoomUsers = produce(roomUsers!, (draftRoomUsers) => {
+      const currentRoomUserIndex = draftRoomUsers.findIndex(
+        (ru) => ru._id === userId
+      );
+      if (currentRoomUserIndex !== -1) {
+        draftRoomUsers[currentRoomUserIndex].cardColor = newColor;
+      }
+    });
+
+    setRoomUsers(updatedRoomUsers);
+  }
+
+  const pickCardStyle = {
+    border: `2px solid ${user?.cardColor}`
+  };
+
+  const glowingCardCardStyle = {
+    border: `2px solid ${user?.cardColor}`
+  };
+
   return (
     <Grid
       style={{
@@ -541,7 +587,82 @@ function VotingRoom(props: Props) {
         ) : (
           <Grid></Grid>
         )}
+        <Grid
+          sx={{
+            position: "absolute",
+            top: "20vh",
+            left: 80,
+            width: "60px",
+            height: "60px",
+            display: { md: "flex", xs: "none" },
+            flexDirection: "row",
+            borderRadius: "50%",
+            border: `2px solid ${user?.cardColor}`,
+            cursor: "pointer",
+            justifyContent: "center",
+            alignItems: "center",
+            "&:hover": {
+              transition: "box-shadow 0.3s ease-in-out",
+              boxShadow: (theme) =>
+                theme.palette.mode === "dark"
+                  ? "0px 0px 10px 2px rgba(255, 255, 255, 0.8)"
+                  : "0px 0px 10px 2px rgba(0, 0, 0, 0.4)"
+            }
+          }}
+          onClick={() => setIsColorPalleteOpen(!isColorPalleteOpen)}
+        >
+          <Tooltip title="Change Card Color">
+            <PaletteIcon sx={{ width: "60px", height: "60px" }} />
+          </Tooltip>
+        </Grid>
 
+        <Grid
+          ref={colorPalleteRef}
+          sx={{
+            position: "absolute",
+            top: "25vh",
+            left: 135,
+            width: "auto",
+            height: "auto",
+            display: { md: "flex", xs: "none" },
+            flexDirection: "row",
+            cursor: "pointer",
+            justifyContent: "center",
+            alignItems: "center"
+          }}
+        >
+          {isColorPalleteOpen && (
+            <Grid
+              sx={{
+                display: { md: "flex", xs: "none" },
+                flexDirection: "row"
+              }}
+            >
+              <Grid>
+                <HexColorPicker
+                  color={color}
+                  onChange={(newColor) =>
+                    handleChangeColor(newColor, user?._id!)
+                  }
+                />
+              </Grid>
+              <Grid
+                sx={{
+                  ml: 1,
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "flex-end",
+                  height: "200px"
+                }}
+                onClick={() => handleChangeColor("#67a3ee", user?._id!)}
+              >
+                <Tooltip title="Reset Color">
+                  <FormatColorResetIcon />
+                </Tooltip>
+              </Grid>
+            </Grid>
+          )}
+        </Grid>
         <Grid
           sx={{
             position: "absolute",
@@ -575,7 +696,10 @@ function VotingRoom(props: Props) {
             />
           </Grid>
         </Grid>
-        <Grid className={isDisabled ? classes.pickCard : classes.glowingCard}>
+        <Grid
+          className={isDisabled ? classes.pickCard : classes.glowingCard}
+          style={isDisabled ? pickCardStyle : glowingCardCardStyle}
+        >
           {!votesCasted ? (
             <Grid
               sx={{
@@ -601,18 +725,14 @@ function VotingRoom(props: Props) {
                     sx={[
                       {
                         mt: 1,
-                        background: "#67A3EE",
+                        background: `${user?.cardColor}`,
                         borderRadius: "5px",
-                        color: "white",
+                        borderColor: `${user?.cardColor}`,
+                        color: (theme) =>
+                          theme.palette.mode === "dark" ? "white" : "black",
                         px: { md: 3, xs: 2 },
                         py: { md: 0.5 },
                         fontSize: "16px"
-                      },
-                      {
-                        "&:hover": {
-                          background: "secondary.main",
-                          color: "#67A3EE"
-                        }
                       }
                     ]}
                     variant="outlined"
@@ -630,18 +750,14 @@ function VotingRoom(props: Props) {
                   {
                     mt: 1,
                     width: "auto",
-                    background: "#67A3EE",
+                    background: `${user?.cardColor}`,
                     borderRadius: "5px",
-                    color: "white",
+                    borderColor: `${user?.cardColor}`,
+                    color: (theme) =>
+                      theme.palette.mode === "dark" ? "white" : "black",
                     px: { md: 2, xs: 1 },
                     py: { md: 1 },
                     fontSize: { md: "16px", xs: "12px" }
-                  },
-                  {
-                    "&:hover": {
-                      background: "secondary.main",
-                      color: "#67A3EE"
-                    }
                   }
                 ]}
                 variant="outlined"
@@ -672,7 +788,7 @@ function VotingRoom(props: Props) {
                       width: { md: 70, xs: 60 },
                       height: { md: 100, xs: 90 },
                       mx: { md: 2, xs: 1 },
-                      border: "1px solid #67A3EE",
+                      border: `1px solid ${roomUser?.cardColor}`,
                       cursor: "pointer",
                       borderRadius: { md: "8px", xs: "4px" },
                       display: "flex",
@@ -682,7 +798,7 @@ function VotingRoom(props: Props) {
                       boxShadow: 5,
                       transition: "transform ease 300ms",
                       background: roomUser!.votedState!
-                        ? "#67A3EE"
+                        ? ` ${roomUser.cardColor}`
                         : "secondary.main"
                     },
                     {
@@ -700,7 +816,13 @@ function VotingRoom(props: Props) {
                     </CardContent>
                   ) : (
                     <Grid>
-                      <Typography variant="h3" sx={{ color: "white" }}>
+                      <Typography
+                        variant="h3"
+                        sx={{
+                          color: (theme) =>
+                            theme.palette.mode === "dark" ? "white" : "black"
+                        }}
+                      >
                         {roomUser.votedState
                           ? roomUser._id === userId && roomUser?.currentVote
                           : undefined}
@@ -728,6 +850,7 @@ function VotingRoom(props: Props) {
       <Grid>
         <VotingResultsContainer
           room={room}
+          userCardColor={user?.cardColor!}
           votesCasted={votesCasted}
           handleAddVote={handleAddVote}
         />

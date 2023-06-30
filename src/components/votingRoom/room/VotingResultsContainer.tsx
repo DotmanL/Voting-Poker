@@ -10,11 +10,12 @@ import { SidebarContext } from "utility/providers/SideBarProvider";
 type Props = {
   room: IRoom;
   votesCasted: IRoomUsers[] | undefined;
+  userCardColor: string;
   handleAddVote: (voteValue: number | string) => Promise<void>;
 };
 
 function VotingResultsContainer(props: Props) {
-  const { room, votesCasted, handleAddVote } = props;
+  const { room, votesCasted, handleAddVote, userCardColor } = props;
   const { isSidebarOpen } = useContext(SidebarContext);
 
   return (
@@ -48,6 +49,7 @@ function VotingResultsContainer(props: Props) {
             <VotingCard
               votingSystem={room.votingSystem}
               handleClickCard={handleAddVote}
+              userCardColor={userCardColor}
             />
           </Grid>
         </Grid>
@@ -76,7 +78,11 @@ function VotingResultsContainer(props: Props) {
                 height: "200px"
               }}
             >
-              <VotingResult votesCasted={votesCasted} room={room} />
+              <VotingResult
+                userCardColor={userCardColor}
+                votesCasted={votesCasted}
+                room={room}
+              />
             </Grid>
           </Slide>
         )}

@@ -6,7 +6,7 @@ import Footer from "./Footer";
 function PrivacyPolicy() {
   return (
     <Grid>
-      <NavBar appName="Dot Voting" isBorderBottom />
+      <NavBar appName="Virtual Planning Poker" isBorderBottom />
       <Grid
         sx={{
           mt: { md: 8, xs: 8 },

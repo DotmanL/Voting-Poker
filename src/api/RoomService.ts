@@ -11,9 +11,13 @@ const apiClient = axios.create({
   }
 });
 
-const getRooms = async () => {
-  const response = await apiClient.get<IRoom[]>("getRooms");
-  return response.data;
+const getRooms = async (companyName: string) => {
+  try {
+    const response = await apiClient.get<IRoom[]>(`getRooms/${companyName}`);
+    return response.data;
+  } catch (err: any) {
+    console.error(err.message);
+  }
 };
 
 const createRoom = async (formData: IRoom) => {
