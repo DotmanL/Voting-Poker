@@ -16,8 +16,7 @@ function RoomOnboardingContainer(props: Props) {
   const { isRoomsTableVisible = false } = props;
   const navigate = useNavigate();
   const location = useLocation();
-  const companyName =
-    location.pathname.charAt(1).toUpperCase() + location.pathname.slice(2);
+  const companyName = location.pathname.slice(1);
 
   const {
     isLoading: isRoomsLoading,
