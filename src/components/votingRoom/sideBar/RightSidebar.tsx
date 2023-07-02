@@ -20,7 +20,7 @@ import {
 import { IRoom } from "interfaces/Room/IRoom";
 import { IssueContext } from "utility/providers/IssuesProvider";
 import JiraImportModal from "./JiraImportModal";
-import { userContext } from "App";
+import { UserContext } from "utility/providers/UserProvider";
 import JiraManagementModal from "./JiraManagementModal";
 import DeleteIcon from "@mui/icons-material/Delete";
 import SaveIcon from "@mui/icons-material/Save";
@@ -80,7 +80,7 @@ function RightSidebar(props: Props) {
     setIsFirstLaunchJiraModalOpen,
     validityText
   } = props;
-  const user = useContext(userContext);
+  const { currentUser } = useContext(UserContext);
   const { isSidebarOpen, setIsSidebarOpen } = useContext(SidebarContext);
   const [isJiraImportModalOpen, setIsJiraImportModalOpen] =
     useState<boolean>(false);
@@ -100,9 +100,9 @@ function RightSidebar(props: Props) {
   const [isConfirmPromptModalOpen, setIsConfirmPromptModalOpen] =
     useState<boolean>(false);
 
-  const { data: currentUser, refetch: refetchCurrentUser } = useQuery({
-    queryKey: ["currentUser"],
-    queryFn: async () => await UserService.loadUser(user?._id!)
+  const { data: reloadedUser, refetch: refetchReloadedUser } = useQuery({
+    queryKey: ["reloadUser"],
+    queryFn: async () => await UserService.loadUser(currentUser?._id!)
   });
 
   useClickAway(singleIssueTextBoxRef, () => {
@@ -163,7 +163,7 @@ function RightSidebar(props: Props) {
       setIsAddMultipleModalOpen(true);
     }
     if (label === "jiraImport") {
-      if (!user) {
+      if (!currentUser) {
         return;
       }
       if (isJiraTokenValid) {
@@ -212,7 +212,7 @@ function RightSidebar(props: Props) {
       const fieldValue = issue.storyPoints!;
       setIsAddingStoryPoints(true);
       const response = await JiraService.jiraUpdateStoryPoints(
-        user?._id!,
+        currentUser?._id!,
         issue.jiraIssueId!,
         fieldValue
       );
@@ -370,7 +370,7 @@ function RightSidebar(props: Props) {
             socket={socket}
             issuesLength={cards.length}
             isFirstLaunch={isFirstLauchJiraModalOpen}
-            refetchCurrentUser={refetchCurrentUser}
+            refetchCurrentUser={refetchReloadedUser}
             setIsJiraTokenValid={setIsJiraTokenValid}
             isJiraManagementModalOpen={isJiraManagementModalOpen}
             setIsJiraManagementModalOpen={setIsJiraManagementModalOpen}
@@ -400,8 +400,8 @@ function RightSidebar(props: Props) {
             <Grid>
               {issues.filter((issue: IIssue) => issue.jiraIssueId !== null)
                 .length > 0 &&
-                !!currentUser?.jiraAccessToken &&
-                !!currentUser?.storyPointsField && (
+                !!reloadedUser?.jiraAccessToken &&
+                !!reloadedUser?.storyPointsField && (
                   <Tooltip arrow title="Saves All Jira Issues StoryPoints">
                     <SaveIcon
                       sx={{
@@ -430,8 +430,8 @@ function RightSidebar(props: Props) {
                 width:
                   issues.filter((issue: IIssue) => issue.jiraIssueId !== null)
                     .length > 0 &&
-                  !!currentUser?.jiraAccessToken &&
-                  !!currentUser.storyPointsField
+                  !!reloadedUser?.jiraAccessToken &&
+                  !!reloadedUser.storyPointsField
                     ? "50%"
                     : "100%",
                 "&:hover": {
@@ -456,7 +456,7 @@ function RightSidebar(props: Props) {
         >
           {cards && (
             <IssuesView
-              currentUser={currentUser}
+              currentUser={reloadedUser}
               setIsJiraErrorManagementModalOpen={
                 setIsJiraErrorManagementModalOpen
               }

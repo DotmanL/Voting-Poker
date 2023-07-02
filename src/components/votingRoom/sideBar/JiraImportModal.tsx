@@ -4,8 +4,7 @@ import CustomModal from "components/shared/component/CustomModal";
 import { Link, useParams } from "react-router-dom";
 import { AiOutlineClose } from "react-icons/ai";
 import CryptoJS from "crypto-js";
-
-import { userContext } from "App";
+import { UserContext } from "utility/providers/UserProvider";
 
 type Props = {
   isJiraImportModalOpen: boolean;
@@ -20,11 +19,11 @@ type RoomRouteParams = {
 function JiraImportModal(props: Props) {
   const { isJiraImportModalOpen, setIsJiraImportModalOpen, validityText } =
     props;
-  const user = useContext(userContext);
+  const { currentUser } = useContext(UserContext);
   const { roomId } = useParams<RoomRouteParams>();
 
   const hashUserId = () => {
-    const hashedUserId = CryptoJS.SHA256(user?._id!).toString();
+    const hashedUserId = CryptoJS.SHA256(currentUser?._id!).toString();
     return hashedUserId + "_" + roomId;
   };
 

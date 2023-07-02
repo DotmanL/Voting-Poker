@@ -1,6 +1,7 @@
 import axios from "axios";
 import { IRoomUsers } from "interfaces/RoomUsers";
 import { getBaseUrl } from "api";
+import { RoleType } from "interfaces/enums/RoleEnum";
 
 const route: string = "roomusers";
 const apiClient = axios.create({
@@ -14,6 +15,8 @@ export type RoomUserUpdate = {
   currentVote?: number;
   activeIssueId?: string;
   votedState?: boolean;
+  cardColor?: string;
+  role?: RoleType;
 };
 
 export type RoomUsersUpdate = {

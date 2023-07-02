@@ -1,8 +1,8 @@
+import { useContext, useEffect, useState } from "react";
 import { Typography } from "@mui/material";
 import AppBar from "@mui/material/AppBar";
 import Grid from "@mui/material/Grid";
 import Toolbar from "@mui/material/Toolbar";
-import { useContext, useEffect, useState } from "react";
 import IconButton from "@mui/material/IconButton";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Link } from "./Link";
@@ -12,7 +12,6 @@ import Menu from "@mui/material/Menu";
 import UserService from "api/UserService";
 import { IUser } from "interfaces/User/IUser";
 import { toast } from "react-toastify";
-import { userContext } from "../../../App";
 import ViewSidebarIcon from "@mui/icons-material/ViewSidebar";
 import { SidebarContext } from "utility/providers/SideBarProvider";
 import DarkModeToggle from "./DarkModeToggle";
@@ -23,19 +22,20 @@ import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
 import CustomModal from "./CustomModal";
 import { AiOutlineClose } from "react-icons/ai";
 import Tooltip from "@mui/material/Tooltip";
+import { UserContext } from "utility/providers/UserProvider";
 
 type Props = {
   appName: string;
   companyName?: string;
-  currentUser?: IUser;
+  loggedInUser?: IUser;
   isBorderBottom?: boolean;
   currentRoomLink?: string;
 };
 
 export const NavBar = (props: Props) => {
-  const { appName, currentUser, currentRoomLink, companyName } = props;
+  const { appName, loggedInUser, currentRoomLink, companyName } = props;
   const navigate = useNavigate();
-  const userData = useContext(userContext);
+  const { currentUser } = useContext(UserContext);
   const { activeIssue } = useContext(IssueContext);
   const location = useLocation();
   const urlPath = location.pathname;
@@ -45,7 +45,7 @@ export const NavBar = (props: Props) => {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState<boolean>(false);
   const [isCopied, setIsCopied] = useState<boolean>(false);
   const [user, setUser] = useState<IUser>(
-    currentUser ? currentUser : userData!
+    loggedInUser ? loggedInUser : currentUser!
   );
 
   async function handleMenu(event: React.MouseEvent<HTMLElement>) {
@@ -101,10 +101,10 @@ export const NavBar = (props: Props) => {
   }
 
   useEffect(() => {
-    if (currentUser) {
-      setUser(currentUser);
+    if (loggedInUser) {
+      setUser(loggedInUser);
     } else {
-      setUser(userData!);
+      setUser(currentUser!);
     }
     const handleScroll = () => {
       const bodyScrollTop =
@@ -116,7 +116,7 @@ export const NavBar = (props: Props) => {
     window.addEventListener("scroll", handleScroll, { passive: true });
 
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [scrolledDownEnough, currentUser, userData]);
+  }, [scrolledDownEnough, loggedInUser, currentUser]);
 
   return (
     <Grid>
@@ -238,7 +238,7 @@ export const NavBar = (props: Props) => {
                   mt: { md: 1, xs: 0.5 },
                   borderRadius: "6px",
                   border: "2px solid",
-                  borderColor: "#67A3EE",
+                  borderColor: "gray",
                   "&:hover": {
                     borderRadius: "6px",
                     borderColor: (theme) => theme.palette.primary.main,
@@ -345,7 +345,7 @@ export const NavBar = (props: Props) => {
                 px: 1.5,
                 py: 0.5,
                 background: (theme) => theme.palette.secondary.main,
-                borderColor: "#67A3EE",
+                borderColor: "gray",
                 "&:hover": {
                   opacity: 0.8
                 }
@@ -425,7 +425,7 @@ export const NavBar = (props: Props) => {
                       textAlign: { xs: "center" },
                       alignSelf: "center",
                       border: { md: "2px solid", xs: "1px solid" },
-                      borderColor: (theme) => theme.palette.primary.main
+                      borderColor: "gray"
                     }}
                   >
                     {currentRoomLink}
@@ -443,7 +443,7 @@ export const NavBar = (props: Props) => {
                       height: { md: "50px", xs: "30px" },
                       borderRadius: "8px",
                       alignSelf: "center",
-                      background: "#67A3EE",
+                      background: "gray",
                       "&:hover": {
                         opacity: 0.8
                       }
@@ -467,7 +467,7 @@ export const NavBar = (props: Props) => {
                 borderRadius: "10px",
                 borderWidth: "1px",
                 border: "2px solid",
-                borderColor: "#67A3EE",
+                borderColor: "gray",
                 mr: { md: 2, xs: 0 },
                 mt: { md: 1, xs: 0.5 },
                 p: { md: 1, xs: 0.5 },

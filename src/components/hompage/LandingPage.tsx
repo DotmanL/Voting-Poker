@@ -23,7 +23,6 @@ function LandingPage() {
         sx={{
           display: "flex",
           flexDirection: { md: "row", xs: "column" },
-          zIndex: 100,
           position: "relative",
           height: "100%"
         }}
@@ -33,50 +32,62 @@ function LandingPage() {
             display: "flex",
             flexDirection: "column",
             alignItems: { md: "center", xs: "center" },
-            width: { md: "40%", xs: "100%" }
+            width: { md: "50%", xs: "100%" },
+            pl: { md: 2, xs: 2 }
           }}
         >
-          <Grid sx={{ mt: { md: 20, xs: 2 } }}>
+          <Grid
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: { md: "flex-start", xs: "center" }
+            }}
+          >
             <Typography
               variant="h3"
               sx={{
-                fontSize: { md: "72px", xs: "30px" },
+                fontSize: { md: "64px", xs: "28px" },
+                mt: { md: 20, xs: 3 },
                 fontWeight: "bold",
                 fontFamily: "Roboto"
               }}
             >
-              Create your
-              <Typography
-                sx={{
-                  fontSize: { md: "64px", xs: "30px" },
-                  fontWeight: "bold",
-                  fontFamily: "Roboto"
-                }}
-              >
-                polls here
-              </Typography>
+              Create your planning
             </Typography>
+
+            <Typography
+              sx={{
+                display: { md: "flex" },
+                fontSize: { md: "64px", xs: "28px" },
+                fontWeight: "bold",
+                fontFamily: "Roboto"
+              }}
+            >
+              poker rooms here
+            </Typography>
+
             <Typography
               sx={{
                 fontSize: { md: "28px", xs: "15px" },
                 fontWeight: 400,
-                fontStyle: "italic"
+                fontStyle: "italic",
+                mt: { md: 1, xs: 0.5 }
               }}
             >
               Help your team make decisions faster
             </Typography>
+
             <Link to="new-room">
               <Button
                 variant="contained"
                 sx={[
                   {
-                    mt: 4,
-                    ml: { md: 5, xs: 0 },
+                    mt: { md: 4, xs: 2 },
                     background: (theme) => theme.palette.primary.main,
                     color: "secondary.main",
-                    px: { md: 4, xs: 2 },
+                    px: { md: 6, xs: 2 },
                     py: { md: 0.7, xs: 0.5 },
-                    fontSize: "20px"
+                    fontSize: { md: "24px", xs: "18px" }
                   },
                   {
                     "&:hover": {
@@ -95,54 +106,115 @@ function LandingPage() {
         <Grid
           sx={{
             display: "flex",
-            zIndex: 100,
-            flexDirection: { md: "column", xs: "column" },
+            flexDirection: { md: "row", xs: "column" },
             justifyContent: "flex-start",
             alignItems: { md: "flex-start", xs: "center" },
-            width: { md: "60%", xs: "100%" },
-            mt: { md: 0.5, xs: 3 }
+            width: { md: "50%", xs: "100%" },
+            mt: { md: -5, xs: 3 }
           }}
         >
           <Grid
             sx={{
               width: "100%",
               display: "flex",
-              flexDirection: { md: "row", xs: "column" },
+              flexDirection: { md: "column", xs: "column" },
               justifyContent: { md: "flex-start" }
             }}
           >
             <Grid
-              component="img"
               sx={{
-                width: { md: "70%", xs: "100%" },
-                height: { md: "90%", xs: "90%" }
+                display: "flex",
+                flexDirection: { md: "row", xs: "column" },
+                height: "50vh",
+                padding: 0,
+                width: "100%"
               }}
-              src={teams}
-              alt="teams card"
-            />
-          </Grid>
-          <Grid
-            sx={{
-              width: "100%",
-              display: "flex",
-              backgorund: "red",
-              flexDirection: { md: "row", xs: "column" },
-              justifyContent: { md: "flex-end", xs: "flex-start" },
-              alignItems: { md: "flex-start", xs: "center" },
-              mt: { md: -8, xs: 0 },
-              ml: { md: 8, xs: 0 }
-            }}
-          >
+            >
+              <Grid
+                sx={{
+                  display: "flex",
+                  flexDirection: "row",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  height: { md: "100%", xs: "auto" },
+                  width: { md: "50%", xs: "100%" }
+                }}
+              >
+                {/* 1st Quarter */}
+                <Grid
+                  component="img"
+                  sx={{
+                    width: { md: "600px", xs: "500px" }
+                  }}
+                  src={teams}
+                  alt="teams card"
+                />
+              </Grid>
+              <Grid
+                sx={{
+                  display: "flex",
+                  flexDirection: "row",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  height: { md: "100%", xs: "auto" },
+                  width: { md: "50%", xs: "100%" }
+                }}
+              >
+                {/* 2nd Quarter */}
+                <Grid
+                  component="img"
+                  sx={{
+                    display: { md: "none", xs: "flex" },
+                    width: { md: "500px", xs: "380px" }
+                  }}
+                  src={bg1}
+                  alt="work planning"
+                />
+              </Grid>
+            </Grid>
             <Grid
-              component="img"
               sx={{
-                width: { md: "70%", xs: "90%" },
-                height: { md: "70%", xs: "70%" },
-                mb: { md: "10px", xs: "0px" }
+                display: "flex",
+                flexDirection: { md: "row", xs: "column" },
+                height: "50vh",
+                padding: 0,
+                width: "100%"
               }}
-              src={bg1}
-              alt="work planning"
-            />
+            >
+              <Grid
+                sx={{
+                  display: { md: "flex", xs: "none" },
+                  flexDirection: "row",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  height: { md: "100%", xs: "auto" },
+                  width: { md: "50%", xs: "100%" }
+                }}
+              >
+                {/* 3rd Quarter */}
+              </Grid>
+              <Grid
+                sx={{
+                  display: "flex",
+                  flexDirection: "row",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  height: { md: "100%", xs: "auto" },
+                  width: { md: "50%", xs: "100%" }
+                }}
+              >
+                {/* 4th Quarter */}
+                <Grid
+                  component="img"
+                  sx={{
+                    display: { md: "flex", xs: "none" },
+                    width: { md: "550px", xs: "500px" }
+                  }}
+                  src={bg1}
+                  alt="work planning"
+                />
+              </Grid>
+            </Grid>
           </Grid>
         </Grid>
       </Grid>

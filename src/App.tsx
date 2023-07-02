@@ -1,8 +1,7 @@
-import React, { useEffect, createContext, useState } from "react";
+import React from "react";
 import "./App.css";
 import { Routes, Route } from "react-router-dom";
 import { CssBaseline, Grid } from "@mui/material";
-import { IUser } from "interfaces/User/IUser";
 import ScrollToTop from "components/shared/hooks/ScrollToTop";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { ToastContainer, Zoom } from "react-toastify";
@@ -11,7 +10,6 @@ import NotFoundContainer from "components/shared/NotFoundContainer";
 import VotingRoomContainer from "components/votingRoom/room/VotingRoomContainer";
 import RoomOnboardingContainer from "components/roomOnboarding/RoomOnboardingContainer";
 import { ColorModeContext } from "utility/providers/ColorContext";
-import UserService from "api/UserService";
 import "react-toastify/dist/ReactToastify.css";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { DndProvider } from "react-dnd";
@@ -21,12 +19,11 @@ import { getDesignTokens } from "theme";
 import IssuesProvider from "utility/providers/IssuesProvider";
 import JiraCallbackContainer from "components/votingRoom/sideBar/JiraCallbackContainer";
 import PrivacyPolicy from "components/hompage/PrivacyPolicy";
+import UserProvider from "utility/providers/UserProvider";
 
 const queryClient = new QueryClient();
-export const userContext = createContext<IUser | null>(null);
 
 function App() {
-  const [currentUser, setCurrentUser] = useState<IUser>();
   const getThemeMode = localStorage.getItem("mode");
   const themeMode = getThemeMode === "light" ? "light" : "dark";
   const [mode, setMode] = React.useState<"light" | "dark">(themeMode);
@@ -45,25 +42,12 @@ function App() {
     [mode]
   );
 
-  useEffect(() => {
-    const getCurrentUser = async () => {
-      const getUserId = localStorage.getItem("userId");
-      const userId = JSON.parse(getUserId!);
-      if (!userId) {
-        return;
-      }
-      const user = await UserService.loadUser(userId);
-      setCurrentUser(user);
-    };
-    getCurrentUser();
-  }, []);
-
   return (
     <QueryClientProvider client={queryClient}>
       <ColorModeContext.Provider value={colorMode}>
         <ThemeProvider theme={theme}>
           <CssBaseline />
-          <userContext.Provider value={currentUser!}>
+          <UserProvider>
             <SidebarProvider>
               <IssuesProvider>
                 <Grid>
@@ -106,7 +90,7 @@ function App() {
                 </Grid>
               </IssuesProvider>
             </SidebarProvider>
-          </userContext.Provider>
+          </UserProvider>
         </ThemeProvider>
       </ColorModeContext.Provider>
     </QueryClientProvider>

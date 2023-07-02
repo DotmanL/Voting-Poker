@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import CustomModal from "components/shared/component/CustomModal";
 import { AiOutlineClose } from "react-icons/ai";
-import { userContext } from "App";
+import { UserContext } from "utility/providers/UserProvider";
 import JiraService from "api/JiraService";
 import LaunchIcon from "@mui/icons-material/Launch";
 import { IIssue } from "interfaces/Issues";
@@ -76,7 +76,7 @@ function JiraManagementModal(props: Props) {
     setIsJiraErrorManagementModalOpen,
     setIsInvalidStoryPointsField
   } = props;
-  const user = useContext(userContext);
+  const { currentUser } = useContext(UserContext);
   const [jiraIssues, setJiraIssues] = useState<any[]>([]);
   const [issueArray, setIssueArray] = useState<IIssue[]>([]);
   const [checkedIssues, setCheckedIssues] = useState<any[]>([]);
@@ -86,7 +86,7 @@ function JiraManagementModal(props: Props) {
   const [selectedIssueType, setSelectedIssueType] = useState<string>("");
   const [selectedFilter, setSelectedFilter] = useState<string>();
   const [selectedField, setSelectedField] = useState<string>(
-    !!user?.storyPointsField ? user.storyPointsField : ""
+    !!currentUser?.storyPointsField ? currentUser.storyPointsField : ""
   );
   const [isConfigurationMode, setIsConfigurationMode] = useState<boolean>(
     isFirstLaunch || isInvalidStoryPointsField ? true : false
@@ -96,34 +96,38 @@ function JiraManagementModal(props: Props) {
   const { roomId } = useParams<RoomRouteParams>();
 
   const getSite = useCallback(async () => {
-    const response = await JiraService.jiraAccessibleResources(user?._id!);
+    const response = await JiraService.jiraAccessibleResources(
+      currentUser?._id!
+    );
 
-    if (user?.jiraAccessToken && !response) {
-      await JiraService.jiraAuthenticationAutoRefresh(user?._id!);
+    if (currentUser?.jiraAccessToken && !response) {
+      await JiraService.jiraAuthenticationAutoRefresh(currentUser?._id!);
     }
 
     if (response) {
       return response?.data.data[0].url;
     }
-  }, [user?._id, user?.jiraAccessToken]);
+  }, [currentUser?._id, currentUser?.jiraAccessToken]);
 
   const checkTokenValidity = useCallback(async () => {
     try {
-      const response = await JiraService.jiraAccessibleResources(user?._id!);
+      const response = await JiraService.jiraAccessibleResources(
+        currentUser?._id!
+      );
 
       if (response?.status === 200) {
         setIsJiraTokenValid(true);
         return;
       }
-      if (user?.jiraAccessToken && !response) {
-        await JiraService.jiraAuthenticationAutoRefresh(user?._id!);
+      if (currentUser?.jiraAccessToken && !response) {
+        await JiraService.jiraAuthenticationAutoRefresh(currentUser?._id!);
         setIsJiraTokenValid(true);
       }
       return response;
     } catch (err) {
       setIsJiraTokenValid(false);
     }
-  }, [user?._id, user?.jiraAccessToken, setIsJiraTokenValid]);
+  }, [currentUser?._id, currentUser?.jiraAccessToken, setIsJiraTokenValid]);
 
   const convertIssues = useCallback((issues: any[], siteUrl: string) => {
     return issues.map((issue) => {
@@ -166,19 +170,19 @@ function JiraManagementModal(props: Props) {
         "assignee",
         "description",
         "priority",
-        !!user?.storyPointsField ? user?.storyPointsField : ""
+        !!currentUser?.storyPointsField ? currentUser?.storyPointsField : ""
       ];
 
       setIsLoadingIssues(true);
 
       const response = await JiraService.jiraBasicSearch(
-        user?._id!,
+        currentUser?._id!,
         jqlQuery,
         fields
       );
 
-      if (user?.jiraAccessToken && !response) {
-        await JiraService.jiraAuthenticationAutoRefresh(user?._id!);
+      if (currentUser?.jiraAccessToken && !response) {
+        await JiraService.jiraAuthenticationAutoRefresh(currentUser?._id!);
         setIsLoadingIssues(false);
       }
 
@@ -196,9 +200,9 @@ function JiraManagementModal(props: Props) {
       }
     },
     [
-      user?.jiraAccessToken,
-      user?.storyPointsField,
-      user?._id,
+      currentUser?.jiraAccessToken,
+      currentUser?.storyPointsField,
+      currentUser?._id,
       convertIssues,
       getSite,
       roomId,
@@ -239,27 +243,28 @@ function JiraManagementModal(props: Props) {
 
   const { data: projects } = useQuery({
     queryKey: ["projects"],
-    queryFn: async () => await JiraService.jiraProjects(user?._id!)
+    queryFn: async () => await JiraService.jiraProjects(currentUser?._id!)
   });
 
   const { data: issueTypes } = useQuery({
     queryKey: ["issueTypes"],
-    queryFn: async () => await JiraService.jiraIssueTypes(user?._id!)
+    queryFn: async () => await JiraService.jiraIssueTypes(currentUser?._id!)
   });
 
   const { data: filters } = useQuery({
     queryKey: ["filters"],
-    queryFn: async () => await JiraService.jiraFilters(user?._id!)
+    queryFn: async () => await JiraService.jiraFilters(currentUser?._id!)
   });
 
   const { data: fields } = useQuery({
     queryKey: ["fields"],
-    queryFn: async () => await JiraService.jiraFields(user?._id!)
+    queryFn: async () => await JiraService.jiraFields(currentUser?._id!)
   });
 
   const { data: siteDetails } = useQuery({
     queryKey: ["siteDetails"],
-    queryFn: async () => await JiraService.jiraAccessibleResources(user?._id!)
+    queryFn: async () =>
+      await JiraService.jiraAccessibleResources(currentUser?._id!)
   });
 
   useEffect(() => {
@@ -271,7 +276,7 @@ function JiraManagementModal(props: Props) {
       if (!selectedProject) {
         setJiraIssues([]);
       }
-      if (!user?.storyPointsField) {
+      if (!currentUser?.storyPointsField) {
         setIsConfigurationMode(true);
       }
     }
@@ -280,7 +285,7 @@ function JiraManagementModal(props: Props) {
     selectedProject,
     selectedIssueType,
     handleBasicSearch,
-    user?.storyPointsField,
+    currentUser?.storyPointsField,
     checkTokenValidity
   ]);
 
@@ -372,14 +377,14 @@ function JiraManagementModal(props: Props) {
 
   async function handleSelectField(event: SelectChangeEvent) {
     setSelectedField(event.target.value as string);
-    user!.storyPointsField = event.target.value;
-    await UserService.updateUser(user?._id!, user!);
+    currentUser!.storyPointsField = event.target.value;
+    await UserService.updateUser(currentUser?._id!, currentUser!);
     setIsInvalidStoryPointsField(false);
     refetchCurrentUser();
   }
 
   async function handleRevokeJiraAcccess() {
-    await UserService.revokeJiraAccess(user?._id!);
+    await UserService.revokeJiraAccess(currentUser?._id!);
     setIsJiraTokenValid(false);
     setIsJiraManagementModalOpen(false);
     refetchCurrentUser();
@@ -511,7 +516,8 @@ function JiraManagementModal(props: Props) {
                     label={
                       fields?.data[
                         fields?.data.findIndex(
-                          (field: any) => field.id === user?.storyPointsField
+                          (field: any) =>
+                            field.id === currentUser?.storyPointsField
                         )
                       ]?.name
                     }

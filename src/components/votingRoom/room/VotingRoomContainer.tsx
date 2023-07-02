@@ -6,11 +6,11 @@ import { IRoom } from "interfaces/Room/IRoom";
 import { io } from "socket.io-client";
 import { useParams } from "react-router-dom";
 import { NavBar } from "components/shared/component/NavBar";
-import { userContext } from "App";
 import VotingRoom from "./VotingRoom";
 import RoomService from "api/RoomService";
 import UserService from "api/UserService";
 import Spinner from "components/shared/component/Spinner";
+import { UserContext } from "utility/providers/UserProvider";
 
 const getBaseUrl = () => {
   let url;
@@ -42,10 +42,14 @@ function VotingRoomContainer() {
     RoomService.getRoomDetails(roomId!)
   );
 
-  const user = useContext(userContext);
+  const { currentUser } = useContext(UserContext);
   const [roomDetails, setRoomDetails] = useState<IRoom>(roomData!);
-  const [currentUser, setCurrentUser] = useState<IUser | null>(user);
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(!user ? true : false);
+  const [loggedInUser, setLoggedInUser] = useState<IUser | undefined>(
+    currentUser
+  );
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(
+    !currentUser ? true : false
+  );
 
   const handleCreateUser = async (formData: IUser) => {
     await UserService.createUser(formData);
@@ -54,21 +58,21 @@ function VotingRoomContainer() {
       return;
     }
     localStorage.setItem("userId", JSON.stringify(userByName?._id));
-    setCurrentUser(userByName!);
+    setLoggedInUser(userByName!);
     socket.emit("user", { userByName });
     window.location.reload();
     setIsModalOpen(false);
   };
 
   useEffect(() => {
-    if (!!user) {
+    if (!!currentUser) {
       setIsModalOpen(false);
     } else {
       setIsModalOpen(true);
     }
 
     setRoomDetails(roomData!);
-  }, [user, roomData]);
+  }, [currentUser, roomData]);
 
   if (error) {
     return <p>{(error as Error)?.message}</p>;
@@ -84,7 +88,7 @@ function VotingRoomContainer() {
       <NavBar
         appName={roomDetails?.name}
         isBorderBottom={false}
-        currentUser={currentUser!}
+        loggedInUser={loggedInUser!}
         currentRoomLink={currentUrl}
         companyName={roomDetails?.companyName}
       />

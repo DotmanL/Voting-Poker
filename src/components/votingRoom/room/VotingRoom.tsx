@@ -7,7 +7,6 @@ import React, {
 } from "react";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
-import { userContext } from "App";
 import CustomModal from "components/shared/component/CustomModal";
 import { IRoom } from "interfaces/Room/IRoom";
 import { IUser } from "interfaces/User/IUser";
@@ -25,7 +24,6 @@ import { getBaseUrlWithoutRoute } from "api";
 import VotingResultsContainer from "./VotingResultsContainer";
 import RightSidebar from "../sideBar/RightSidebar";
 import PaletteIcon from "@mui/icons-material/Palette";
-import { HexColorPicker } from "react-colorful";
 import { IIssue } from "interfaces/Issues";
 import { SidebarContext } from "utility/providers/SideBarProvider";
 import UserService from "api/UserService";
@@ -39,6 +37,7 @@ import { IssueContext } from "utility/providers/IssuesProvider";
 import FormatColorResetIcon from "@mui/icons-material/FormatColorReset";
 import JiraService from "api/JiraService";
 import { useClickAway } from "react-use";
+import { UserContext } from "utility/providers/UserProvider";
 
 const useStyles = makeStyles((theme) => ({
   "@keyframes glowing": {
@@ -91,8 +90,8 @@ type Props = {
 
 function VotingRoom(props: Props) {
   const { room, handleCreateUser, isModalOpen } = props;
-  const user = useContext(userContext);
-  const classes = useStyles({ cardColor: user?.cardColor });
+  const { currentUser, setCurrentUser } = useContext(UserContext);
+  const classes = useStyles();
   const { isSidebarOpen } = useContext(SidebarContext);
   const { activeIssue, setActiveIssue } = useContext(IssueContext);
 
@@ -103,7 +102,7 @@ function VotingRoom(props: Props) {
   const [isVoted, setIsVoted] = useState<boolean>(false);
   const [showActiveIssue, setShowActiveIssue] = useState<boolean>(false);
   const [isJiraTokenValid, setIsJiraTokenValid] = useState<boolean>(false);
-  const [isDisabled, setIsDisabled] = useState(true);
+  const [isDisabled, setIsDisabled] = useState<boolean>(true);
   const [validityText, setValidityText] = useState<string>("");
   const [isJiraManagementModalOpen, setIsJiraManagementModalOpen] =
     useState<boolean>(false);
@@ -111,7 +110,19 @@ function VotingRoom(props: Props) {
     useState<boolean>(false);
 
   const [isColorPalleteOpen, setIsColorPalleteOpen] = useState<boolean>(false);
-  const [color, setColor] = useState("#67A3EE");
+  const presetColors = [
+    "#67A3EE",
+    "#FF0000",
+    "#0000FF",
+    "#FFFF00",
+    "#FF6600",
+    "#FFFF00",
+    "#00FF00",
+    "#6600FF",
+    "#000000",
+    "#00B8EA",
+    "#FC0FC0"
+  ];
 
   const getRoomId = useParams();
   const getUserId = localStorage.getItem("userId");
@@ -123,6 +134,10 @@ function VotingRoom(props: Props) {
   const jiraAuthenticate = params.get("jiraAuthenticate");
 
   const colorPalleteRef = useRef<HTMLDivElement>(null);
+
+  const currentRoomUser = roomUsers?.find(
+    (ru) => ru._id === currentUser?._id! && ru.roomId === roomId
+  );
 
   useClickAway(colorPalleteRef, () => {
     setIsColorPalleteOpen(false);
@@ -139,9 +154,9 @@ function VotingRoom(props: Props) {
 
   const joinRoom = useCallback(async () => {
     const roomUsersFormData = {
-      userId: user?._id!,
+      userId: currentUser?._id!,
       roomId: getRoomId.roomId!,
-      userName: user?.name!
+      userName: currentUser?.name!
     };
     const roomUsersData = await RoomUsersService.getRoomUsersByRoomId(
       getRoomId.roomId!
@@ -149,13 +164,13 @@ function VotingRoom(props: Props) {
     const existingRoomUsersData = roomUsersData.find(
       (roomUserData) =>
         roomUserData.roomId === getRoomId.roomId &&
-        roomUserData.userId === user?._id!
+        roomUserData.userId === currentUser?._id!
     );
 
-    if (!!user && !existingRoomUsersData) {
+    if (!!currentUser && !existingRoomUsersData) {
       await RoomUsersService.createRoomUsers(roomUsersFormData);
     }
-  }, [getRoomId.roomId, user]);
+  }, [getRoomId.roomId, currentUser]);
 
   const getActiveIssue = useCallback(async () => {
     const roomUsersData = await RoomUsersService.getRoomUsersByRoomId(roomId!);
@@ -179,13 +194,15 @@ function VotingRoom(props: Props) {
 
   const checkTokenValidity = useCallback(async () => {
     try {
-      const response = await JiraService.jiraAccessibleResources(user?._id!);
+      const response = await JiraService.jiraAccessibleResources(
+        currentUser?._id!
+      );
 
       if (response?.status === 200) {
         setIsJiraTokenValid(true);
       }
-      if (user?.jiraAccessToken && !response) {
-        await JiraService.jiraAuthenticationAutoRefresh(user?._id!);
+      if (currentUser?.jiraAccessToken && !response) {
+        await JiraService.jiraAuthenticationAutoRefresh(currentUser?._id!);
         setIsJiraTokenValid(true);
       }
       return response;
@@ -193,7 +210,7 @@ function VotingRoom(props: Props) {
       setIsJiraTokenValid(false);
       setValidityText("Jira token has expired");
     }
-  }, [user?._id, user?.jiraAccessToken]);
+  }, [currentUser?._id, currentUser?.jiraAccessToken]);
 
   useEffect(() => {
     const newSocket = io(getBaseUrlWithoutRoute());
@@ -224,25 +241,24 @@ function VotingRoom(props: Props) {
       setIsDisabled(true);
     }
 
-    if (!!roomUsers && roomUsers?.length > 0 && !!user) {
+    if (!!roomUsers && roomUsers?.length > 0 && !!currentUser) {
       const disabled =
         roomUsers.filter((ru) => ru.votedState === true).length <
         roomUsers.length;
       setIsDisabled(disabled);
     }
-  }, [roomUsers, user]);
+  }, [roomUsers, currentUser]);
 
   useEffect(() => {
     if (!socket) return;
 
     socket.emit("user", {
-      userName: user?.name,
-      _id: user?._id,
+      userName: currentUser?.name,
+      _id: currentUser?._id,
       socketId: socket.id && socket.id,
       roomId: getRoomId.roomId,
-      votedState: user?.votedState,
-      currentVote: user?.currentVote,
-      cardColor: user?.cardColor
+      votedState: currentUser?.votedState,
+      currentVote: currentUser?.currentVote
     });
 
     socket.on("userResponse", async (data: IRoomUsers[]) => {
@@ -261,12 +277,13 @@ function VotingRoom(props: Props) {
           if (roomUserData) {
             roomOnlyData.currentVote = roomUserData.currentVote;
             roomOnlyData.votedState = roomUserData.votedState;
+            roomOnlyData.cardColor = roomUserData.cardColor;
           }
         }
         return getRoomOnlyData;
       };
 
-      if (!user) {
+      if (!currentUser) {
         return;
       }
 
@@ -285,7 +302,7 @@ function VotingRoom(props: Props) {
 
     socket.on("isUserVotedResponse", (data: IRoomUsers[]) => {
       const getRoomOnlyData = data.find(
-        (d) => d.roomId === room.roomId && d._id === user?._id
+        (d) => d.roomId === room.roomId && d._id === currentUser?._id
       );
 
       if (!!getRoomOnlyData) {
@@ -299,9 +316,9 @@ function VotingRoom(props: Props) {
     });
 
     socket.on("isVotedResponse", (data: IUser) => {
-      if (data._id === user?._id) {
+      if (data._id === currentUser?._id) {
         setIsVoted(data.votedState!);
-        user!.votedState = data.votedState;
+        currentUser!.votedState = data.votedState;
       }
     });
 
@@ -339,11 +356,13 @@ function VotingRoom(props: Props) {
   }, [
     room,
     socket,
-    user,
+    currentUser,
     getRoomId.roomId,
     setActiveIssue,
+    setCurrentUser,
     refetchIssues,
-    issues
+    issues,
+    roomId
   ]);
 
   // Legacy
@@ -455,7 +474,7 @@ function VotingRoom(props: Props) {
 
     const userRoomVote = getVoteValue();
 
-    if (userRoomVote >= 0 && user) {
+    if (userRoomVote >= 0 && currentUser) {
       const userVotingDetails: IVotingDetails = {
         vote: userRoomVote,
         roomId: getRoomId.roomId!,
@@ -468,30 +487,32 @@ function VotingRoom(props: Props) {
         (userRoomVote !== userVote && true);
 
       setIsVoted(isVotedState);
-      user.currentVote = userVotingDetails.vote;
-      user.currentRoomId = userVotingDetails.roomId;
-      user.votedState =
+      currentUser.currentVote = userVotingDetails.vote;
+      currentUser.currentRoomId = userVotingDetails.roomId;
+      currentUser.votedState =
         (userRoomVote === userVote && !isVoted) ||
         (userRoomVote !== userVote && true);
-      user!.currentVote = getVoteValue();
+      currentUser!.currentVote = getVoteValue();
 
       socket.emit("isVotedState", {
-        roomId: user.currentRoomId,
-        userId: user._id,
+        roomId: currentUser.currentRoomId,
+        userId: currentUser._id,
         votedState: isVotedState
       });
 
       const roomUserUpdate: RoomUserUpdate = {
-        currentVote: user.currentVote!,
-        votedState: user.votedState!
+        currentVote: currentUser.currentVote!,
+        votedState: currentUser.votedState!
       };
       await RoomUsersService.updateRoomUser(
         room.roomId,
-        user._id!,
+        currentUser._id!,
         roomUserUpdate
       );
       setUserVote(getVoteValue());
-      const roomUserIndex = roomUsers!.findIndex((r) => r._id === user._id);
+      const roomUserIndex = roomUsers!.findIndex(
+        (r) => r._id === currentUser._id
+      );
       roomUsers![roomUserIndex].votedState = isVotedState;
       roomUsers![roomUserIndex].currentVote = getVoteValue();
       socket.emit("isUserVoted", roomUsers);
@@ -499,9 +520,13 @@ function VotingRoom(props: Props) {
   };
 
   async function handleChangeColor(newColor: string, userId: string) {
-    setColor(newColor);
-    user!.cardColor = newColor;
-    await UserService.updateUser(userId, user!);
+    const roomUserUpdate: RoomUserUpdate = {
+      cardColor: newColor
+    };
+    currentUser!.cardColor = newColor;
+    const updatedUser = await UserService.updateUser(userId, currentUser!);
+    setCurrentUser(updatedUser);
+    await RoomUsersService.updateRoomUser(roomId!, userId, roomUserUpdate);
     const updatedRoomUsers = [...roomUsers!];
 
     const currentRoomUserIndex = updatedRoomUsers.findIndex(
@@ -518,11 +543,11 @@ function VotingRoom(props: Props) {
   }
 
   const pickCardStyle = {
-    border: `2px solid ${user?.cardColor}`
+    border: `2px solid ${currentRoomUser?.cardColor}`
   };
 
   const glowingCardCardStyle = {
-    border: `2px solid ${user?.cardColor}`
+    border: `2px solid ${currentRoomUser?.cardColor}`
   };
 
   return (
@@ -563,17 +588,13 @@ function VotingRoom(props: Props) {
               cursor: "pointer",
               alignItems: "flex-start",
               justifyContent: "center"
-              // boxShadow: (theme) =>
-              //   theme.palette.mode === "dark"
-              //     ? "0px 0px 10px 2px rgba(255, 255, 255, 0.1)"
-              //     : "0px 0px 10px 2px rgba(0, 0, 0, 0.1)"
             }}
           >
             <Typography
               variant="h5"
               sx={{ wordBreak: "break-word", fontSize: { md: 24, xs: 10 } }}
             >
-              Voting {activeIssue?.name}
+              Voting - {activeIssue?.name}
             </Typography>
             <Link
               variant="h6"
@@ -589,16 +610,17 @@ function VotingRoom(props: Props) {
           <Grid></Grid>
         )}
         <Grid
+          ref={colorPalleteRef}
           sx={{
             position: "absolute",
-            top: "20vh",
+            top: !!activeIssue ? "25vh" : "18vh",
             left: 80,
             width: "60px",
             height: "60px",
             display: { md: "flex", xs: "none" },
             flexDirection: "row",
             borderRadius: "50%",
-            border: `2px solid ${user?.cardColor}`,
+            border: `2px solid ${currentRoomUser?.cardColor}`,
             cursor: "pointer",
             justifyContent: "center",
             alignItems: "center",
@@ -610,59 +632,87 @@ function VotingRoom(props: Props) {
                   : "0px 0px 10px 2px rgba(0, 0, 0, 0.4)"
             }
           }}
-          onClick={() => setIsColorPalleteOpen(!isColorPalleteOpen)}
         >
           <Tooltip title="Change Card Color">
-            <PaletteIcon sx={{ width: "60px", height: "60px" }} />
+            <PaletteIcon
+              onClick={() => setIsColorPalleteOpen(!isColorPalleteOpen)}
+              sx={{ width: "60px", height: "60px" }}
+            />
           </Tooltip>
-        </Grid>
 
-        <Grid
-          ref={colorPalleteRef}
-          sx={{
-            position: "absolute",
-            top: "25vh",
-            left: 135,
-            width: "auto",
-            height: "auto",
-            display: { md: "flex", xs: "none" },
-            flexDirection: "row",
-            cursor: "pointer",
-            justifyContent: "center",
-            alignItems: "center"
-          }}
-        >
-          {isColorPalleteOpen && (
-            <Grid
-              sx={{
-                display: { md: "flex", xs: "none" },
-                flexDirection: "row"
-              }}
-            >
-              <Grid>
-                <HexColorPicker
-                  color={color}
-                  onChange={(newColor) =>
-                    handleChangeColor(newColor, user?._id!)
-                  }
-                />
-              </Grid>
+          <Grid
+            sx={{
+              position: "absolute",
+              top: "3vh",
+              left: 65,
+              width: "auto",
+              height: "auto",
+              display: { md: "flex", xs: "none" },
+              flexDirection: "row",
+              cursor: "pointer",
+              justifyContent: "center",
+              alignItems: "center"
+            }}
+          >
+            {isColorPalleteOpen && (
               <Grid
                 sx={{
-                  ml: 1,
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "flex-end",
-                  height: "200px"
+                  display: { md: "flex", xs: "none" },
+                  flexDirection: "row"
                 }}
-                onClick={() => handleChangeColor("#67a3ee", user?._id!)}
               >
-                <Tooltip title="Reset Color">
-                  <FormatColorResetIcon />
-                </Tooltip>
+                <Grid
+                  sx={{
+                    backgroundColor: (theme) => theme.palette.secondary.main,
+                    border: `1px solid ${currentRoomUser?.cardColor}`,
+                    borderRadius: "6px",
+                    width: "180px",
+                    height: "180px",
+                    flexWrap: "wrap",
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    mt: 0.5,
+                    px: 1,
+                    py: 0.5
+                  }}
+                >
+                  {presetColors.map((presetColor) => (
+                    <Grid
+                      key={presetColor}
+                      sx={{
+                        background: presetColor,
+                        width: "36px",
+                        height: "36px",
+                        cursor: "pointer",
+                        borderRadius: "6px",
+                        m: 0.25
+                      }}
+                      onClick={() =>
+                        handleChangeColor(presetColor, currentUser?._id!)
+                      }
+                    />
+                  ))}
+                </Grid>
+                <Grid
+                  sx={{
+                    ml: 1,
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "flex-end",
+                    height: "180px"
+                  }}
+                  onClick={() =>
+                    handleChangeColor("#67a3ee", currentUser?._id!)
+                  }
+                >
+                  <Tooltip title="Reset Color">
+                    <FormatColorResetIcon />
+                  </Tooltip>
+                </Grid>
               </Grid>
-            </Grid>
-          )}
+            )}
+          </Grid>
         </Grid>
         <Grid
           sx={{
@@ -726,9 +776,8 @@ function VotingRoom(props: Props) {
                     sx={[
                       {
                         mt: 1,
-                        background: `${user?.cardColor}`,
                         borderRadius: "5px",
-                        borderColor: `${user?.cardColor}`,
+                        borderColor: `${currentRoomUser?.cardColor}`,
                         color: (theme) =>
                           theme.palette.mode === "dark" ? "white" : "black",
                         px: { md: 3, xs: 2 },
@@ -751,9 +800,8 @@ function VotingRoom(props: Props) {
                   {
                     mt: 1,
                     width: "auto",
-                    background: `${user?.cardColor}`,
                     borderRadius: "5px",
-                    borderColor: `${user?.cardColor}`,
+                    borderColor: `${currentRoomUser?.cardColor}`,
                     color: (theme) =>
                       theme.palette.mode === "dark" ? "white" : "black",
                     px: { md: 2, xs: 1 },
@@ -851,7 +899,7 @@ function VotingRoom(props: Props) {
       <Grid>
         <VotingResultsContainer
           room={room}
-          userCardColor={user?.cardColor!}
+          userCardColor={currentRoomUser?.cardColor!}
           votesCasted={votesCasted}
           handleAddVote={handleAddVote}
         />

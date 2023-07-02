@@ -11,7 +11,7 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import Button from "@mui/material/Button";
 import RoomUsersService from "api/RoomUsersService";
-import { userContext } from "App";
+import { UserContext } from "utility/providers/UserProvider";
 
 type Props = {
   allRooms: IRoom[];
@@ -20,14 +20,14 @@ type Props = {
 function RoomsTable(props: Props) {
   const navigate = useNavigate();
   const { allRooms } = props;
-  const user = useContext(userContext);
+  const { currentUser } = useContext(UserContext);
 
   const handleJoinRoom = async (roomDetails: IRoom) => {
     localStorage.setItem("room", JSON.stringify(roomDetails));
     const roomUsersFormData = {
-      userId: user?._id!,
+      userId: currentUser?._id!,
       roomId: roomDetails.roomId!,
-      userName: user?.name!
+      userName: currentUser?.name!
     };
     const roomUsersData = await RoomUsersService.getRoomUsersByRoomId(
       roomDetails.roomId
@@ -35,9 +35,9 @@ function RoomsTable(props: Props) {
     const existingRoomUsersData = roomUsersData.find(
       (roomUserData) =>
         roomUserData.roomId === roomDetails.roomId &&
-        roomUserData.userId === user?._id!
+        roomUserData.userId === currentUser?._id!
     );
-    if (!!user && !existingRoomUsersData) {
+    if (!!currentUser && !existingRoomUsersData) {
       await RoomUsersService.createRoomUsers(roomUsersFormData);
     }
     navigate(`/room/${roomDetails.roomId}`);

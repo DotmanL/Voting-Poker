@@ -12,5 +12,4 @@ export interface IUser extends IBase {
   jiraRefreshToken?: string;
   storyPointsField?: string;
   cardColor?: string;
-  role?: RoleType;
 }

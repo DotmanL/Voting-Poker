@@ -1,7 +1,7 @@
 import React, { useContext, useState, useEffect } from "react";
 import Grid from "@mui/material/Grid";
-import { userContext } from "App";
 import { IRoomUsers } from "interfaces/RoomUsers";
+import { UserContext } from "utility/providers/UserProvider";
 import { IRoom } from "interfaces/Room/IRoom";
 import Typography from "@mui/material/Typography";
 import { SidebarContext } from "utility/providers/SideBarProvider";
@@ -15,7 +15,7 @@ type Props = {
 };
 
 function VotingResult(props: Props) {
-  const user = useContext(userContext);
+  const { currentUser } = useContext(UserContext);
   const { isSidebarOpen } = useContext(SidebarContext);
   const { votesCasted, room, userCardColor } = props;
   const [showCelebration, setShowCelebration] = useState<boolean>(false);
@@ -111,7 +111,7 @@ function VotingResult(props: Props) {
           >
             <Grid>
               <Typography sx={{ fontSize: "25px", ml: 2 }}>
-                {room.roomId === user!.currentRoomId && v.userName}
+                {room.roomId === currentUser!.currentRoomId && v.userName}
               </Typography>
             </Grid>
             <Grid

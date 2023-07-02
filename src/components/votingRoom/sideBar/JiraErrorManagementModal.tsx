@@ -4,7 +4,7 @@ import Link from "@mui/material/Link";
 import CustomModal from "components/shared/component/CustomModal";
 import { AiOutlineClose } from "react-icons/ai";
 import { Tooltip, Typography } from "@mui/material";
-import { userContext } from "App";
+import { UserContext } from "utility/providers/UserProvider";
 import SettingsIcon from "@mui/icons-material/Settings";
 
 type Props = {
@@ -21,7 +21,7 @@ function JiraErrorManagementModal(props: Props) {
     setIsJiraErrorManagementModalOpen,
     setIsJiraManagementModalOpen
   } = props;
-  const user = useContext(userContext);
+  const { currentUser } = useContext(UserContext);
 
   return (
     <Grid>
@@ -78,7 +78,7 @@ function JiraErrorManagementModal(props: Props) {
               <Typography variant="h5" fontSize={24}>
                 Errors could either be due to the{" "}
                 <span style={{ color: "red", fontWeight: "bold" }}>
-                  "{user?.storyPointsField}",{" "}
+                  "{currentUser?.storyPointsField}",{" "}
                 </span>
                 field{" "}
                 <span>
