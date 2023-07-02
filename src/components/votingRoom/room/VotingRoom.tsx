@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-  useRef
-} from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import CustomModal from "components/shared/component/CustomModal";
@@ -19,11 +13,10 @@ import { useParams, useLocation, useNavigate } from "react-router-dom";
 // import { toast } from "react-toastify";
 import { IRoomUsers } from "interfaces/RoomUsers";
 import { makeStyles } from "@mui/styles";
-import { Button, Link, Tooltip } from "@mui/material";
+import { Button, Link } from "@mui/material";
 import { getBaseUrlWithoutRoute } from "api";
 import VotingResultsContainer from "./VotingResultsContainer";
 import RightSidebar from "../sideBar/RightSidebar";
-import PaletteIcon from "@mui/icons-material/Palette";
 import { IIssue } from "interfaces/Issues";
 import { SidebarContext } from "utility/providers/SideBarProvider";
 import UserService from "api/UserService";
@@ -34,10 +27,9 @@ import RoomUsersService, {
   RoomUsersUpdate
 } from "api/RoomUsersService";
 import { IssueContext } from "utility/providers/IssuesProvider";
-import FormatColorResetIcon from "@mui/icons-material/FormatColorReset";
 import JiraService from "api/JiraService";
-import { useClickAway } from "react-use";
 import { UserContext } from "utility/providers/UserProvider";
+import ColorPallete from "./ColorPallete";
 
 const useStyles = makeStyles((theme) => ({
   "@keyframes glowing": {
@@ -109,21 +101,6 @@ function VotingRoom(props: Props) {
   const [isFirstLauchJiraModalOpen, setIsFirstLaunchJiraModalOpen] =
     useState<boolean>(false);
 
-  const [isColorPalleteOpen, setIsColorPalleteOpen] = useState<boolean>(false);
-  const presetColors = [
-    "#67A3EE",
-    "#FF0000",
-    "#0000FF",
-    "#FFFF00",
-    "#FF6600",
-    "#FFFF00",
-    "#00FF00",
-    "#6600FF",
-    "#000000",
-    "#00B8EA",
-    "#FC0FC0"
-  ];
-
   const getRoomId = useParams();
   const getUserId = localStorage.getItem("userId");
   const userId = getUserId ? JSON.parse(getUserId) : null;
@@ -133,15 +110,9 @@ function VotingRoom(props: Props) {
   const params = new URLSearchParams(search);
   const jiraAuthenticate = params.get("jiraAuthenticate");
 
-  const colorPalleteRef = useRef<HTMLDivElement>(null);
-
   const currentRoomUser = roomUsers?.find(
     (ru) => ru._id === currentUser?._id! && ru.roomId === roomId
   );
-
-  useClickAway(colorPalleteRef, () => {
-    setIsColorPalleteOpen(false);
-  });
 
   const {
     isLoading,
@@ -609,111 +580,13 @@ function VotingRoom(props: Props) {
         ) : (
           <Grid></Grid>
         )}
-        <Grid
-          ref={colorPalleteRef}
-          sx={{
-            position: "absolute",
-            top: !!activeIssue ? "25vh" : "18vh",
-            left: 80,
-            width: "60px",
-            height: "60px",
-            display: { md: "flex", xs: "none" },
-            flexDirection: "row",
-            borderRadius: "50%",
-            border: `2px solid ${currentRoomUser?.cardColor}`,
-            cursor: "pointer",
-            justifyContent: "center",
-            alignItems: "center",
-            "&:hover": {
-              transition: "box-shadow 0.3s ease-in-out",
-              boxShadow: (theme) =>
-                theme.palette.mode === "dark"
-                  ? "0px 0px 10px 2px rgba(255, 255, 255, 0.8)"
-                  : "0px 0px 10px 2px rgba(0, 0, 0, 0.4)"
-            }
-          }}
-        >
-          <Tooltip title="Change Card Color">
-            <PaletteIcon
-              onClick={() => setIsColorPalleteOpen(!isColorPalleteOpen)}
-              sx={{ width: "60px", height: "60px" }}
-            />
-          </Tooltip>
 
-          <Grid
-            sx={{
-              position: "absolute",
-              top: "3vh",
-              left: 65,
-              width: "auto",
-              height: "auto",
-              display: { md: "flex", xs: "none" },
-              flexDirection: "row",
-              cursor: "pointer",
-              justifyContent: "center",
-              alignItems: "center"
-            }}
-          >
-            {isColorPalleteOpen && (
-              <Grid
-                sx={{
-                  display: { md: "flex", xs: "none" },
-                  flexDirection: "row"
-                }}
-              >
-                <Grid
-                  sx={{
-                    backgroundColor: (theme) => theme.palette.secondary.main,
-                    border: `1px solid ${currentRoomUser?.cardColor}`,
-                    borderRadius: "6px",
-                    width: "180px",
-                    height: "180px",
-                    flexWrap: "wrap",
-                    display: "flex",
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    mt: 0.5,
-                    px: 1,
-                    py: 0.5
-                  }}
-                >
-                  {presetColors.map((presetColor) => (
-                    <Grid
-                      key={presetColor}
-                      sx={{
-                        background: presetColor,
-                        width: "36px",
-                        height: "36px",
-                        cursor: "pointer",
-                        borderRadius: "6px",
-                        m: 0.25
-                      }}
-                      onClick={() =>
-                        handleChangeColor(presetColor, currentUser?._id!)
-                      }
-                    />
-                  ))}
-                </Grid>
-                <Grid
-                  sx={{
-                    ml: 1,
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "flex-end",
-                    height: "180px"
-                  }}
-                  onClick={() =>
-                    handleChangeColor("#67a3ee", currentUser?._id!)
-                  }
-                >
-                  <Tooltip title="Reset Color">
-                    <FormatColorResetIcon />
-                  </Tooltip>
-                </Grid>
-              </Grid>
-            )}
-          </Grid>
-        </Grid>
+        <ColorPallete
+          currentRoomUser={currentRoomUser}
+          currentUser={currentUser}
+          handleChangeColor={handleChangeColor}
+        />
+
         <Grid
           sx={{
             position: "absolute",
