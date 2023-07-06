@@ -12,10 +12,17 @@ type Props = {
   votesCasted: IRoomUsers[] | undefined;
   userCardColor: string;
   handleAddVote: (voteValue: number | string) => Promise<void>;
+  setShowCelebration: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 function VotingResultsContainer(props: Props) {
-  const { room, votesCasted, handleAddVote, userCardColor } = props;
+  const {
+    room,
+    votesCasted,
+    handleAddVote,
+    userCardColor,
+    setShowCelebration
+  } = props;
   const { isSidebarOpen } = useContext(SidebarContext);
 
   return (
@@ -79,6 +86,7 @@ function VotingResultsContainer(props: Props) {
               }}
             >
               <VotingResult
+                setShowCelebration={setShowCelebration}
                 userCardColor={userCardColor}
                 votesCasted={votesCasted}
                 room={room}

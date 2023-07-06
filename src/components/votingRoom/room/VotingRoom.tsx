@@ -30,6 +30,8 @@ import { IssueContext } from "utility/providers/IssuesProvider";
 import JiraService from "api/JiraService";
 import { UserContext } from "utility/providers/UserProvider";
 import ColorPallete from "./ColorPallete";
+import useWindowSize from "react-use/lib/useWindowSize";
+import Confetti from "react-confetti";
 
 const useStyles = makeStyles((theme) => ({
   "@keyframes glowing": {
@@ -100,6 +102,7 @@ function VotingRoom(props: Props) {
     useState<boolean>(false);
   const [isFirstLauchJiraModalOpen, setIsFirstLaunchJiraModalOpen] =
     useState<boolean>(false);
+  const [showCelebration, setShowCelebration] = useState<boolean>(false);
 
   const getRoomId = useParams();
   const getUserId = localStorage.getItem("userId");
@@ -109,6 +112,7 @@ function VotingRoom(props: Props) {
   const navigate = useNavigate();
   const params = new URLSearchParams(search);
   const jiraAuthenticate = params.get("jiraAuthenticate");
+  const { width, height } = useWindowSize();
 
   const currentRoomUser = roomUsers?.find(
     (ru) => ru._id === currentUser?._id! && ru.roomId === roomId
@@ -285,6 +289,11 @@ function VotingRoom(props: Props) {
       setVotesCasted(userVotingDetails);
       refetchIssues();
     });
+    socket.on("endCelebrationResponse", (data: any) => {
+      if (data) {
+        setShowCelebration(data.isCelebration);
+      }
+    });
 
     socket.on("isVotedResponse", (data: IUser) => {
       if (data._id === currentUser?._id) {
@@ -431,6 +440,10 @@ function VotingRoom(props: Props) {
       roomId: room.roomId
     });
     socket.emit("isUserVoted", updatedRoomUsers ?? []);
+    socket.emit("endCelebration", {
+      isCelebration: false,
+      roomId: room.roomId
+    });
     setNextIssueToVote();
   };
 
@@ -529,6 +542,7 @@ function VotingRoom(props: Props) {
         height: "100vh"
       }}
     >
+      {showCelebration && <Confetti width={width} height={height} />}
       <Grid
         sx={{
           position: "relative",
@@ -772,6 +786,7 @@ function VotingRoom(props: Props) {
       <Grid>
         <VotingResultsContainer
           room={room}
+          setShowCelebration={setShowCelebration}
           userCardColor={currentRoomUser?.cardColor!}
           votesCasted={votesCasted}
           handleAddVote={handleAddVote}

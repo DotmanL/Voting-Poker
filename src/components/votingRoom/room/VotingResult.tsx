@@ -1,30 +1,30 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useEffect } from "react";
 import Grid from "@mui/material/Grid";
 import { IRoomUsers } from "interfaces/RoomUsers";
 import { UserContext } from "utility/providers/UserProvider";
 import { IRoom } from "interfaces/Room/IRoom";
 import Typography from "@mui/material/Typography";
 import { SidebarContext } from "utility/providers/SideBarProvider";
-import { useSpring, animated } from "react-spring";
-import PartyPopper from "../assets/partyPopper.gif";
+// import { useSpring, animated } from "react-spring";
+// import PartyPopper from "../assets/partyPopper.gif";
 
 type Props = {
   votesCasted?: IRoomUsers[];
   room: IRoom;
   userCardColor: string;
+  setShowCelebration: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 function VotingResult(props: Props) {
   const { currentUser } = useContext(UserContext);
   const { isSidebarOpen } = useContext(SidebarContext);
-  const { votesCasted, room, userCardColor } = props;
-  const [showCelebration, setShowCelebration] = useState<boolean>(false);
+  const { votesCasted, room, userCardColor, setShowCelebration } = props;
 
-  const animationProps = useSpring({
-    from: { y: 0 },
-    to: { y: showCelebration ? 50 : 0 },
-    config: { mass: 1, tension: 120, friction: 14 }
-  });
+  // const animationProps = useSpring({
+  //   from: { y: 0 },
+  //   to: { y: showCelebration ? 50 : 0 },
+  //   config: { mass: 1, tension: 120, friction: 14 }
+  // });
 
   const checkEquality = (votesCasted: IRoomUsers[], currentVote: string) => {
     const values = votesCasted.map((item: IRoomUsers) => item[currentVote]);
@@ -40,12 +40,12 @@ function VotingResult(props: Props) {
       setShowCelebration(true);
       celebrationTimeout = setTimeout(() => {
         setShowCelebration(false);
-      }, 10000);
+      }, 15000);
     }
     return () => {
       clearTimeout(celebrationTimeout);
     };
-  }, [votesCasted]);
+  }, [votesCasted, setShowCelebration]);
 
   return (
     <Grid
@@ -71,7 +71,7 @@ function VotingResult(props: Props) {
           bottom: 0
         }}
       >
-        {showCelebration && (
+        {/* {showCelebration && (
           <Grid>
             <animated.div
               style={{
@@ -85,7 +85,7 @@ function VotingResult(props: Props) {
               <img src={PartyPopper} alt="Cheers" width="200" height="200" />
             </animated.div>
           </Grid>
-        )}
+        )} */}
       </Grid>
       <Grid
         sx={{

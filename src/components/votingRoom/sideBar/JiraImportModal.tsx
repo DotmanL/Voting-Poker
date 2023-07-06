@@ -31,7 +31,7 @@ function JiraImportModal(props: Props) {
     let url;
     switch (process.env.NODE_ENV) {
       case "production":
-        url = `https://auth.atlassian.com/authorize?audience=api.atlassian.com&client_id=z3uY8LNXLI6xcRUka1dkwDefZ9WQ0li3&scope=offline_access%20read%3Ajira-work%20manage%3Ajira-project%20manage%3Ajira-configuration%20read%3Ajira-user%20write%3Ajira-work%20manage%3Ajira-webhook%20manage%3Ajira-data-provider&redirect_uri=https%3A%2F%2Fdot-voting.netlify.app%2Froom%2FjiraCallback&state=${hashUserId()}&response_type=code&prompt=consent`;
+        url = `https://auth.atlassian.com/authorize?audience=api.atlassian.com&client_id=z3uY8LNXLI6xcRUka1dkwDefZ9WQ0li3&scope=offline_access%20read%3Ajira-work%20manage%3Ajira-project%20manage%3Ajira-configuration%20read%3Ajira-user%20write%3Ajira-work%20manage%3Ajira-webhook%20manage%3Ajira-data-provider&redirect_uri=https%3A%2F%2Fvirtualplanningpoker.com%2Froom%2FjiraCallback&state=${hashUserId()}&response_type=code&prompt=consent`;
         break;
       case "development":
       default:
