@@ -347,7 +347,12 @@ export const NavBar = (props: Props) => {
                 background: (theme) => theme.palette.secondary.main,
                 borderColor: "gray",
                 "&:hover": {
-                  opacity: 0.8
+                  opacity: 0.8,
+                  transition: "box-shadow 0.3s ease-in-out",
+                  boxShadow: (theme) =>
+                    theme.palette.mode === "dark"
+                      ? "0px 0px 10px 2px rgba(255, 255, 255, 0.4)"
+                      : "0px 0px 10px 2px rgba(0, 0, 0, 0.4)"
                 }
               }}
               onClick={() => setIsInviteModalOpen(true)}
@@ -472,7 +477,15 @@ export const NavBar = (props: Props) => {
                 mt: { md: 1, xs: 0.5 },
                 p: { md: 1, xs: 0.5 },
                 cursor: "pointer",
-                display: urlPath.indexOf("/room") >= 0 ? "flex" : "none"
+                display: urlPath.indexOf("/room") >= 0 ? "flex" : "none",
+                "&:hover": {
+                  opacity: 0.8,
+                  transition: "box-shadow 0.3s ease-in-out",
+                  boxShadow: (theme) =>
+                    theme.palette.mode === "dark"
+                      ? "0px 0px 10px 2px rgba(255, 255, 255, 0.4)"
+                      : "0px 0px 10px 2px rgba(0, 0, 0, 0.4)"
+                }
               }}
             >
               <ViewSidebarIcon

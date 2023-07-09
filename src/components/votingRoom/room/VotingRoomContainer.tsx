@@ -11,6 +11,7 @@ import RoomService from "api/RoomService";
 import UserService from "api/UserService";
 import Spinner from "components/shared/component/Spinner";
 import { UserContext } from "utility/providers/UserProvider";
+import { toast } from "react-toastify";
 
 const getBaseUrl = () => {
   let url;
@@ -52,16 +53,22 @@ function VotingRoomContainer() {
   );
 
   const handleCreateUser = async (formData: IUser) => {
-    await UserService.createUser(formData);
-    const userByName = await UserService.getCurrentUserByName(formData.name);
-    if (!userByName) {
-      return;
+    const response = await UserService.createUser(formData);
+    if (response) {
+      const userByName = await UserService.getCurrentUserByName(formData.name);
+      if (!userByName) {
+        return;
+      }
+      localStorage.setItem("userId", JSON.stringify(userByName?._id));
+      setLoggedInUser(userByName!);
+      socket.emit("user", { userByName });
+      window.location.reload();
+      setIsModalOpen(false);
+    } else {
+      toast.error(
+        "User with the same user name already exists, please pick another user name"
+      );
     }
-    localStorage.setItem("userId", JSON.stringify(userByName?._id));
-    setLoggedInUser(userByName!);
-    socket.emit("user", { userByName });
-    window.location.reload();
-    setIsModalOpen(false);
   };
 
   useEffect(() => {

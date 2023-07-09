@@ -61,9 +61,11 @@ function CreateUser(props: Props) {
                 label="User Name"
                 component={InputTextField}
                 value={values.name}
-                onChange={handleChange}
+                onChange={(e: any) => {
+                  handleChange(e);
+                }}
                 error={touched.name && Boolean(errors.name)}
-                helperText={touched.name && errors.name}
+                helperText={errors.name}
               />
               <Grid
                 sx={{

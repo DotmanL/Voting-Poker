@@ -29,6 +29,9 @@ function RoomOnboardingContainer(props: Props) {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleCreateRoom = async (formData: IRoom) => {
+    if (companyName) {
+      formData.companyName = companyName;
+    }
     localStorage.setItem("room", JSON.stringify(formData));
     setIsLoading(true);
     await RoomService.createRoom(formData);

@@ -17,7 +17,7 @@ const createUser = async (formData: IUser) => {
     const body = JSON.stringify(formData);
     const response = await apiClient.post<IUser>("createuser", body);
     toast.success("User created successfully");
-    return response.status;
+    return response;
   } catch (err: any) {
     console.error(err.message);
   }
