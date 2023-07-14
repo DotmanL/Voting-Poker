@@ -13,7 +13,7 @@ function Footer() {
         backgroundColor: (theme) =>
           theme.palette.mode === "dark" ? "#121212" : "#e9ecef",
         height: { md: "200px", xs: "100%" },
-        mb: { md: 0, xs: 2 }
+        pb: { md: 0, xs: 2 }
       }}
     >
       <Grid
