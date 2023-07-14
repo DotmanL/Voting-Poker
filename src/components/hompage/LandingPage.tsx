@@ -2,7 +2,6 @@ import React from "react";
 import { Button, Grid, Typography } from "@mui/material";
 import bg1 from "./assets/bg1.svg";
 import teams from "./assets/teams.svg";
-// import waveBottom from "./assets/wavesBottom.svg";
 import { Link } from "../shared/component/Link";
 
 function LandingPage() {
@@ -144,7 +143,8 @@ function LandingPage() {
                 <Grid
                   component="img"
                   sx={{
-                    width: { md: "600px", xs: "500px" }
+                    width: { md: "600px", xs: "350px" },
+                    height: { xs: "95%" }
                   }}
                   src={teams}
                   alt="teams card"
@@ -165,7 +165,8 @@ function LandingPage() {
                   component="img"
                   sx={{
                     display: { md: "none", xs: "flex" },
-                    width: { md: "500px", xs: "380px" }
+                    width: { md: "500px", xs: "350px" },
+                    height: { xs: "85%" }
                   }}
                   src={bg1}
                   alt="work planning"
@@ -208,7 +209,8 @@ function LandingPage() {
                   component="img"
                   sx={{
                     display: { md: "flex", xs: "none" },
-                    width: { md: "550px", xs: "500px" }
+                    width: { md: "550px" },
+                    mr: { md: 4 }
                   }}
                   src={bg1}
                   alt="work planning"
@@ -218,21 +220,6 @@ function LandingPage() {
           </Grid>
         </Grid>
       </Grid>
-      {/* <Grid sx={{ display: { md: "flex", xs: "none" } }}>
-        <img
-          src={waveBottom}
-          alt="waves"
-          style={{
-            position: "absolute",
-            opacity: 0.9,
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: "50vh",
-            width: "100%"
-          }}
-        />
-      </Grid> */}
     </Grid>
   );
 }
