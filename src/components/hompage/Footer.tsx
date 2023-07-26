@@ -1,9 +1,13 @@
 import React from "react";
 import { Grid, Typography } from "@mui/material";
-import dotvotingLogo from "./assets/dotvotingLogo.png";
 import { Link } from "../shared/component/Link";
+import { useTheme } from "@mui/material/styles";
+import darkvppLogo from "./assets/darkvppLogo.png";
+import lightvpplogo from "./assets/lightvpplogo.png";
 
 function Footer() {
+  const appTheme = useTheme();
+
   return (
     <Grid
       sx={{
@@ -51,15 +55,29 @@ function Footer() {
           }}
         >
           <Link to="/">
-            <Grid
-              component={"img"}
-              src={dotvotingLogo}
-              alt="waves"
-              sx={{
-                height: { md: "80px", xs: "50px" },
-                width: { md: "80px", xs: "50px" }
-              }}
-            />
+            <Grid>
+              {appTheme.palette.mode === "dark" ? (
+                <Grid
+                  component={"img"}
+                  src={darkvppLogo}
+                  alt="darkvppLogo"
+                  sx={{
+                    height: { md: "80px", xs: "50px" },
+                    width: { md: "80px", xs: "50px" }
+                  }}
+                />
+              ) : (
+                <Grid
+                  component={"img"}
+                  src={lightvpplogo}
+                  alt="lightvpplogo"
+                  sx={{
+                    height: { md: "80px", xs: "50px" },
+                    width: { md: "80px", xs: "50px" }
+                  }}
+                />
+              )}
+            </Grid>
           </Link>
           <Link to="/">
             <Typography

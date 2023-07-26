@@ -11,7 +11,9 @@ import { IUser } from "interfaces/User/IUser";
 import ViewSidebarIcon from "@mui/icons-material/ViewSidebar";
 import DarkModeToggle from "./DarkModeToggle";
 import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
-import dotvotingLogo from "../assets/dotvotingLogo.png";
+import { useTheme } from "@mui/material/styles";
+import darkvppLogo from "../assets/darkvppLogo.png";
+import lightvpplogo from "../assets/lightvpplogo.png";
 
 type Props = {
   user: IUser;
@@ -33,6 +35,7 @@ function MobileNavBar(props: Props) {
     handleSignUp,
     setIsInviteModalOpen
   } = props;
+  const appTheme = useTheme();
   const [isMobileNavOpen, setIsMobileNavOpen] = useState<boolean>(false);
   const { isSidebarOpen, setIsSidebarOpen } = useContext(SidebarContext);
   const location = useLocation();
@@ -205,15 +208,27 @@ function MobileNavBar(props: Props) {
           }}
         >
           <Grid>
-            <Grid
-              component={"img"}
-              src={dotvotingLogo}
-              alt="waves"
-              sx={{
-                height: { md: "60px", xs: "40px" },
-                width: { md: "60px", xs: "40px" }
-              }}
-            />
+            {appTheme.palette.mode === "dark" ? (
+              <Grid
+                component={"img"}
+                src={darkvppLogo}
+                alt="waves"
+                sx={{
+                  height: { md: "60px", xs: "60px" },
+                  width: { md: "60px", xs: "60px" }
+                }}
+              />
+            ) : (
+              <Grid
+                component={"img"}
+                src={lightvpplogo}
+                alt="waves"
+                sx={{
+                  height: { md: "60px", xs: "60px" },
+                  width: { md: "60px", xs: "60px" }
+                }}
+              />
+            )}
           </Grid>
           <Grid>
             <Typography
