@@ -26,7 +26,7 @@ const queryClient = new QueryClient();
 function App() {
   const getThemeMode = localStorage.getItem("mode");
   const themeMode = getThemeMode === "light" ? "light" : "dark";
-  const [mode, setMode] = React.useState<"light" | "dark">(themeMode);
+  const [mode, setMode] = React.useState<"light" | "dark">(themeMode || "dark");
   const colorMode = React.useMemo(
     () => ({
       toggleColorMode: () => {

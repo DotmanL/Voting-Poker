@@ -652,7 +652,7 @@ function VotingRoom(props: Props) {
                     variant="h3"
                     sx={{ fontSize: { md: "32px", xs: "16px" } }}
                   >
-                    Pick Your Cards
+                    Choose Your Cards
                   </Typography>
                 </Grid>
               ) : (
@@ -716,7 +716,14 @@ function VotingRoom(props: Props) {
         >
           {roomUsers &&
             roomUsers.map((roomUser: IRoomUsers, i: number) => (
-              <Grid key={roomUser._id}>
+              <Grid
+                key={roomUser._id}
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center"
+                }}
+              >
                 <Card
                   variant="outlined"
                   sx={[

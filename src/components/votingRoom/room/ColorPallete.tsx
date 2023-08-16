@@ -24,10 +24,9 @@ function ColorPallete(props: Props) {
     "#FF0000",
     "#0000FF",
     "#FF6600",
-    "#FFFF00",
     "#00FF00",
     "#6600FF",
-    "#000000",
+    "#808080",
     "#00B8EA",
     "#FC0FC0"
   ];

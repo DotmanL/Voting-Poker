@@ -212,7 +212,7 @@ export const NavBar = (props: Props) => {
               height: "auto",
               ml: 4,
               mt: 4,
-              border: "2px solid none",
+              border: "1px solid none",
               borderRadius: "8px",
               background: "#14213d",
               width: "auto",
@@ -252,7 +252,7 @@ export const NavBar = (props: Props) => {
                   ml: { md: 0, xs: 2 },
                   mt: { md: 1, xs: 0.5 },
                   borderRadius: "6px",
-                  border: "2px solid",
+                  border: "1px solid",
                   borderColor: "gray",
                   "&:hover": {
                     borderRadius: "6px",
@@ -428,7 +428,7 @@ export const NavBar = (props: Props) => {
                         fontWeight: "900px"
                       }}
                     >
-                      Invite Team Mates
+                      Invite Team Members
                     </Typography>
                   </Grid>
                   <Grid
@@ -441,10 +441,11 @@ export const NavBar = (props: Props) => {
                       width: "90%",
                       height: "50px",
                       borderRadius: "6px",
+                      padding: "6px",
                       fontSize: { md: "18px", xs: "10px" },
                       textAlign: { xs: "center" },
                       alignSelf: "center",
-                      border: { md: "2px solid", xs: "1px solid" },
+                      border: { md: "1px solid", xs: "1px solid" },
                       borderColor: "gray"
                     }}
                   >

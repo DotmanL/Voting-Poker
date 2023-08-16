@@ -165,7 +165,7 @@ function Footer() {
                   }
                 }}
               >
-                Contact Us
+                Contact Me
               </Typography>
             </Link>
           </Grid>
@@ -185,7 +185,7 @@ function Footer() {
                   }
                 }}
               >
-                Created by Dotmanl
+                Created by DotmanL
               </Typography>
             </Link>
           </Grid>

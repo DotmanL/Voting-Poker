@@ -691,7 +691,8 @@ function JiraManagementModal(props: Props) {
                         flexDirection: "row",
                         alignItems: "center",
                         justifyContent: "center",
-                        color: "white",
+                        color: (theme) =>
+                          theme.palette.mode === "dark" ? "white" : "black",
                         background:
                           selectedIssueType === issue.name ? "green" : "none",
                         border: (theme) =>
