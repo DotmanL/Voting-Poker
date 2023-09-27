@@ -1,17 +1,16 @@
-import React, { useEffect, useState, useContext } from "react";
-import { useQuery } from "react-query";
-import { IUser } from "interfaces/User/IUser";
 import { Grid } from "@mui/material";
-import { IRoom } from "interfaces/Room/IRoom";
-import { io } from "socket.io-client";
-import { useParams } from "react-router-dom";
-import { NavBar } from "components/shared/component/NavBar";
-import VotingRoom from "./VotingRoom";
 import RoomService from "api/RoomService";
 import UserService from "api/UserService";
+import { NavBar } from "components/shared/component/NavBar";
 import Spinner from "components/shared/component/Spinner";
+import { IRoom } from "interfaces/Room/IRoom";
+import { IUser } from "interfaces/User/IUser";
+import { useContext, useEffect, useState } from "react";
+import { useQuery } from "react-query";
+import { useParams } from "react-router-dom";
+import { io } from "socket.io-client";
 import { UserContext } from "utility/providers/UserProvider";
-import { toast } from "react-toastify";
+import VotingRoom from "./VotingRoom";
 
 const getBaseUrl = () => {
   let url;
@@ -55,20 +54,21 @@ function VotingRoomContainer() {
   const handleCreateUser = async (formData: IUser) => {
     const response = await UserService.createUser(formData);
     if (response) {
-      const userByName = await UserService.getCurrentUserByName(formData.name);
-      if (!userByName) {
+      const user = await UserService.getCurrentUser(response.data._id!);
+      if (!user) {
         return;
       }
-      localStorage.setItem("userId", JSON.stringify(userByName?._id));
-      setLoggedInUser(userByName!);
-      socket.emit("user", { userByName });
+      localStorage.setItem("userId", JSON.stringify(user?._id));
+      setLoggedInUser(user!);
+      socket.emit("user", { user });
       window.location.reload();
       setIsModalOpen(false);
-    } else {
-      toast.error(
-        "User with the same user name already exists, please pick another user name"
-      );
     }
+    // else {
+    //   toast.error(
+    //     "User with the same user name already exists, please pick another user name"
+    //   );
+    // }
   };
 
   useEffect(() => {

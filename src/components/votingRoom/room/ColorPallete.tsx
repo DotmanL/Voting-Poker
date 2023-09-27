@@ -49,7 +49,6 @@ function ColorPallete(props: Props) {
         display: { md: "flex", xs: "none" },
         flexDirection: "row",
         borderRadius: "50%",
-        border: `2px solid ${currentRoomUser?.cardColor}`,
         cursor: "pointer",
         justifyContent: "center",
         alignItems: "center",
@@ -65,7 +64,11 @@ function ColorPallete(props: Props) {
       <Tooltip title="Change Card Color">
         <PaletteIcon
           onClick={() => setIsColorPalleteOpen(!isColorPalleteOpen)}
-          sx={{ width: "60px", height: "60px" }}
+          sx={{
+            width: "60px",
+            height: "60px",
+            color: currentRoomUser?.cardColor
+          }}
         />
       </Tooltip>
 
