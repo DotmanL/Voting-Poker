@@ -23,6 +23,15 @@ const createUser = async (formData: IUser) => {
   }
 };
 
+const getCurrentUser = async (id: string) => {
+  try {
+    const response = await apiClient.get<IUser>(`getCurrentUser/${id}`);
+    return response.data;
+  } catch (err: any) {
+    console.error(err.message);
+  }
+};
+
 const getCurrentUserByName = async (name: string) => {
   try {
     const response = await apiClient.get<IUser>(`getCurrentUserByName/${name}`);
@@ -91,6 +100,7 @@ const deleteUser = async (_id: string | undefined) => {
 
 export const UserService = {
   createUser,
+  getCurrentUser,
   getCurrentUserByName,
   loadUser,
   getRoomUsers,

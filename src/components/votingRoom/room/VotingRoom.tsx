@@ -32,6 +32,7 @@ import { UserContext } from "utility/providers/UserProvider";
 import ColorPallete from "./ColorPallete";
 import useWindowSize from "react-use/lib/useWindowSize";
 import Confetti from "react-confetti";
+// import ChatTab from "./ChatTab";
 
 const useStyles = makeStyles((theme) => ({
   "@keyframes glowing": {
@@ -791,6 +792,7 @@ function VotingRoom(props: Props) {
       </Grid>
 
       <Grid>
+        {/* <ChatTab /> */}
         <VotingResultsContainer
           room={room}
           setShowCelebration={setShowCelebration}
