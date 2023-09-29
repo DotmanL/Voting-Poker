@@ -1,7 +1,7 @@
 import { RoleType } from "interfaces/enums/RoleEnum";
 import { IBase } from "../IBase";
 
-export interface IRoomUsers extends IBase {
+export interface IRoomUser extends IBase {
   userId: string;
   roomId: string;
   userName: string;

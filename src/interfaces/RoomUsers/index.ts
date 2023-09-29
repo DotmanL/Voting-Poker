@@ -1,3 +1,3 @@
-import { IRoomUsers } from "./IRoomUsers";
+import { IRoomUser } from "./IRoomUsers";
 
-export type { IRoomUsers };
+export type { IRoomUser as IRoomUsers };
