@@ -4,7 +4,7 @@ import SendIcon from "@mui/icons-material/Send";
 import { Grid, Typography } from "@mui/material";
 import TextField from "@mui/material/TextField";
 import { IRoomUser } from "interfaces/RoomUsers/IRoomUsers";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Socket } from "socket.io-client";
 
 type Props = {
@@ -25,7 +25,7 @@ function ChatTab(props: Props) {
   const [isChatBoxOpen, setIsChatBoxOpen] = useState<boolean>(false);
   const [userMessage, setUserMessage] = useState<string>("");
   const [allMessages, setAllMessages] = useState<Message[]>([]);
-  // const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!socket) return;
@@ -37,31 +37,31 @@ function ChatTab(props: Props) {
   }, [socket, allMessages]);
 
   //too slow
-  // useEffect(() => {
-  //   const divElement = scrollContainerRef.current;
+  useEffect(() => {
+    const divElement = scrollContainerRef.current;
 
-  //   if (
-  //     allMessages &&
-  //     divElement &&
-  //     divElement.scrollHeight > divElement.clientHeight
-  //   ) {
-  //     const targetScrollTop = divElement.scrollHeight - divElement.clientHeight;
-  //     const currentScrollTop = divElement.scrollTop;
-  //     const scrollStep = (targetScrollTop - currentScrollTop) / 60;
-  //     let frame = 0;
+    if (
+      allMessages &&
+      divElement &&
+      divElement.scrollHeight > divElement.clientHeight
+    ) {
+      const targetScrollTop = divElement.scrollHeight - divElement.clientHeight;
+      const currentScrollTop = divElement.scrollTop;
+      const scrollStep = (targetScrollTop - currentScrollTop) / 60;
+      let frame = 0;
 
-  //     const animateScroll = () => {
-  //       if (frame < 60) {
-  //         // Continue animation for 60 frames (1 second)
-  //         divElement.scrollTop += scrollStep;
-  //         frame++;
-  //         requestAnimationFrame(animateScroll);
-  //       }
-  //     };
+      const animateScroll = () => {
+        if (frame < 60) {
+          // Continue animation for 60 frames (1 second)
+          divElement.scrollTop += scrollStep;
+          frame++;
+          requestAnimationFrame(animateScroll);
+        }
+      };
 
-  //     animateScroll();
-  //   }
-  // }, [allMessages]);
+      animateScroll();
+    }
+  }, [allMessages]);
 
   function handleSendMessage() {
     socket.emit("sendRoomMessage", {
@@ -130,7 +130,7 @@ function ChatTab(props: Props) {
       >
         {isChatBoxOpen && (
           <Grid
-            // ref={scrollContainerRef}
+            ref={scrollContainerRef}
             sx={{
               display: {
                 md: "flex",
@@ -139,8 +139,8 @@ function ChatTab(props: Props) {
                 marginBottom: "70px",
                 padding: "10px",
                 height: "420px",
-                maxHeight: "420px",
-                overflowY: "auto"
+                // maxHeight: "420px",
+                overflowY: "scroll"
               }
             }}
           >
