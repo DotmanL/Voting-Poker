@@ -536,11 +536,12 @@ function RightSidebar(props: Props) {
           sx: { background: (theme) => theme.palette.secondary.main }
         }}
         ModalProps={{
+          disableEnforceFocus: true,
           BackdropProps: {
             invisible: true,
             sx: {
               cursor: "pointer",
-              width: "100%",
+              width: "0vw",
               height: "0vh"
             }
           }

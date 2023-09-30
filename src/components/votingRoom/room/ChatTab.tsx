@@ -1,10 +1,10 @@
-import { Grid, Typography } from "@mui/material";
-import React, { useEffect, useState } from "react";
 import CancelIcon from "@mui/icons-material/Cancel";
-import TextField from "@mui/material/TextField";
 import ChatIcon from "@mui/icons-material/Chat";
 import SendIcon from "@mui/icons-material/Send";
+import { Grid, Typography } from "@mui/material";
+import TextField from "@mui/material/TextField";
 import { IRoomUser } from "interfaces/RoomUsers/IRoomUsers";
+import { useEffect, useRef, useState } from "react";
 import { Socket } from "socket.io-client";
 
 type Props = {
@@ -25,6 +25,7 @@ function ChatTab(props: Props) {
   const [isChatBoxOpen, setIsChatBoxOpen] = useState<boolean>(false);
   const [userMessage, setUserMessage] = useState<string>("");
   const [allMessages, setAllMessages] = useState<Message[]>([]);
+  // const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!socket) return;
@@ -34,6 +35,33 @@ function ChatTab(props: Props) {
       }
     });
   }, [socket, allMessages]);
+
+  //too slow
+  // useEffect(() => {
+  //   const divElement = scrollContainerRef.current;
+
+  //   if (
+  //     allMessages &&
+  //     divElement &&
+  //     divElement.scrollHeight > divElement.clientHeight
+  //   ) {
+  //     const targetScrollTop = divElement.scrollHeight - divElement.clientHeight;
+  //     const currentScrollTop = divElement.scrollTop;
+  //     const scrollStep = (targetScrollTop - currentScrollTop) / 60;
+  //     let frame = 0;
+
+  //     const animateScroll = () => {
+  //       if (frame < 60) {
+  //         // Continue animation for 60 frames (1 second)
+  //         divElement.scrollTop += scrollStep;
+  //         frame++;
+  //         requestAnimationFrame(animateScroll);
+  //       }
+  //     };
+
+  //     animateScroll();
+  //   }
+  // }, [allMessages]);
 
   function handleSendMessage() {
     socket.emit("sendRoomMessage", {
@@ -51,9 +79,8 @@ function ChatTab(props: Props) {
     <Grid
       sx={{
         position: "absolute",
-        // top: "40vh",
         bottom: 60,
-        zIndex: 100,
+        zIndex: 80,
         left: 100,
         width: "50px",
         height: "50px",
@@ -62,18 +89,13 @@ function ChatTab(props: Props) {
         cursor: "pointer",
         justifyContent: "center",
         alignItems: "center"
-        // "&:hover": {
-        //   transition: "box-shadow 0.3s ease-in-out",
-        //   boxShadow: (theme) =>
-        //     theme.palette.mode === "dark"
-        //       ? "0px 0px 10px 2px rgba(255, 255, 255, 0.2)"
-        //       : "0px 0px 10px 2px rgba(0, 0, 0, 0.4)"
-        // }
       }}
     >
       {!isChatBoxOpen ? (
         <ChatIcon
-          onClick={() => setIsChatBoxOpen(!isChatBoxOpen)}
+          onClick={() => {
+            setIsChatBoxOpen(!isChatBoxOpen);
+          }}
           sx={{
             width: "50px",
             height: "50px"
@@ -97,6 +119,9 @@ function ChatTab(props: Props) {
           width: "400px",
           height: "auto",
           display: { md: "flex", xs: "none" },
+          backgroundColor: (theme) =>
+            theme.palette.mode === "dark" ? "#171a1d" : "#adb5bd",
+          borderRadius: "15px",
           flexDirection: "row",
           cursor: "pointer",
           justifyContent: "center",
@@ -105,63 +130,63 @@ function ChatTab(props: Props) {
       >
         {isChatBoxOpen && (
           <Grid
+            // ref={scrollContainerRef}
             sx={{
               display: {
                 md: "flex",
-                xs: "none",
+                flexDirection: "column",
                 width: "400px",
-                borderRadius: "10px",
                 marginBottom: "70px",
                 padding: "10px",
-                height: "500px",
-                maxHeight: "500px",
-                border: "2px solid gray",
-                background: "secondary.main",
+                height: "420px",
+                maxHeight: "420px",
                 overflowY: "auto"
-              },
-              flexDirection: "row"
+              }
             }}
           >
-            <Grid
-              sx={{
-                width: "100%",
-                height: "100%"
-              }}
-            >
-              {allMessages.map((am, i) => (
-                <Grid
+            {allMessages.map((am, i) => (
+              <Grid
+                sx={{
+                  marginY: "8px",
+                  paddingX: "10px",
+                  width: "70%",
+                  paddingY: "2px",
+                  borderRadius: "5px",
+                  color: (theme) =>
+                    theme.palette.mode === "dark" ? "white" : "black",
+                  background: (theme) =>
+                    theme.palette.mode === "dark" ? "#343a40" : "#dee2e6",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignSelf:
+                    currentRoomUser._id === am.userId
+                      ? "flex-end"
+                      : "flex-start"
+                }}
+                key={i}
+              >
+                <Typography
                   sx={{
-                    marginY: "8px",
-                    paddingX: "10px",
-                    borderRadius: "20px",
-                    background: "secondary.main",
-                    border: "0.5px solid",
-                    borderColor: "primary.main",
                     display: "flex",
-                    flexDirection: "column",
-
-                    alignItems:
-                      currentRoomUser._id === am.userId
-                        ? "flex-end"
-                        : "flex-start"
+                    color: roomUsers.find((user) => user._id === am.userId)
+                      ?.cardColor
                   }}
-                  key={i}
+                  fontSize={18}
                 >
-                  <Typography
-                    sx={{
-                      color: roomUsers.find((user) => user._id === am.userId)
-                        ?.cardColor
-                    }}
-                    fontSize={20}
-                  >
-                    {am.userName}
-                  </Typography>
-                  <Typography fontSize={18} sx={{ wordBreak: "break-word" }}>
-                    {am.message}
-                  </Typography>
-                </Grid>
-              ))}
-            </Grid>
+                  {currentRoomUser._id === am.userId ? "me" : am.userName}
+                </Typography>
+                <Typography
+                  fontSize={16}
+                  sx={{
+                    wordBreak: "break-word",
+                    alignSelf: "flex-start",
+                    display: "flex"
+                  }}
+                >
+                  {am.message}
+                </Typography>
+              </Grid>
+            ))}
 
             <Grid
               sx={{
@@ -169,16 +194,17 @@ function ChatTab(props: Props) {
                 alignItems: "center",
                 paddingRight: "10px",
                 position: "absolute",
+                borderBottomLeftRadius: "15px",
+                borderBottomRightRadius: "15px",
                 bottom: 0,
-                zIndex: 3000,
+                zIndex: 80,
                 left: 0,
                 height: "auto",
                 width: "400px",
                 background: (theme) =>
-                  theme.palette.mode === "dark" ? "white" : "black",
-                border: "2px solid",
-                borderColor: "primary.main",
-                borderRadius: "10px"
+                  theme.palette.mode === "dark" ? "#171a1d" : "#adb5bd",
+                borderTop: "1px solid",
+                borderColor: "#8d99ae"
               }}
             >
               <TextField
@@ -187,16 +213,15 @@ function ChatTab(props: Props) {
                   border: "none",
                   paddingX: "2px",
                   paddingY: "3px",
-                  overflowY: "auto"
+                  overflowY: "auto",
+                  "& fieldset": { border: "none" }
                 }}
-                // multiline
-                // rows={3}
+                placeholder="Send a message..."
                 InputProps={{
                   sx: {
                     maxHeight: "60px",
-
                     color: (theme) =>
-                      theme.palette.mode === "dark" ? "black" : "white",
+                      theme.palette.mode === "dark" ? "white" : "black",
                     border: "none"
                   }
                 }}
@@ -213,8 +238,12 @@ function ChatTab(props: Props) {
                 }}
               />
               <SendIcon
-                sx={{ marginLeft: 1, color: "green" }}
-                onClick={handleSendMessage}
+                sx={{
+                  marginLeft: 1,
+                  color: (theme) =>
+                    theme.palette.mode === "dark" ? "white" : "black"
+                }}
+                onClick={() => userMessage.length > 0 && handleSendMessage()}
               />
             </Grid>
           </Grid>

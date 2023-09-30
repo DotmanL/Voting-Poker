@@ -631,6 +631,7 @@ function JiraManagementModal(props: Props) {
                   sx={{
                     display: "flex",
                     flexDirection: "row",
+                    flexWrap: "wrap",
                     alignItems: "center",
                     mt: 0,
                     p: 0.5,
@@ -655,11 +656,11 @@ function JiraManagementModal(props: Props) {
                             : "2px solid #67A3EE",
                         cursor: "pointer",
                         borderRadius: "10px",
-                        height: "20px",
+                        height: "auto",
                         width: "auto",
-                        ml: 1,
-                        px: 2,
-                        py: 1.5,
+                        mx: 0.8,
+                        px: 1,
+                        py: 1,
                         "&:hover": {
                           opacity: 0.7
                         }
@@ -701,10 +702,11 @@ function JiraManagementModal(props: Props) {
                             : "2px solid #67A3EE",
                         cursor: "pointer",
                         borderRadius: "10px",
-                        height: "20px",
+                        height: "auto",
                         width: "auto",
                         m: 0.8,
-                        py: 1.5,
+                        px: 1,
+                        py: 1,
                         "&:hover": {
                           background:
                             selectedIssueType === issue.name ? "green" : "none",

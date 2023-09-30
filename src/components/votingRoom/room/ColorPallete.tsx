@@ -43,6 +43,7 @@ function ColorPallete(props: Props) {
       sx={{
         position: "absolute",
         top: !!activeIssue ? "25vh" : "18vh",
+        zIndex: 120,
         left: 80,
         width: "60px",
         height: "60px",
@@ -75,8 +76,8 @@ function ColorPallete(props: Props) {
       <Grid
         sx={{
           position: "absolute",
-          top: "3vh",
-          left: 65,
+          top: "-4vh",
+          left: 68,
           width: "auto",
           height: "auto",
           display: { md: "flex", xs: "none" },
@@ -98,12 +99,12 @@ function ColorPallete(props: Props) {
                 backgroundColor: (theme) => theme.palette.secondary.main,
                 border: `1px solid ${currentRoomUser?.cardColor}`,
                 borderRadius: "6px",
-                width: "180px",
-                height: "180px",
+                width: "250px",
+                height: "100px",
                 flexWrap: "wrap",
                 display: "flex",
                 flexDirection: "row",
-                justifyContent: "space-between",
+                justifyContent: "space-evenly",
                 mt: 0.5,
                 px: 1,
                 py: 0.5
@@ -128,6 +129,7 @@ function ColorPallete(props: Props) {
             </Grid>
             <Grid
               sx={{
+                marginTop: "-80px",
                 ml: 1,
                 display: "flex",
                 flexDirection: "column",
