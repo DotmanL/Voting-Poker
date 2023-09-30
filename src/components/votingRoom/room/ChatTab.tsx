@@ -4,7 +4,7 @@ import SendIcon from "@mui/icons-material/Send";
 import { Grid, Typography } from "@mui/material";
 import TextField from "@mui/material/TextField";
 import { IRoomUser } from "interfaces/RoomUsers/IRoomUsers";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Socket } from "socket.io-client";
 
 type Props = {
