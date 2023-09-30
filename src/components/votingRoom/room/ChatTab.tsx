@@ -4,7 +4,7 @@ import SendIcon from "@mui/icons-material/Send";
 import { Grid, Typography } from "@mui/material";
 import TextField from "@mui/material/TextField";
 import { IRoomUser } from "interfaces/RoomUsers/IRoomUsers";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { Socket } from "socket.io-client";
 
 type Props = {
@@ -27,19 +27,33 @@ function ChatTab(props: Props) {
   const [allMessages, setAllMessages] = useState<Message[]>([]);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
+  const appendMessage = useCallback(
+    (message: Message) => {
+      setAllMessages((prevMessages) => [...prevMessages, message]);
+    },
+    [setAllMessages]
+  );
+
   useEffect(() => {
     if (!socket) return;
     socket.on("sendRoomMessageResponse", (data: any) => {
       if (data) {
-        setAllMessages([...allMessages, data.roomMessage]);
+        appendMessage(data.roomMessage);
       }
     });
-  }, [socket, allMessages]);
+  }, [socket, appendMessage]);
 
-  //too slow
+  useEffect(() => {
+    if (isChatBoxOpen) {
+      const divElement = scrollContainerRef.current;
+      if (divElement) {
+        divElement.scrollTop = divElement.scrollHeight;
+      }
+    }
+  }, [isChatBoxOpen]);
+
   useEffect(() => {
     const divElement = scrollContainerRef.current;
-
     if (
       allMessages &&
       divElement &&
@@ -47,12 +61,11 @@ function ChatTab(props: Props) {
     ) {
       const targetScrollTop = divElement.scrollHeight - divElement.clientHeight;
       const currentScrollTop = divElement.scrollTop;
-      const scrollStep = (targetScrollTop - currentScrollTop) / 60;
+      const scrollStep = (targetScrollTop - currentScrollTop) / 30;
       let frame = 0;
 
       const animateScroll = () => {
-        if (frame < 60) {
-          // Continue animation for 60 frames (1 second)
+        if (frame < 30) {
           divElement.scrollTop += scrollStep;
           frame++;
           requestAnimationFrame(animateScroll);
@@ -139,7 +152,6 @@ function ChatTab(props: Props) {
                 marginBottom: "70px",
                 padding: "10px",
                 height: "420px",
-                // maxHeight: "420px",
                 overflowY: "scroll"
               }
             }}
