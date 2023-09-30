@@ -3,7 +3,7 @@ import IconButton from "@mui/material/IconButton";
 import { Brightness7, Brightness4 } from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
 import { ColorModeContext } from "utility/providers/ColorContext";
-import { Grid, Switch } from "@mui/material";
+import { Grid } from "@mui/material";
 
 type Props = {
   isMobileFlex?: boolean;
@@ -15,8 +15,7 @@ function DarkModeToggle(props: Props) {
   const colorMode = useContext(ColorModeContext);
   const icon =
     theme.palette.mode === "dark" ? <Brightness7 /> : <Brightness4 />;
-
-  const isDarkMode = theme.palette.mode === "dark";
+  // const isDarkMode = theme.palette.mode === "dark";
 
   return (
     <Grid
@@ -27,13 +26,13 @@ function DarkModeToggle(props: Props) {
     >
       {!isMobileFlex ? (
         <>
-          <Switch
+          {/* <Switch
             checked={isDarkMode}
             sx={{
               background: (theme) => theme.palette.secondary.main
             }}
             onClick={colorMode.toggleColorMode}
-          />
+          /> */}
           <IconButton onClick={colorMode.toggleColorMode} color="inherit">
             {icon}
           </IconButton>
@@ -71,7 +70,7 @@ function DarkModeToggle(props: Props) {
           >
             {theme.palette.mode === "dark" ? "Dark Mode" : "Light Mode"}
           </Grid>
-          <Grid>
+          {/* <Grid>
             <Switch
               checked={isDarkMode}
               sx={{
@@ -79,7 +78,7 @@ function DarkModeToggle(props: Props) {
               }}
               onClick={colorMode.toggleColorMode}
             />
-          </Grid>
+          </Grid> */}
         </Grid>
       )}
     </Grid>

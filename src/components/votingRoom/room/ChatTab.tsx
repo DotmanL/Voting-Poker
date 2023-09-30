@@ -4,7 +4,8 @@ import SendIcon from "@mui/icons-material/Send";
 import { Grid, Typography } from "@mui/material";
 import TextField from "@mui/material/TextField";
 import { IRoomUser } from "interfaces/RoomUsers/IRoomUsers";
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { animated, useSpring } from "react-spring";
 import { Socket } from "socket.io-client";
 
 type Props = {
@@ -27,6 +28,14 @@ function ChatTab(props: Props) {
   const [allMessages, setAllMessages] = useState<Message[]>([]);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
+  const [animationProps, api] = useSpring(
+    () => ({
+      y: 0,
+      config: { mass: 1, tension: 120, friction: 14, bounce: 5 }
+    }),
+    []
+  );
+
   const appendMessage = useCallback(
     (message: Message) => {
       setAllMessages((prevMessages) => [...prevMessages, message]);
@@ -36,12 +45,21 @@ function ChatTab(props: Props) {
 
   useEffect(() => {
     if (!socket) return;
+    let bouncingTimeout: NodeJS.Timeout;
     socket.on("sendRoomMessageResponse", (data: any) => {
       if (data) {
         appendMessage(data.roomMessage);
+        api.start({ y: 8 });
+        bouncingTimeout = setTimeout(() => {
+          api.start({ y: 1 });
+        }, 1000);
       }
     });
-  }, [socket, appendMessage]);
+
+    return () => {
+      clearTimeout(bouncingTimeout);
+    };
+  }, [socket, appendMessage, api]);
 
   useEffect(() => {
     if (isChatBoxOpen) {
@@ -105,15 +123,26 @@ function ChatTab(props: Props) {
       }}
     >
       {!isChatBoxOpen ? (
-        <ChatIcon
-          onClick={() => {
-            setIsChatBoxOpen(!isChatBoxOpen);
+        <animated.div
+          style={{
+            transform: animationProps.y
+              .to({
+                range: [0, 1],
+                output: [0, -10]
+              })
+              .to((y) => `translateY(${y}px)`)
           }}
-          sx={{
-            width: "50px",
-            height: "50px"
-          }}
-        />
+        >
+          <ChatIcon
+            onClick={() => {
+              setIsChatBoxOpen(!isChatBoxOpen);
+            }}
+            sx={{
+              width: "50px",
+              height: "50px"
+            }}
+          />
+        </animated.div>
       ) : (
         <CancelIcon
           onClick={() => setIsChatBoxOpen(!isChatBoxOpen)}
@@ -152,7 +181,7 @@ function ChatTab(props: Props) {
                 marginBottom: "70px",
                 padding: "10px",
                 height: "420px",
-                overflowY: "scroll"
+                overflowY: "auto"
               }
             }}
           >
@@ -228,6 +257,7 @@ function ChatTab(props: Props) {
                   overflowY: "auto",
                   "& fieldset": { border: "none" }
                 }}
+                autoComplete="false"
                 placeholder="Send a message..."
                 InputProps={{
                   sx: {
