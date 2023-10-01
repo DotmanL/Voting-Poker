@@ -743,7 +743,7 @@ function VotingRoom(props: Props) {
                     {
                       width: { md: 70, xs: 60 },
                       height: { md: 100, xs: 90 },
-                      mx: { md: 2, xs: 1 },
+                      mx: { md: 3, xs: 1 },
                       border: `1px solid ${roomUser?.cardColor}`,
                       cursor: "pointer",
                       borderRadius: { md: "8px", xs: "4px" },

@@ -12,6 +12,7 @@ import {
 import { IRoomUser } from "interfaces/RoomUsers/IRoomUsers";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { QueryObserverResult } from "react-query";
+import { Scrollbar } from "react-scrollbars-custom";
 import { animated, useSpring } from "react-spring";
 import { Socket } from "socket.io-client";
 
@@ -42,7 +43,8 @@ function ChatInterface(props: Props) {
   const [isChatBoxOpen, setIsChatBoxOpen] = useState<boolean>(false);
   const [userMessage, setUserMessage] = useState<string>("");
   const [allMessages, setAllMessages] = useState<IUserMessage[]>([]);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  // type T = HTMLDivElement; // Define T as HTMLElement or any other type you need
+  const scrollContainerRef = useRef<Scrollbar & HTMLDivElement>(null);
 
   const [animationProps, api] = useSpring(
     () => ({
@@ -213,16 +215,14 @@ function ChatInterface(props: Props) {
       >
         {isChatBoxOpen && (
           <Grid
-            ref={scrollContainerRef}
             sx={{
               display: {
                 md: "flex",
                 flexDirection: "column",
                 width: "400px",
-                marginBottom: "70px",
-                padding: "10px",
                 height: "420px",
-                overflowY: "auto"
+                padding: "10px",
+                marginBottom: "75px"
               }
             }}
           >
@@ -230,52 +230,74 @@ function ChatInterface(props: Props) {
               {isLoadingMessages ? (
                 <Spinner />
               ) : (
-                <>
-                  {allMessages.map((am, i) => (
-                    <Grid
-                      sx={{
-                        marginY: "8px",
-                        paddingX: "10px",
-                        width: "70%",
-                        paddingY: "2px",
-                        borderRadius: "5px",
-                        color: (theme) =>
-                          theme.palette.mode === "dark" ? "white" : "black",
-                        background: (theme) =>
-                          theme.palette.mode === "dark" ? "#343a40" : "#dee2e6",
-                        display: "flex",
+                <Scrollbar
+                  ref={scrollContainerRef}
+                  style={{
+                    width: "100%",
+                    height: "420px"
+                  }}
+                  noScrollX
+                >
+                  <Grid
+                    sx={{
+                      display: {
+                        md: "flex",
                         flexDirection: "column",
-                        alignSelf:
-                          currentRoomUser._id === am.userId
-                            ? "flex-end"
-                            : "flex-start"
-                      }}
-                      key={i}
-                    >
-                      <Typography
+                        height: "100%"
+                      }
+                    }}
+                  >
+                    {allMessages.map((am, i) => (
+                      <Grid
                         sx={{
+                          marginY: "8px",
+                          marginRight: "8px",
+                          paddingX: "10px",
+                          width: "70%",
+                          paddingY: "2px",
+                          borderRadius: "5px",
+                          color: (theme) =>
+                            theme.palette.mode === "dark" ? "white" : "black",
+                          background: (theme) =>
+                            theme.palette.mode === "dark"
+                              ? "#343a40"
+                              : "#dee2e6",
                           display: "flex",
-                          color: roomUsers.find(
-                            (user) => user._id === am.userId
-                          )?.cardColor
+                          flexDirection: "column",
+                          alignSelf:
+                            currentRoomUser._id === am.userId
+                              ? "flex-end"
+                              : "flex-start"
                         }}
-                        fontSize={18}
+                        key={i}
                       >
-                        {currentRoomUser._id === am.userId ? "me" : am.userName}
-                      </Typography>
-                      <Typography
-                        fontSize={16}
-                        sx={{
-                          wordBreak: "break-word",
-                          alignSelf: "flex-start",
-                          display: "flex"
-                        }}
-                      >
-                        {am.message}
-                      </Typography>
-                    </Grid>
-                  ))}
-                </>
+                        <Typography
+                          sx={{
+                            display: "flex",
+                            color: roomUsers.find(
+                              (user) => user._id === am.userId
+                            )?.cardColor
+                          }}
+                          fontSize={18}
+                        >
+                          {currentRoomUser._id === am.userId
+                            ? "me"
+                            : am.userName}
+                        </Typography>
+                        <Typography
+                          fontSize={16}
+                          sx={{
+                            wordBreak: "break-word",
+                            alignSelf: "flex-start",
+                            display: "flex"
+                          }}
+                        >
+                          {am.message}
+                        </Typography>
+                      </Grid>
+                    ))}
+                  </Grid>
+                </Scrollbar>
               )}
             </>
 
@@ -283,10 +305,11 @@ function ChatInterface(props: Props) {
               sx={{
                 display: "flex",
                 alignItems: "center",
-                paddingRight: "10px",
+                paddingRight: "4px",
                 position: "absolute",
                 borderBottomLeftRadius: "15px",
                 borderBottomRightRadius: "15px",
+                mt: 4,
                 bottom: 0,
                 zIndex: 80,
                 left: 0,
@@ -303,16 +326,18 @@ function ChatInterface(props: Props) {
                   width: "100%",
                   border: "none",
                   paddingX: "2px",
-                  paddingY: "3px",
+                  paddingY: "2px",
+                  maxHeight: "90px",
                   overflowY: "auto",
                   "& fieldset": { border: "none" }
                 }}
                 autoFocus={true}
                 autoComplete="false"
                 placeholder="Send a message..."
+                multiline
+                rows={2}
                 InputProps={{
                   sx: {
-                    maxHeight: "60px",
                     color: (theme) =>
                       theme.palette.mode === "dark" ? "white" : "black",
                     border: "none"
