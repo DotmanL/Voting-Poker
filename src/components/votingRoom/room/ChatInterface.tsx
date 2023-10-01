@@ -3,8 +3,15 @@ import ChatIcon from "@mui/icons-material/Chat";
 import SendIcon from "@mui/icons-material/Send";
 import { Grid, Typography } from "@mui/material";
 import TextField from "@mui/material/TextField";
+import RoomMessageService from "api/RoomMessageService";
+import Spinner from "components/shared/component/Spinner";
+import {
+  IRoomMessage,
+  IUserMessage
+} from "interfaces/RoomMessages/IRoomMessage";
 import { IRoomUser } from "interfaces/RoomUsers/IRoomUsers";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { QueryObserverResult } from "react-query";
 import { animated, useSpring } from "react-spring";
 import { Socket } from "socket.io-client";
 
@@ -12,20 +19,29 @@ type Props = {
   socket: Socket;
   roomId: string;
   currentRoomUser: IRoomUser;
+  isLoadingMessages: boolean;
+  isErrorMessages: Error | null;
+  roomMessages: IUserMessage[] | undefined;
   roomUsers: IRoomUser[];
+  refetchMessages: () => Promise<
+    QueryObserverResult<IUserMessage[] | undefined, Error>
+  >;
 };
 
-type Message = {
-  userId: string;
-  userName: string;
-  message: string;
-};
-
-function ChatTab(props: Props) {
-  const { socket, roomId, roomUsers, currentRoomUser } = props;
+function ChatInterface(props: Props) {
+  const {
+    socket,
+    roomId,
+    roomUsers,
+    currentRoomUser,
+    isLoadingMessages,
+    isErrorMessages,
+    roomMessages,
+    refetchMessages
+  } = props;
   const [isChatBoxOpen, setIsChatBoxOpen] = useState<boolean>(false);
   const [userMessage, setUserMessage] = useState<string>("");
-  const [allMessages, setAllMessages] = useState<Message[]>([]);
+  const [allMessages, setAllMessages] = useState<IUserMessage[]>([]);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const [animationProps, api] = useSpring(
@@ -37,7 +53,7 @@ function ChatTab(props: Props) {
   );
 
   const appendMessage = useCallback(
-    (message: Message) => {
+    (message: IUserMessage) => {
       setAllMessages((prevMessages) => [...prevMessages, message]);
     },
     [setAllMessages]
@@ -62,13 +78,19 @@ function ChatTab(props: Props) {
   }, [socket, appendMessage, api]);
 
   useEffect(() => {
-    if (isChatBoxOpen) {
-      const divElement = scrollContainerRef.current;
-      if (divElement) {
-        divElement.scrollTop = divElement.scrollHeight;
+    async function refreshMessages() {
+      if (isChatBoxOpen && roomMessages) {
+        await refetchMessages();
+        setAllMessages(roomMessages);
+        const divElement = scrollContainerRef.current;
+        if (divElement) {
+          divElement.scrollTop = divElement.scrollHeight;
+        }
       }
     }
-  }, [isChatBoxOpen]);
+
+    refreshMessages();
+  }, [isChatBoxOpen, roomMessages, refetchMessages]);
 
   useEffect(() => {
     const divElement = scrollContainerRef.current;
@@ -94,7 +116,7 @@ function ChatTab(props: Props) {
     }
   }, [allMessages]);
 
-  function handleSendMessage() {
+  async function handleSendMessageAsync() {
     socket.emit("sendRoomMessage", {
       roomMessage: {
         userId: currentRoomUser._id,
@@ -103,7 +125,26 @@ function ChatTab(props: Props) {
       },
       roomId: roomId
     });
+
+    const userMessageToBeSent: IUserMessage = {
+      userId: currentRoomUser._id!,
+      userName: currentRoomUser.userName,
+      message: userMessage
+    };
+
+    const roomMessage: IRoomMessage = {
+      roomId: roomId,
+      messages: [userMessageToBeSent]
+    };
+
+    await RoomMessageService.createOrUpdateRoomMessage(roomMessage);
+
     setUserMessage("");
+  }
+
+  //TODO: handle more gracefully
+  if (isErrorMessages) {
+    return <div>{(isErrorMessages as Error)?.message}</div>;
   }
 
   return (
@@ -185,49 +226,58 @@ function ChatTab(props: Props) {
               }
             }}
           >
-            {allMessages.map((am, i) => (
-              <Grid
-                sx={{
-                  marginY: "8px",
-                  paddingX: "10px",
-                  width: "70%",
-                  paddingY: "2px",
-                  borderRadius: "5px",
-                  color: (theme) =>
-                    theme.palette.mode === "dark" ? "white" : "black",
-                  background: (theme) =>
-                    theme.palette.mode === "dark" ? "#343a40" : "#dee2e6",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignSelf:
-                    currentRoomUser._id === am.userId
-                      ? "flex-end"
-                      : "flex-start"
-                }}
-                key={i}
-              >
-                <Typography
-                  sx={{
-                    display: "flex",
-                    color: roomUsers.find((user) => user._id === am.userId)
-                      ?.cardColor
-                  }}
-                  fontSize={18}
-                >
-                  {currentRoomUser._id === am.userId ? "me" : am.userName}
-                </Typography>
-                <Typography
-                  fontSize={16}
-                  sx={{
-                    wordBreak: "break-word",
-                    alignSelf: "flex-start",
-                    display: "flex"
-                  }}
-                >
-                  {am.message}
-                </Typography>
-              </Grid>
-            ))}
+            <>
+              {isLoadingMessages ? (
+                <Spinner />
+              ) : (
+                <>
+                  {allMessages.map((am, i) => (
+                    <Grid
+                      sx={{
+                        marginY: "8px",
+                        paddingX: "10px",
+                        width: "70%",
+                        paddingY: "2px",
+                        borderRadius: "5px",
+                        color: (theme) =>
+                          theme.palette.mode === "dark" ? "white" : "black",
+                        background: (theme) =>
+                          theme.palette.mode === "dark" ? "#343a40" : "#dee2e6",
+                        display: "flex",
+                        flexDirection: "column",
+                        alignSelf:
+                          currentRoomUser._id === am.userId
+                            ? "flex-end"
+                            : "flex-start"
+                      }}
+                      key={i}
+                    >
+                      <Typography
+                        sx={{
+                          display: "flex",
+                          color: roomUsers.find(
+                            (user) => user._id === am.userId
+                          )?.cardColor
+                        }}
+                        fontSize={18}
+                      >
+                        {currentRoomUser._id === am.userId ? "me" : am.userName}
+                      </Typography>
+                      <Typography
+                        fontSize={16}
+                        sx={{
+                          wordBreak: "break-word",
+                          alignSelf: "flex-start",
+                          display: "flex"
+                        }}
+                      >
+                        {am.message}
+                      </Typography>
+                    </Grid>
+                  ))}
+                </>
+              )}
+            </>
 
             <Grid
               sx={{
@@ -257,6 +307,7 @@ function ChatTab(props: Props) {
                   overflowY: "auto",
                   "& fieldset": { border: "none" }
                 }}
+                autoFocus={true}
                 autoComplete="false"
                 placeholder="Send a message..."
                 InputProps={{
@@ -275,7 +326,7 @@ function ChatTab(props: Props) {
                 }}
                 onKeyDown={(event) => {
                   if (event.key === "Enter" && userMessage.length > 0) {
-                    handleSendMessage();
+                    handleSendMessageAsync();
                   }
                 }}
               />
@@ -285,7 +336,9 @@ function ChatTab(props: Props) {
                   color: (theme) =>
                     theme.palette.mode === "dark" ? "white" : "black"
                 }}
-                onClick={() => userMessage.length > 0 && handleSendMessage()}
+                onClick={() =>
+                  userMessage.length > 0 && handleSendMessageAsync()
+                }
               />
             </Grid>
           </Grid>
@@ -295,4 +348,4 @@ function ChatTab(props: Props) {
   );
 }
 
-export default ChatTab;
+export default ChatInterface;

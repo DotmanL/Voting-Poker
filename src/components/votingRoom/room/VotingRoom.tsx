@@ -32,7 +32,9 @@ import { UserContext } from "utility/providers/UserProvider";
 import ColorPallete from "./ColorPallete";
 import useWindowSize from "react-use/lib/useWindowSize";
 import Confetti from "react-confetti";
-import ChatTab from "./ChatTab";
+import ChatInterface from "./ChatInterface";
+import { IUserMessage } from "interfaces/RoomMessages/IRoomMessage";
+import RoomMessageService from "api/RoomMessageService";
 
 const useStyles = makeStyles((theme) => ({
   "@keyframes glowing": {
@@ -126,6 +128,15 @@ function VotingRoom(props: Props) {
     refetch: refetchIssues
   } = useQuery<IIssue[] | undefined, Error>("getIssues", async () =>
     IssueService.getAllIssues(roomId!)
+  );
+
+  const {
+    isLoading: isLoadingMessages,
+    error: isErrorMessages,
+    data: roomMessages,
+    refetch: refetchMessages
+  } = useQuery<IUserMessage[] | undefined, Error>("getMessages", async () =>
+    RoomMessageService.getRoomMessages(roomId!)
   );
 
   const joinRoom = useCallback(async () => {
@@ -489,6 +500,7 @@ function VotingRoom(props: Props) {
         currentVote: currentUser.currentVote!,
         votedState: currentUser.votedState!
       };
+      //TODO: handle error properly
       await RoomUsersService.updateRoomUser(
         room.roomId,
         currentUser._id!,
@@ -792,11 +804,15 @@ function VotingRoom(props: Props) {
       </Grid>
 
       <Grid>
-        <ChatTab
+        <ChatInterface
           socket={socket}
           roomId={getRoomId.roomId!}
           roomUsers={roomUsers || []}
           currentRoomUser={currentRoomUser!}
+          isLoadingMessages={isLoadingMessages}
+          isErrorMessages={isErrorMessages}
+          roomMessages={roomMessages}
+          refetchMessages={refetchMessages}
         />
         <VotingResultsContainer
           room={room}

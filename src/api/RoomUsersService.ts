@@ -61,8 +61,6 @@ const updateRoomUsers = async (
   roomUsersUpdate: RoomUsersUpdate
 ) => {
   try {
-    // const requestBody = { activeIssueId };
-    // const body = JSON.stringify(requestBody);
     const body = JSON.stringify(roomUsersUpdate);
     const response = await apiClient.put<IRoomUsers>(
       `roomUsers/${roomId}`,
