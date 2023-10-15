@@ -2,6 +2,7 @@ export interface IUserMessage {
   userId: string;
   userName: string;
   message: string;
+  messageTime?: number;
   iv?: string;
 }
 

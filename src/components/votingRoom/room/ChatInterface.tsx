@@ -29,6 +29,10 @@ type Props = {
   >;
 };
 
+interface GroupedMessages {
+  [key: string]: IUserMessage[];
+}
+
 function ChatInterface(props: Props) {
   const {
     socket,
@@ -43,7 +47,8 @@ function ChatInterface(props: Props) {
   const [isChatBoxOpen, setIsChatBoxOpen] = useState<boolean>(false);
   const [userMessage, setUserMessage] = useState<string>("");
   const [allMessages, setAllMessages] = useState<IUserMessage[]>([]);
-  // type T = HTMLDivElement; // Define T as HTMLElement or any other type you need
+  const [roomGroupedMessages, setRoomGroupedMessages] =
+    useState<GroupedMessages>();
   const scrollContainerRef = useRef<Scrollbar & HTMLDivElement>(null);
 
   const [animationProps, api] = useSpring(
@@ -53,6 +58,23 @@ function ChatInterface(props: Props) {
     }),
     []
   );
+
+  const groupMessagesByDay = (messages: IUserMessage[]) => {
+    const groupedMessages: GroupedMessages = {};
+    messages.forEach((message) => {
+      const messageDate = new Date(message?.messageTime!).toDateString();
+      if (groupedMessages[messageDate]) {
+        groupedMessages[messageDate].push(message);
+      } else {
+        groupedMessages[messageDate] = [message];
+      }
+    });
+    return groupedMessages;
+  };
+
+  useEffect(() => {
+    setRoomGroupedMessages(groupMessagesByDay(allMessages));
+  }, [allMessages]);
 
   const appendMessage = useCallback(
     (message: IUserMessage) => {
@@ -97,13 +119,13 @@ function ChatInterface(props: Props) {
   useEffect(() => {
     const divElement = scrollContainerRef.current;
     if (
-      allMessages &&
+      roomGroupedMessages &&
       divElement &&
       divElement.scrollHeight > divElement.clientHeight
     ) {
       const targetScrollTop = divElement.scrollHeight - divElement.clientHeight;
       const currentScrollTop = divElement.scrollTop;
-      const scrollStep = (targetScrollTop - currentScrollTop) / 30;
+      const scrollStep = (targetScrollTop - currentScrollTop) / 30 + 1;
       let frame = 0;
 
       const animateScroll = () => {
@@ -116,7 +138,7 @@ function ChatInterface(props: Props) {
 
       animateScroll();
     }
-  }, [allMessages]);
+  }, [roomGroupedMessages]);
 
   async function handleSendMessageAsync() {
     socket.emit("sendRoomMessage", {
@@ -128,10 +150,16 @@ function ChatInterface(props: Props) {
       roomId: roomId
     });
 
+    // const currentDate = new Date();
+
+    // currentDate.setDate(currentDate.getDate() + 2);
+
     const userMessageToBeSent: IUserMessage = {
       userId: currentRoomUser._id!,
       userName: currentRoomUser.userName,
-      message: userMessage
+      message: userMessage,
+      messageTime: Date.now()
+      // messageTime: currentDate.setDate(currentDate.getDate() + 6)
     };
 
     const roomMessage: IRoomMessage = {
@@ -247,55 +275,79 @@ function ChatInterface(props: Props) {
                       }
                     }}
                   >
-                    {allMessages.map((am, i) => (
-                      <Grid
-                        sx={{
-                          marginY: "8px",
-                          marginRight: "8px",
-                          paddingX: "10px",
-                          width: "70%",
-                          paddingY: "2px",
-                          borderRadius: "5px",
-                          color: (theme) =>
-                            theme.palette.mode === "dark" ? "white" : "black",
-                          background: (theme) =>
-                            theme.palette.mode === "dark"
-                              ? "#343a40"
-                              : "#dee2e6",
-                          display: "flex",
-                          flexDirection: "column",
-                          alignSelf:
-                            currentRoomUser._id === am.userId
-                              ? "flex-end"
-                              : "flex-start"
-                        }}
-                        key={i}
-                      >
-                        <Typography
+                    {roomGroupedMessages &&
+                      Object.keys(roomGroupedMessages).map((messageDate, i) => (
+                        <Grid
+                          key={i}
                           sx={{
-                            display: "flex",
-                            color: roomUsers.find(
-                              (user) => user._id === am.userId
-                            )?.cardColor
-                          }}
-                          fontSize={18}
-                        >
-                          {currentRoomUser._id === am.userId
-                            ? "me"
-                            : am.userName}
-                        </Typography>
-                        <Typography
-                          fontSize={16}
-                          sx={{
-                            wordBreak: "break-word",
-                            alignSelf: "flex-start",
-                            display: "flex"
+                            display: {
+                              md: "flex",
+                              flexDirection: "column",
+                              height: "100%"
+                            }
                           }}
                         >
-                          {am.message}
-                        </Typography>
-                      </Grid>
-                    ))}
+                          <Typography sx={{ mr: "auto", ml: "auto" }}>
+                            {messageDate !== "Invalid Date" &&
+                              (messageDate === new Date().toDateString()
+                                ? "Today"
+                                : messageDate)}
+                          </Typography>
+                          {roomGroupedMessages[messageDate].map(
+                            (message, i) => (
+                              <Grid
+                                sx={{
+                                  marginY: "8px",
+                                  marginRight: "8px",
+                                  paddingX: "10px",
+                                  width: "70%",
+                                  paddingY: "2px",
+                                  borderRadius: "5px",
+                                  color: (theme) =>
+                                    theme.palette.mode === "dark"
+                                      ? "white"
+                                      : "black",
+                                  background: (theme) =>
+                                    theme.palette.mode === "dark"
+                                      ? "#343a40"
+                                      : "#dee2e6",
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  alignSelf:
+                                    currentRoomUser._id === message.userId
+                                      ? "flex-end"
+                                      : "flex-start"
+                                }}
+                                key={i}
+                              >
+                                <Typography
+                                  sx={{
+                                    display: "flex",
+                                    color: roomUsers.find(
+                                      (user) => user._id === message.userId
+                                    )?.cardColor
+                                  }}
+                                  fontSize={18}
+                                >
+                                  {currentRoomUser._id === message.userId
+                                    ? "me"
+                                    : message.userName}
+                                </Typography>
+                                <Typography
+                                  fontSize={16}
+                                  sx={{
+                                    wordBreak: "break-word",
+                                    alignSelf: "flex-start",
+                                    display: "flex"
+                                  }}
+                                >
+                                  {message.message}
+                                </Typography>
+                              </Grid>
+                            )
+                          )}
+                        </Grid>
+                      ))}
                   </Grid>
                 </Scrollbar>
               )}
