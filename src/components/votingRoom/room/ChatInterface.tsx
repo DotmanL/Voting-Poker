@@ -150,16 +150,11 @@ function ChatInterface(props: Props) {
       roomId: roomId
     });
 
-    // const currentDate = new Date();
-
-    // currentDate.setDate(currentDate.getDate() + 2);
-
     const userMessageToBeSent: IUserMessage = {
       userId: currentRoomUser._id!,
       userName: currentRoomUser.userName,
       message: userMessage,
       messageTime: Date.now()
-      // messageTime: currentDate.setDate(currentDate.getDate() + 6)
     };
 
     const roomMessage: IRoomMessage = {
@@ -168,7 +163,7 @@ function ChatInterface(props: Props) {
     };
 
     await RoomMessageService.createOrUpdateRoomMessage(roomMessage);
-
+    refetchMessages();
     setUserMessage("");
   }
 
@@ -181,8 +176,8 @@ function ChatInterface(props: Props) {
     <Grid
       sx={{
         position: "absolute",
-        bottom: 60,
-        zIndex: 80,
+        bottom: 30,
+        zIndex: 120,
         left: 100,
         width: "50px",
         height: "50px",
@@ -248,7 +243,7 @@ function ChatInterface(props: Props) {
                 md: "flex",
                 flexDirection: "column",
                 width: "400px",
-                height: "420px",
+                height: "350px",
                 padding: "10px",
                 marginBottom: "75px"
               }
@@ -262,7 +257,7 @@ function ChatInterface(props: Props) {
                   ref={scrollContainerRef}
                   style={{
                     width: "100%",
-                    height: "420px"
+                    height: "350px"
                   }}
                   noScrollX
                 >

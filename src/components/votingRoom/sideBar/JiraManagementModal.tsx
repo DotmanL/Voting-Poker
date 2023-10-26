@@ -635,7 +635,7 @@ function JiraManagementModal(props: Props) {
                     alignItems: "center",
                     mt: 0,
                     p: 0.5,
-                    height: "50px"
+                    height: "auto"
                   }}
                 >
                   <Grid>Projects - </Grid>

@@ -51,12 +51,12 @@ const useStyles = makeStyles((theme) => ({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    marginTop: "25vh",
+    marginTop: "22vh",
     borderRadius: "20px",
-    width: "400px",
-    height: "200px",
+    width: "350px",
+    height: "150px",
     [theme.breakpoints.down("md")]: {
-      width: "220px",
+      width: "350px",
       height: "150px"
     }
   },
@@ -66,13 +66,13 @@ const useStyles = makeStyles((theme) => ({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    marginTop: "25vh",
+    marginTop: "22vh",
     borderRadius: "20px",
     animation: `$glowing 0.5s infinite alternate`,
     width: "400px",
     height: "200px",
     [theme.breakpoints.down("md")]: {
-      width: "300px",
+      width: "2200px",
       height: "150px"
     }
   }
@@ -663,7 +663,7 @@ function VotingRoom(props: Props) {
                 <Grid>
                   <Typography
                     variant="h3"
-                    sx={{ fontSize: { md: "32px", xs: "16px" } }}
+                    sx={{ fontSize: { md: "28px", xs: "16px" } }}
                   >
                     Choose Your Cards
                   </Typography>
@@ -724,7 +724,7 @@ function VotingRoom(props: Props) {
             flexDirection: "row",
             justifyContent: "center",
             alignItems: "center",
-            mt: { md: 3, xs: 3 }
+            mt: { md: 2, xs: 2 }
           }}
         >
           {roomUsers &&

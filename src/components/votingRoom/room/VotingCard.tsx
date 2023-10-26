@@ -35,7 +35,7 @@ function VotingCard(props: Props) {
           sx={[
             {
               minWidth: { md: 60, xs: 50 },
-              minHeight: { md: 80, xs: 60 },
+              minHeight: { md: 70, xs: 60 },
               mx: { md: 1, xs: 1 },
               border: `1px solid ${userCardColor}`,
               cursor: "pointer",
