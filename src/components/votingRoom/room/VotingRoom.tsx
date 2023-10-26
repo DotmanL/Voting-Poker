@@ -69,8 +69,8 @@ const useStyles = makeStyles((theme) => ({
     marginTop: "22vh",
     borderRadius: "20px",
     animation: `$glowing 0.5s infinite alternate`,
-    width: "400px",
-    height: "200px",
+    width: "350px",
+    height: "150px",
     [theme.breakpoints.down("md")]: {
       width: "2200px",
       height: "150px"
