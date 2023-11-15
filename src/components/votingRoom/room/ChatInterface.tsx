@@ -243,7 +243,7 @@ function ChatInterface(props: Props) {
                 md: "flex",
                 flexDirection: "column",
                 width: "400px",
-                height: "350px",
+                height: "450px",
                 padding: "10px",
                 marginBottom: "75px"
               }
@@ -257,7 +257,7 @@ function ChatInterface(props: Props) {
                   ref={scrollContainerRef}
                   style={{
                     width: "100%",
-                    height: "350px"
+                    height: "450px"
                   }}
                   noScrollX
                 >
