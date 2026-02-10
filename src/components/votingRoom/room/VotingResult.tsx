@@ -102,10 +102,18 @@ function VotingResult(props: Props) {
               display: "flex",
               flexDirection: "row",
               justifyContent: "center",
-              borderRadius: "8px",
+              borderRadius: "10px",
               px: 1,
               background: (theme) => theme.palette.secondary.main,
-              m: 1
+              boxShadow: (theme) =>
+                theme.palette.mode === "dark"
+                  ? "0 2px 8px rgba(0, 0, 0, 0.3)"
+                  : "0 2px 8px rgba(0, 0, 0, 0.1)",
+              m: 1,
+              transition: "transform 0.2s ease",
+              "&:hover": {
+                transform: "translateY(-2px)"
+              }
             }}
             key={i}
           >

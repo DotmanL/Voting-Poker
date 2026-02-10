@@ -15,15 +15,17 @@ function Footer() {
         flexDirection: { md: "column", xs: "column" },
         width: "100%",
         backgroundColor: (theme) =>
-          theme.palette.mode === "dark" ? "#121212" : "#e9ecef",
+          theme.palette.mode === "dark" ? "#0f1419" : "#f1f3f5",
         height: { md: "200px", xs: "100%" },
         pb: { md: 0, xs: 2 }
       }}
     >
       <Grid
         sx={{
-          background: "red",
-          borderTop: "1px solid gray",
+          borderTop: (theme) =>
+            theme.palette.mode === "dark"
+              ? "1px solid rgba(255, 255, 255, 0.08)"
+              : "1px solid rgba(0, 0, 0, 0.08)",
           height: "auto",
           width: { md: "75%", xs: "80%" },
           display: "flex",
@@ -84,12 +86,11 @@ function Footer() {
               variant="h5"
               color="#f9f7f3"
               sx={{
-                color: (theme) =>
-                  theme.palette.mode === "dark" ? "gray" : "black",
-                fontSize: { md: "24px", xs: "14px" },
+                color: "text.secondary",
+                fontSize: { md: "22px", xs: "14px" },
+                fontWeight: 600,
                 "&:hover": {
-                  color: (theme) =>
-                    theme.palette.mode === "dark" ? "gray" : "black",
+                  color: "text.secondary",
                   opacity: 1
                 }
               }}
@@ -125,12 +126,12 @@ function Footer() {
               <Typography
                 variant="h6"
                 sx={{
-                  fontSize: { md: "18px", xs: "14px" },
-                  fontWeight: "normal",
-                  color: (theme) =>
-                    theme.palette.mode === "dark" ? "gray" : "black",
+                  fontSize: { md: "16px", xs: "14px" },
+                  fontWeight: 500,
+                  color: "text.secondary",
                   "&:hover": {
-                    opacity: 0.9
+                    color: "primary.main",
+                    transition: "color 0.2s ease"
                   }
                 }}
               >
@@ -139,10 +140,9 @@ function Footer() {
             </Link>
             <Typography
               sx={{
-                fontSize: { md: "18px", xs: "14px" },
+                fontSize: { md: "16px", xs: "14px" },
                 fontWeight: "normal",
-                color: (theme) =>
-                  theme.palette.mode === "dark" ? "gray" : "black",
+                color: "text.secondary",
                 ml: 0.8,
                 "&:hover": {
                   opacity: 0.9
@@ -155,13 +155,13 @@ function Footer() {
               <Typography
                 variant="h6"
                 sx={{
-                  fontSize: { md: "18px", xs: "14px" },
+                  fontSize: { md: "16px", xs: "14px" },
                   ml: 1,
-                  color: (theme) =>
-                    theme.palette.mode === "dark" ? "gray" : "black",
-                  fontWeight: "normal",
+                  color: "text.secondary",
+                  fontWeight: 500,
                   "&:hover": {
-                    opacity: 0.9
+                    color: "primary.main",
+                    transition: "color 0.2s ease"
                   }
                 }}
               >
@@ -174,14 +174,14 @@ function Footer() {
               <Typography
                 variant="h6"
                 sx={{
-                  fontSize: { md: "18px", xs: "14px" },
+                  fontSize: { md: "16px", xs: "14px" },
                   ml: 1,
-                  color: (theme) =>
-                    theme.palette.mode === "dark" ? "gray" : "black",
+                  color: "text.secondary",
                   textDecorationStyle: "underline",
-                  fontWeight: "normal",
+                  fontWeight: 500,
                   "&:hover": {
-                    opacity: 0.9
+                    color: "primary.main",
+                    transition: "color 0.2s ease"
                   }
                 }}
               >

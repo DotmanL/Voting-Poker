@@ -80,7 +80,7 @@ function VotingResultsContainer(props: Props) {
                 display: "flex",
                 flexDirection: "row",
                 justifyContent: "center",
-                background: "#67A3EE",
+                background: (theme) => theme.palette.primary.main,
                 width: "100%",
                 height: "200px"
               }}

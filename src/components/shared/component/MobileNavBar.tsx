@@ -234,9 +234,10 @@ function MobileNavBar(props: Props) {
             <Typography
               variant="h5"
               sx={{
-                fontFamily: "Jost",
-                fontWeight: "bold",
+                fontFamily: "Inter, sans-serif",
+                fontWeight: 700,
                 fontSize: { xs: "18px" },
+                letterSpacing: "-0.01em",
                 color: "primary.main"
               }}
             >
@@ -253,9 +254,11 @@ function MobileNavBar(props: Props) {
             height: "auto",
             ml: 4,
             mt: 2,
-            border: "2px solid none",
-            borderRadius: "8px",
-            background: "#14213d",
+            border: "none",
+            borderRadius: "12px",
+            background: (theme) =>
+              theme.palette.mode === "dark" ? "#1c2329" : "#1a1a2e",
+            boxShadow: "0 4px 16px rgba(0, 0, 0, 0.2)",
             width: "auto",
             color: (theme) => theme.palette.primary.main,
             flexDirection: "row",
@@ -281,7 +284,11 @@ function MobileNavBar(props: Props) {
             width: "auto",
             height: "50px",
             borderRadius: "10px",
-            border: "1px solid #67A3EE",
+            border: "1.5px solid",
+            borderColor: (theme) =>
+              theme.palette.mode === "dark"
+                ? "rgba(255, 255, 255, 0.12)"
+                : "rgba(91, 147, 217, 0.3)",
             mr: 1,
             mt: 0.5,
             px: 1,

@@ -70,8 +70,9 @@ function RoomCreate(props: Props) {
               xs: !isRoomsTableVisible ? "50%" : 5
             },
             px: 6,
-            fontSize: { md: "24px", xs: "18px" },
-            fontWeigth: "bolder",
+            fontSize: { md: "22px", xs: "18px" },
+            fontWeight: 600,
+            letterSpacing: "-0.01em",
             textAlign: "center"
           }}
         >
@@ -140,15 +141,18 @@ function RoomCreate(props: Props) {
                     sx={[
                       {
                         width: { md: "40%", xs: "70%" },
-                        fontSize: { md: "24px", xs: "16px" },
+                        fontSize: { md: "20px", xs: "16px" },
+                        fontWeight: 600,
                         background: "primary.main",
-                        color: "secondary.main",
-                        py: { md: 0.5 }
+                        color: (theme) =>
+                          theme.palette.mode === "dark" ? "#141a1f" : "#ffffff",
+                        py: { md: 0.5 },
+                        borderRadius: "12px"
                       },
                       {
                         "&:hover": {
-                          color: "white",
-                          opacity: "0.6"
+                          transform: "translateY(-1px)",
+                          boxShadow: "0 4px 16px rgba(91, 147, 217, 0.3)"
                         }
                       }
                     ]}
@@ -177,7 +181,7 @@ function RoomCreate(props: Props) {
       <Grid
         sx={{
           width: { md: "60%", xs: "100%" },
-          background: "#67A3EE",
+          background: (theme) => theme.palette.primary.main,
           height: { md: "100vh", xs: "auto" }
         }}
       >

@@ -28,10 +28,10 @@ function Spinner(props: Props) {
       }}
     >
       {spinnerType === "RingLoader" && (
-        <RingLoader cssOverride={override} size={size} color="#67A3EE" />
+        <RingLoader cssOverride={override} size={size} color="#5B93D9" />
       )}
       {spinnerType === "PuffLoader" && (
-        <PuffLoader cssOverride={override} size={size} color="#67A3EE" />
+        <PuffLoader cssOverride={override} size={size} color="#5B93D9" />
       )}
     </div>
   );

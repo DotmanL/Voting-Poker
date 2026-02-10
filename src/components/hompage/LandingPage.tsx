@@ -45,10 +45,12 @@ function LandingPage() {
             <Typography
               variant="h3"
               sx={{
-                fontSize: { md: "64px", xs: "28px" },
+                fontSize: { md: "58px", xs: "28px" },
                 mt: { md: 20, xs: 3 },
-                fontWeight: "bold",
-                fontFamily: "Roboto"
+                fontWeight: 800,
+                fontFamily: "Inter, sans-serif",
+                letterSpacing: "-0.03em",
+                lineHeight: 1.1
               }}
             >
               Create your planning
@@ -57,9 +59,11 @@ function LandingPage() {
             <Typography
               sx={{
                 display: { md: "flex" },
-                fontSize: { md: "64px", xs: "28px" },
-                fontWeight: "bold",
-                fontFamily: "Roboto"
+                fontSize: { md: "58px", xs: "28px" },
+                fontWeight: 800,
+                fontFamily: "Inter, sans-serif",
+                letterSpacing: "-0.03em",
+                lineHeight: 1.1
               }}
             >
               poker rooms here
@@ -67,10 +71,11 @@ function LandingPage() {
 
             <Typography
               sx={{
-                fontSize: { md: "28px", xs: "15px" },
+                fontSize: { md: "20px", xs: "15px" },
                 fontWeight: 400,
-                fontStyle: "italic",
-                mt: { md: 1, xs: 0.5 }
+                color: "text.secondary",
+                mt: { md: 2, xs: 0.5 },
+                lineHeight: 1.6
               }}
             >
               Help your team make decisions faster
@@ -83,15 +88,26 @@ function LandingPage() {
                   {
                     mt: { md: 4, xs: 2 },
                     background: (theme) => theme.palette.primary.main,
-                    color: "secondary.main",
-                    px: { md: 6, xs: 2 },
-                    py: { md: 0.7, xs: 0.5 },
-                    fontSize: { md: "24px", xs: "18px" }
+                    color: (theme) =>
+                      theme.palette.mode === "dark" ? "#141a1f" : "#ffffff",
+                    px: { md: 5, xs: 2 },
+                    py: { md: 1, xs: 0.5 },
+                    fontSize: { md: "20px", xs: "16px" },
+                    fontWeight: 600,
+                    borderRadius: "12px",
+                    letterSpacing: "0.01em",
+                    boxShadow: (theme) =>
+                      theme.palette.mode === "dark"
+                        ? "0 4px 14px rgba(232, 234, 237, 0.15)"
+                        : "0 4px 14px rgba(91, 147, 217, 0.3)"
                   },
                   {
                     "&:hover": {
-                      color: "white",
-                      opacity: "0.6"
+                      transform: "translateY(-2px)",
+                      boxShadow: (theme) =>
+                        theme.palette.mode === "dark"
+                          ? "0 6px 20px rgba(232, 234, 237, 0.2)"
+                          : "0 6px 20px rgba(91, 147, 217, 0.4)"
                     }
                   }
                 ]}

@@ -12,20 +12,24 @@ const useStyles = makeStyles({
 
 const CssTextField = styled(TextField)({
   "& label.Mui-focused": {
-    color: "#67A3EE"
+    color: "#5B93D9"
   },
   "& .MuiInput-underline:after": {
-    borderBottomColor: "#67A3EE"
+    borderBottomColor: "#5B93D9"
   },
   "& .MuiOutlinedInput-root": {
+    borderRadius: "10px",
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
     "& fieldset": {
-      borderColor: "#67A3EE"
+      borderColor: "rgba(128, 128, 128, 0.3)",
+      borderWidth: "1.5px"
     },
     "&:hover fieldset": {
-      borderColor: "#67A3EE"
+      borderColor: "#5B93D9"
     },
     "&.Mui-focused fieldset": {
-      borderColor: "#67A3EE"
+      borderColor: "#5B93D9",
+      boxShadow: "0 0 0 3px rgba(91, 147, 217, 0.12)"
     }
   }
 });

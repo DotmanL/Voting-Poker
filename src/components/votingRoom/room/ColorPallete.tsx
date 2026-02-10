@@ -20,15 +20,15 @@ function ColorPallete(props: Props) {
   const { activeIssue } = useContext(IssueContext);
 
   const presetColors = [
-    "#67A3EE",
-    "#FF0000",
-    "#0000FF",
-    "#FF6600",
-    "#00FF00",
-    "#6600FF",
-    "#808080",
-    "#00B8EA",
-    "#FC0FC0"
+    "#5B93D9",
+    "#E74C3C",
+    "#3498DB",
+    "#E67E22",
+    "#2ECC71",
+    "#9B59B6",
+    "#7F8C8D",
+    "#1ABC9C",
+    "#E84393"
   ];
 
   const colorPalleteRef = useRef<HTMLDivElement>(null);
@@ -97,8 +97,8 @@ function ColorPallete(props: Props) {
             <Grid
               sx={{
                 backgroundColor: (theme) => theme.palette.secondary.main,
-                border: `1px solid ${currentRoomUser?.cardColor}`,
-                borderRadius: "6px",
+                border: `1.5px solid ${currentRoomUser?.cardColor}`,
+                borderRadius: "12px",
                 width: "250px",
                 height: "100px",
                 flexWrap: "wrap",
@@ -107,7 +107,11 @@ function ColorPallete(props: Props) {
                 justifyContent: "space-evenly",
                 mt: 0.5,
                 px: 1,
-                py: 0.5
+                py: 0.5,
+                boxShadow: (theme) =>
+                  theme.palette.mode === "dark"
+                    ? "0 8px 24px rgba(0, 0, 0, 0.4)"
+                    : "0 8px 24px rgba(0, 0, 0, 0.12)"
               }}
             >
               {presetColors.map((presetColor) => (
@@ -118,8 +122,12 @@ function ColorPallete(props: Props) {
                     width: "36px",
                     height: "36px",
                     cursor: "pointer",
-                    borderRadius: "6px",
-                    m: 0.25
+                    borderRadius: "8px",
+                    m: 0.25,
+                    transition: "transform 0.15s ease",
+                    "&:hover": {
+                      transform: "scale(1.15)"
+                    }
                   }}
                   onClick={() =>
                     handleChangeColor(presetColor, currentUser?._id!)
@@ -136,7 +144,7 @@ function ColorPallete(props: Props) {
                 justifyContent: "flex-end",
                 height: "180px"
               }}
-              onClick={() => handleChangeColor("#67a3ee", currentUser?._id!)}
+              onClick={() => handleChangeColor("#5B93D9", currentUser?._id!)}
             >
               <Tooltip title="Reset Color">
                 <FormatColorResetIcon />

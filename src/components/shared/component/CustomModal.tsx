@@ -19,14 +19,7 @@ const sizeList: { [key: string]: string } = {
 };
 
 function CustomModal(props: Props) {
-  const {
-    isOpen,
-    children,
-    size,
-    modalWidth,
-    customLeftPosition,
-    borderColor
-  } = props;
+  const { isOpen, children, size, modalWidth, customLeftPosition } = props;
   return (
     <div>
       {isOpen ? (
@@ -46,10 +39,16 @@ function CustomModal(props: Props) {
                 width: { md: modalWidth, xs: "80%" },
                 height: { md: !!size ? sizeList[size] : "auto", xs: "sm" },
                 background: (theme) => theme.palette.secondary.main,
-                border: "2px solid",
-                borderColor: !!borderColor ? borderColor : "#67A3EE",
-                borderRadius: "10px",
-                boxShadow: 10
+                border: "1.5px solid",
+                borderColor: (theme) =>
+                  theme.palette.mode === "dark"
+                    ? "rgba(255, 255, 255, 0.1)"
+                    : "rgba(91, 147, 217, 0.25)",
+                borderRadius: "16px",
+                boxShadow: (theme) =>
+                  theme.palette.mode === "dark"
+                    ? "0 24px 48px rgba(0, 0, 0, 0.4), 0 8px 16px rgba(0, 0, 0, 0.2)"
+                    : "0 24px 48px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.06)"
               }}
             >
               {children}
