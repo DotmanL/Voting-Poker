@@ -702,10 +702,17 @@ function VotingRoom(props: Props) {
 
   return (
     <Grid
-      style={{
+      className="voting-room-bg"
+      sx={{
         marginRight: isSidebarOpen ? "400px" : "0",
-        backgroundColor: "secondary.main",
-        height: "100vh"
+        backgroundColor: (theme) => theme.palette.secondary.main,
+        height: "100vh",
+        overflow: "hidden",
+        color: (theme) =>
+          theme.palette.mode === "dark"
+            ? "rgba(103, 163, 238, 0.7)"
+            : "rgba(91, 147, 217, 0.6)",
+        transition: "margin-right 0.3s ease"
       }}
     >
       {showCelebration && <Confetti width={width} height={height} />}
@@ -715,7 +722,8 @@ function VotingRoom(props: Props) {
           display: "flex",
           flexDirection: "column",
           justifyContent: "flex-start",
-          alignItems: "center"
+          alignItems: "center",
+          zIndex: 1
         }}
       >
         {showActiveIssue ? (
@@ -840,6 +848,7 @@ function VotingRoom(props: Props) {
         {/* ====== TABLE LAYOUT ====== */}
         <Grid
           sx={{
+            position: "relative",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
@@ -889,13 +898,14 @@ function VotingRoom(props: Props) {
             {/* The Table (center area) */}
             <Grid
               sx={{
-                width: { md: "380px", xs: "220px" },
-                height: { md: "180px", xs: "120px" },
-                borderRadius: "20px",
+                position: "relative",
+                width: { md: "400px", xs: "230px" },
+                height: { md: "190px", xs: "125px" },
+                borderRadius: "24px",
                 background: (theme) =>
                   theme.palette.mode === "dark"
-                    ? "rgba(91, 147, 217, 0.06)"
-                    : "rgba(91, 147, 217, 0.05)",
+                    ? "rgba(91, 147, 217, 0.04)"
+                    : "rgba(91, 147, 217, 0.03)",
                 border: (theme) =>
                   theme.palette.mode === "dark"
                     ? `2px solid ${currentRoomUser?.cardColor || "rgba(255,255,255,0.1)"}`
@@ -906,9 +916,24 @@ function VotingRoom(props: Props) {
                 alignItems: "center",
                 boxShadow: (theme) =>
                   theme.palette.mode === "dark"
-                    ? "inset 0 2px 20px rgba(0, 0, 0, 0.15)"
-                    : "inset 0 2px 20px rgba(0, 0, 0, 0.03)",
-                transition: "all 0.3s ease",
+                    ? `inset 0 2px 30px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255,255,255,0.03)`
+                    : `inset 0 2px 30px rgba(0, 0, 0, 0.02), 0 0 0 1px rgba(0,0,0,0.02)`,
+                transition: "all 0.4s ease",
+                overflow: "hidden",
+                "&::before": {
+                  content: '""',
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  borderRadius: "24px",
+                  background: (theme: any) =>
+                    theme.palette.mode === "dark"
+                      ? `radial-gradient(ellipse at center, ${currentRoomUser?.cardColor || "rgba(103,163,238,0.08)"}15, transparent 70%)`
+                      : `radial-gradient(ellipse at center, ${currentRoomUser?.cardColor || "rgba(91,147,217,0.06)"}10, transparent 70%)`,
+                  pointerEvents: "none"
+                },
                 ...(!isDisabled && {
                   animation: "tableGlow 0.6s infinite alternate"
                 })

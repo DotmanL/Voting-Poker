@@ -153,22 +153,55 @@ function MobileNavBar(props: Props) {
         >
           <DarkModeToggle isMobileFlex />
         </Grid>
-        <Grid sx={{}}>
+        <Grid sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
           <Grid
             sx={{
               display: urlPath.indexOf("/room") >= 0 ? "flex" : "none",
-              fontSize: "24px"
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 1.5,
+              px: 1,
+              py: 0.8,
+              borderRadius: "10px",
+              cursor: "pointer",
+              transition: "background 0.15s ease",
+              "&:hover": {
+                background: (theme) =>
+                  theme.palette.mode === "dark"
+                    ? "rgba(255, 255, 255, 0.04)"
+                    : "rgba(0, 0, 0, 0.03)"
+              }
             }}
             onClick={handleLeaveRoom}
           >
-            Leave Room
+            <Typography sx={{ fontSize: "15px", fontWeight: 500 }}>
+              Leave Room
+            </Typography>
           </Grid>
-          <Grid onClick={() => setIsMobileNavOpen(false)} sx={{ mt: 0.5 }}>
+          <Grid onClick={() => setIsMobileNavOpen(false)}>
             <Grid
               onClick={!user ? handleSignUp : handleSignOut}
-              sx={{ fontSize: "24px" }}
+              sx={{
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 1.5,
+                px: 1,
+                py: 0.8,
+                borderRadius: "10px",
+                cursor: "pointer",
+                transition: "background 0.15s ease",
+                "&:hover": {
+                  background: (theme) =>
+                    theme.palette.mode === "dark"
+                      ? "rgba(255, 255, 255, 0.04)"
+                      : "rgba(0, 0, 0, 0.03)"
+                }
+              }}
             >
-              {!user ? "Sign Up" : "Sign Out"}
+              <Typography sx={{ fontSize: "15px", fontWeight: 500 }}>
+                {!user ? "Sign Up" : "Sign Out"}
+              </Typography>
             </Grid>
           </Grid>
         </Grid>
@@ -214,8 +247,8 @@ function MobileNavBar(props: Props) {
                 src={darkvppLogo}
                 alt="waves"
                 sx={{
-                  height: { md: "60px", xs: "60px" },
-                  width: { md: "60px", xs: "60px" }
+                  height: { md: "60px", xs: "40px" },
+                  width: { md: "60px", xs: "40px" }
                 }}
               />
             ) : (
@@ -224,8 +257,8 @@ function MobileNavBar(props: Props) {
                 src={lightvpplogo}
                 alt="waves"
                 sx={{
-                  height: { md: "60px", xs: "60px" },
-                  width: { md: "60px", xs: "60px" }
+                  height: { md: "60px", xs: "40px" },
+                  width: { md: "60px", xs: "40px" }
                 }}
               />
             )}

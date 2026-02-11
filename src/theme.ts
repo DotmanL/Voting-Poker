@@ -140,7 +140,7 @@ export const getDesignTokens = (mode: PaletteMode) => ({
             main: "#e9ecef"
           },
           background: {
-            default: "#000000",
+            default: "#e9ecef",
             paper: "#ffffff"
           },
           text: {

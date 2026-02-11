@@ -176,7 +176,7 @@ function ChatInterface(props: Props) {
     <Grid
       sx={{
         position: "absolute",
-        bottom: 30,
+        bottom: 70,
         zIndex: 120,
         left: 100,
         width: "50px",

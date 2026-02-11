@@ -41,7 +41,7 @@ function VotingResultsContainer(props: Props) {
             height: { md: "120px", xs: "150px" },
             left: 0,
             right: 0,
-            bottom: 0,
+            bottom: 40,
             borderTop: (theme) =>
               theme.palette.mode === "dark"
                 ? "1px solid rgba(255, 255, 255, 0.04)"

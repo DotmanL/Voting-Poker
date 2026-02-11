@@ -19,7 +19,7 @@ function LandingPage() {
       icon: <SpeedIcon sx={{ fontSize: 32 }} />,
       title: "Fast & Simple",
       description:
-        "Create a room in seconds. No sign-up walls — just share the link and start voting."
+        "Create a room in seconds. No sign-up walls, just share the link and start voting."
     },
     {
       icon: <InsightsIcon sx={{ fontSize: 32 }} />,
@@ -73,7 +73,7 @@ function LandingPage() {
             left: { md: 40 },
             color: "text.secondary",
             display: { xs: "none", md: "block" },
-            opacity: 0.06
+            opacity: 0.2
           }}
         />
 
@@ -88,19 +88,6 @@ function LandingPage() {
             animation: "fadeInUp 0.7s ease-out"
           }}
         >
-          <Typography
-            sx={{
-              fontSize: { md: "14px", xs: "12px" },
-              fontWeight: 600,
-              color: "primary.main",
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              mb: { md: 1.5, xs: 1 }
-            }}
-          >
-            Planning Poker Tool
-          </Typography>
-
           <Typography
             variant="h1"
             sx={{
@@ -140,7 +127,7 @@ function LandingPage() {
             }}
           >
             Create planning poker rooms instantly. Collaborate with your team in
-            real time to estimate tasks and align on effort — no friction, no
+            real time to estimate tasks and align on effort, no friction, no
             hassle.
           </Typography>
 
@@ -175,7 +162,7 @@ function LandingPage() {
                 }
               ]}
             >
-              Get Started — It's Free
+              Create a Room
             </Button>
           </Link>
         </Grid>
@@ -409,7 +396,7 @@ function LandingPage() {
               mb: 2
             }}
           >
-            Focus on what matters — let the tool handle the rest
+            Focus on what matters, let us handle the rest
           </Typography>
           <Typography
             sx={{

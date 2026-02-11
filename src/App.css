@@ -51,10 +51,10 @@ body {
 /* Table glow animation for voting room */
 @keyframes tableGlow {
   from {
-    box-shadow: inset 0 2px 20px rgba(91, 147, 217, 0.05), 0 0 8px 2px rgba(91, 147, 217, 0.12);
+    box-shadow: inset 0 2px 30px rgba(91, 147, 217, 0.04), 0 0 12px 2px rgba(91, 147, 217, 0.08);
   }
   to {
-    box-shadow: inset 0 2px 20px rgba(91, 147, 217, 0.08), 0 0 18px 4px rgba(91, 147, 217, 0.2);
+    box-shadow: inset 0 2px 30px rgba(91, 147, 217, 0.07), 0 0 24px 6px rgba(91, 147, 217, 0.14);
   }
 }
 
@@ -92,6 +92,47 @@ body {
   height: 120px;
   background-image: radial-gradient(circle, currentColor 1.2px, transparent 1.2px);
   background-size: 16px 16px;
-  opacity: 0.12;
+  opacity: 0.5;
   pointer-events: none;
+}
+
+/* Voting room background pattern */
+.voting-room-bg {
+  position: relative;
+}
+
+.voting-room-bg::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    radial-gradient(circle at 1px 1px, currentColor 0.5px, transparent 0.5px);
+  background-size: 32px 32px;
+  opacity: 1;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.voting-room-bg::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, currentColor 0%, transparent 70%);
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Ambient glow keyframes */
+@keyframes ambientDrift {
+  0%, 100% { opacity: 0.04; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 0.06; transform: translate(-50%, -50%) scale(1.08); }
 }
