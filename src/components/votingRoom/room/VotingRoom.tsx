@@ -728,41 +728,71 @@ function VotingRoom(props: Props) {
               mt: 1,
               ml: { md: 4, xs: 1 },
               width: { md: "auto", xs: "95vw" },
+              maxWidth: { md: "400px" },
               height: { md: "auto", xs: "auto" },
-              px: 2,
-              py: 1,
-              borderRadius: "12px",
+              px: 2.5,
+              py: 1.5,
+              borderRadius: "14px",
               display: "flex",
               flexDirection: "column",
-              background: "secondary.main",
+              background: (theme) =>
+                theme.palette.mode === "dark"
+                  ? "rgba(28, 35, 41, 0.95)"
+                  : "rgba(255, 255, 255, 0.95)",
+              backdropFilter: "blur(8px)",
               border: (theme) =>
                 theme.palette.mode === "dark"
-                  ? "1px solid rgba(255, 255, 255, 0.06)"
-                  : "1px solid rgba(0, 0, 0, 0.06)",
+                  ? "1px solid rgba(255, 255, 255, 0.08)"
+                  : "1px solid rgba(0, 0, 0, 0.08)",
               boxShadow: (theme) =>
                 theme.palette.mode === "dark"
-                  ? "0 2px 8px rgba(0, 0, 0, 0.2)"
-                  : "0 2px 8px rgba(0, 0, 0, 0.06)",
+                  ? "0 4px 16px rgba(0, 0, 0, 0.3)"
+                  : "0 4px 16px rgba(0, 0, 0, 0.06)",
               cursor: "pointer",
               alignItems: "flex-start",
-              justifyContent: "center"
+              justifyContent: "center",
+              animation: "fadeInUp 0.4s ease-out"
             }}
           >
             <Typography
-              variant="h5"
-              sx={{ wordBreak: "break-word", fontSize: { md: 24, xs: 10 } }}
+              sx={{
+                fontSize: "11px",
+                fontWeight: 600,
+                color: "primary.main",
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                mb: 0.3
+              }}
             >
-              Voting - {activeIssue?.name}
+              Now Voting
             </Typography>
-            <Link
-              variant="h6"
-              href={activeIssue?.link}
-              target="_blank"
-              rel="noreferrer"
-              sx={{ wordBreak: "break-word", fontSize: { md: 24, xs: 10 } }}
+            <Typography
+              sx={{
+                wordBreak: "break-word",
+                fontSize: { md: "16px", xs: "12px" },
+                fontWeight: 700,
+                letterSpacing: "-0.01em"
+              }}
             >
-              {activeIssue?.link}
-            </Link>
+              {activeIssue?.name}
+            </Typography>
+            {activeIssue?.link && (
+              <Link
+                href={activeIssue?.link}
+                target="_blank"
+                rel="noreferrer"
+                sx={{
+                  wordBreak: "break-word",
+                  fontSize: { md: "13px", xs: "10px" },
+                  color: "primary.main",
+                  mt: 0.3,
+                  fontWeight: 500,
+                  "&:hover": { textDecoration: "underline" }
+                }}
+              >
+                {activeIssue?.link}
+              </Link>
+            )}
           </Grid>
         ) : (
           <Grid></Grid>
@@ -893,34 +923,57 @@ function VotingRoom(props: Props) {
                   }}
                 >
                   {isDisabled ? (
-                    <Typography
-                      variant="h6"
+                    <Grid
                       sx={{
-                        fontSize: { md: "22px", xs: "14px" },
-                        fontWeight: 600,
-                        color: "text.secondary",
-                        letterSpacing: "-0.01em"
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center"
                       }}
                     >
-                      Choose Your Cards
-                    </Typography>
+                      <Typography
+                        sx={{
+                          fontSize: { md: "11px", xs: "9px" },
+                          fontWeight: 600,
+                          color: "primary.main",
+                          letterSpacing: "0.08em",
+                          textTransform: "uppercase",
+                          mb: 0.5
+                        }}
+                      >
+                        Waiting for votes
+                      </Typography>
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          fontSize: { md: "20px", xs: "13px" },
+                          fontWeight: 700,
+                          color: "text.secondary",
+                          letterSpacing: "-0.01em"
+                        }}
+                      >
+                        Choose Your Cards
+                      </Typography>
+                    </Grid>
                   ) : (
                     <Button
                       disabled={isDisabled}
                       onClick={handleRevealVotes}
                       sx={{
-                        borderRadius: "10px",
+                        borderRadius: "12px",
                         borderColor: `${currentRoomUser?.cardColor}`,
-                        borderWidth: "1.5px",
+                        borderWidth: "2px",
                         color: (theme) =>
                           theme.palette.mode === "dark" ? "white" : "black",
-                        px: { md: 3, xs: 2 },
-                        py: { md: 0.6 },
+                        px: { md: 3.5, xs: 2.5 },
+                        py: { md: 0.8, xs: 0.5 },
                         fontSize: { md: "15px", xs: "12px" },
-                        fontWeight: 600,
+                        fontWeight: 700,
+                        letterSpacing: "0.01em",
+                        transition: "all 0.2s ease",
                         "&:hover": {
-                          borderWidth: "1.5px",
-                          transform: "translateY(-1px)"
+                          borderWidth: "2px",
+                          transform: "translateY(-2px)",
+                          boxShadow: `0 4px 16px ${currentRoomUser?.cardColor}30`
                         }
                       }}
                       variant="outlined"
@@ -933,23 +986,26 @@ function VotingRoom(props: Props) {
                 <Button
                   onClick={handleNewVotingSession}
                   sx={{
-                    borderRadius: "10px",
+                    borderRadius: "12px",
                     borderColor: `${currentRoomUser?.cardColor}`,
-                    borderWidth: "1.5px",
+                    borderWidth: "2px",
                     color: (theme) =>
                       theme.palette.mode === "dark" ? "white" : "black",
-                    px: { md: 2.5, xs: 1.5 },
-                    py: { md: 0.6 },
+                    px: { md: 3, xs: 2 },
+                    py: { md: 0.8, xs: 0.5 },
                     fontSize: { md: "14px", xs: "11px" },
-                    fontWeight: 600,
+                    fontWeight: 700,
+                    letterSpacing: "0.01em",
+                    transition: "all 0.2s ease",
                     "&:hover": {
-                      borderWidth: "1.5px",
-                      transform: "translateY(-1px)"
+                      borderWidth: "2px",
+                      transform: "translateY(-2px)",
+                      boxShadow: `0 4px 16px ${currentRoomUser?.cardColor}30`
                     }
                   }}
                   variant="outlined"
                 >
-                  Start New Voting Session
+                  New Voting Session
                 </Button>
               )}
             </Grid>

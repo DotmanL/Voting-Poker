@@ -222,26 +222,30 @@ export const NavBar = (props: Props) => {
           <Grid
             sx={{
               display: isCopied ? "flex" : "none",
-              px: 4,
+              px: 2,
               height: "auto",
               ml: 4,
               mt: 4,
-              border: "none",
+              border: (theme) =>
+                theme.palette.mode === "dark"
+                  ? "1px solid rgba(46, 204, 113, 0.2)"
+                  : "1px solid rgba(39, 174, 96, 0.15)",
               borderRadius: "12px",
               background: (theme) =>
-                theme.palette.mode === "dark" ? "#1c2329" : "#1a1a2e",
-              boxShadow: "0 4px 16px rgba(0, 0, 0, 0.2)",
+                theme.palette.mode === "dark"
+                  ? "rgba(46, 204, 113, 0.08)"
+                  : "rgba(39, 174, 96, 0.06)",
+              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
               width: "auto",
-              color: (theme) => theme.palette.primary.main,
+              color: "success.main",
               flexDirection: "row",
               justifyContent: "center",
               alignItems: "center"
             }}
           >
             {isCopied ? (
-              <Typography variant="h6" fontSize="18px" sx={{ py: 1 }}>
-                Invitation Link Copied to you Clipboard,
-                <br /> You can now share with your team mates
+              <Typography sx={{ py: 1, fontSize: "14px", fontWeight: 600 }}>
+                ✓ Link copied! Share it with your team.
               </Typography>
             ) : (
               ""
@@ -426,11 +430,22 @@ export const NavBar = (props: Props) => {
                   <Grid
                     sx={{
                       position: "absolute",
-                      top: "20px",
-                      right: "20px",
+                      top: "16px",
+                      right: "16px",
                       cursor: "pointer",
+                      width: "32px",
+                      height: "32px",
+                      borderRadius: "8px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      transition: "all 0.15s ease",
                       "&:hover": {
-                        color: "red"
+                        background: (theme) =>
+                          theme.palette.mode === "dark"
+                            ? "rgba(255, 255, 255, 0.06)"
+                            : "rgba(0, 0, 0, 0.04)",
+                        color: "error.main"
                       }
                     }}
                     onClick={() => {
@@ -438,19 +453,39 @@ export const NavBar = (props: Props) => {
                       setIsCopied(false);
                     }}
                   >
-                    <AiOutlineClose size={32} />
+                    <AiOutlineClose size={20} />
                   </Grid>
 
-                  <Grid sx={{ pl: 5 }}>
+                  <Grid sx={{ pl: 5, pr: 5 }}>
                     <Typography
-                      variant="h4"
                       sx={{
-                        fontSize: { md: "24px", xs: "24px" },
-                        fontStyle: "bolder",
-                        fontWeight: "900px"
+                        fontSize: "13px",
+                        fontWeight: 600,
+                        color: "primary.main",
+                        letterSpacing: "0.1em",
+                        textTransform: "uppercase",
+                        mb: 0.5
+                      }}
+                    >
+                      Share
+                    </Typography>
+                    <Typography
+                      sx={{
+                        fontSize: { md: "24px", xs: "20px" },
+                        fontWeight: 800,
+                        letterSpacing: "-0.02em"
                       }}
                     >
                       Invite Team Members
+                    </Typography>
+                    <Typography
+                      sx={{
+                        fontSize: "14px",
+                        color: "text.secondary",
+                        mt: 0.5
+                      }}
+                    >
+                      Share this link with your teammates to join the room.
                     </Typography>
                   </Grid>
                   <Grid
