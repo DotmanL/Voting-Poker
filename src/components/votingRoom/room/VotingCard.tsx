@@ -34,26 +34,29 @@ function VotingCard(props: Props) {
           variant="outlined"
           sx={[
             {
-              minWidth: { md: 60, xs: 50 },
-              minHeight: { md: 70, xs: 60 },
-              mx: { md: 1, xs: 1 },
-              border: `1px solid ${userCardColor}`,
+              minWidth: { md: 64, xs: 50 },
+              minHeight: { md: 80, xs: 65 },
+              mx: { md: 0.8, xs: 0.8 },
+              border: `1.5px solid ${userCardColor}`,
               cursor: "pointer",
-              borderRadius: { md: "8px", xs: "4px" },
+              borderRadius: "12px",
               display: "flex",
               flexDirection: "row",
               justifyContent: "center",
               background: "secondary.main",
               alignItems: "center",
-              boxShadow: 10,
-              transition: "transform ease 300ms"
+              boxShadow: (theme) =>
+                theme.palette.mode === "dark"
+                  ? "0 2px 8px rgba(0, 0, 0, 0.3)"
+                  : "0 2px 8px rgba(0, 0, 0, 0.08)",
+              transition: "all 0.25s ease-in-out"
             },
             {
               "&:hover": {
-                borderRadius: "8px",
-                opacity: "0.9",
-                transform: "translate(0, -5px)",
-                backgroundColor: `${userCardColor}`
+                borderRadius: "12px",
+                transform: "translateY(-6px)",
+                backgroundColor: `${userCardColor}`,
+                boxShadow: `0 8px 24px ${userCardColor}40`
               }
             }
           ]}
@@ -62,7 +65,10 @@ function VotingCard(props: Props) {
           <CardContent>
             <Typography
               variant="h6"
-              sx={{ fontSize: { md: "32px", xs: "22px" } }}
+              sx={{
+                fontSize: { md: "28px", xs: "20px" },
+                fontWeight: 700
+              }}
             >
               {cardNumber}
             </Typography>

@@ -270,43 +270,85 @@ function RightSidebar(props: Props) {
       }}
       role="presentation"
     >
+      {/* Sidebar Header */}
       <Grid
         sx={{
-          height: "auto",
-          marginTop: "30px",
+          mt: "20px",
+          px: 2.5,
+          pb: 2,
           display: "flex",
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "space-between",
-          p: { md: "5px", xs: "8px" }
+          borderBottom: (theme) =>
+            theme.palette.mode === "dark"
+              ? "1px solid rgba(255, 255, 255, 0.06)"
+              : "1px solid rgba(0, 0, 0, 0.06)"
         }}
       >
-        <Grid>
-          <Typography variant="h5" sx={{ color: "primary.main", ml: 2 }}>
-            {issues.length} Issue{issues.length > 1 ? "s" : ""}
-          </Typography>
-        </Grid>
-
-        <Typography variant="h6" sx={{ mr: 2, mt: 0.2, color: "primary.main" }}>
-          {issuesStoryPoints} Story Point{issuesStoryPoints > 1 ? "s" : ""}
-        </Typography>
-
-        <Tooltip title="Close Sidebar">
-          <Grid
+        <Grid sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <Typography
             sx={{
-              mr: 4,
-              cursor: "pointer",
-              "&:hover": {
-                color: "red"
-              }
-            }}
-            onClick={() => {
-              setIsSidebarOpen(false);
+              fontSize: "20px",
+              fontWeight: 700,
+              letterSpacing: "-0.01em"
             }}
           >
-            <AiOutlineClose size={32} />
+            Issues
+          </Typography>
+          <Grid
+            sx={{
+              px: 1.2,
+              py: 0.2,
+              borderRadius: "8px",
+              fontSize: "13px",
+              fontWeight: 600,
+              background: (theme) =>
+                theme.palette.mode === "dark"
+                  ? "rgba(232, 234, 237, 0.08)"
+                  : "rgba(91, 147, 217, 0.1)",
+              color: "primary.main"
+            }}
+          >
+            {issues.length}
           </Grid>
-        </Tooltip>
+        </Grid>
+
+        <Grid sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Typography
+            sx={{
+              fontSize: "13px",
+              fontWeight: 600,
+              color: "text.secondary"
+            }}
+          >
+            {issuesStoryPoints} pts
+          </Typography>
+          <Tooltip title="Close Sidebar">
+            <Grid
+              sx={{
+                cursor: "pointer",
+                width: "32px",
+                height: "32px",
+                borderRadius: "8px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "all 0.15s ease",
+                "&:hover": {
+                  background: (theme) =>
+                    theme.palette.mode === "dark"
+                      ? "rgba(255, 255, 255, 0.06)"
+                      : "rgba(0, 0, 0, 0.04)",
+                  color: "error.main"
+                }
+              }}
+              onClick={() => setIsSidebarOpen(false)}
+            >
+              <AiOutlineClose size={18} />
+            </Grid>
+          </Tooltip>
+        </Grid>
       </Grid>
 
       <Grid
@@ -472,29 +514,46 @@ function RightSidebar(props: Props) {
             {!isSingleIssueTextBoxOpen && (
               <Grid
                 sx={{
-                  height: "auto",
-                  marginTop: "30px",
                   display: "flex",
                   flexDirection: "row",
                   alignItems: "center",
-                  padding: "5px",
+                  px: 2,
+                  py: 1,
+                  mt: 1,
+                  mx: 1,
                   cursor: "pointer",
-                  mt: 0.5,
-                  p: 0.5,
-                  borderRadius: "10px"
+                  borderRadius: "12px",
+                  border: (theme) =>
+                    theme.palette.mode === "dark"
+                      ? "1.5px dashed rgba(255, 255, 255, 0.1)"
+                      : "1.5px dashed rgba(0, 0, 0, 0.1)",
+                  transition: "all 0.2s ease",
+                  "&:hover": {
+                    borderColor: "primary.main",
+                    background: (theme) =>
+                      theme.palette.mode === "dark"
+                        ? "rgba(232, 234, 237, 0.03)"
+                        : "rgba(91, 147, 217, 0.04)"
+                  }
                 }}
                 onClick={() => setIsSingleIssueTextBoxOpen(true)}
               >
                 <AddTaskIcon
                   sx={{
-                    marginLeft: "15px",
-                    color: (theme) => theme.palette.primary.main,
-                    width: "32px",
-                    height: "32px"
+                    color: "primary.main",
+                    width: "22px",
+                    height: "22px"
                   }}
                 />
-                <Typography variant="h6" sx={{ ml: 1 }}>
-                  Add Issue(s)
+                <Typography
+                  sx={{
+                    ml: 1,
+                    fontSize: "14px",
+                    fontWeight: 600,
+                    color: "text.secondary"
+                  }}
+                >
+                  Add Issue
                 </Typography>
               </Grid>
             )}

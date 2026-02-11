@@ -12,7 +12,6 @@ import { io } from "socket.io-client";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 // import { toast } from "react-toastify";
 import { IRoomUsers } from "interfaces/RoomUsers";
-import { makeStyles } from "@mui/styles";
 import { Button, Link } from "@mui/material";
 import { getBaseUrlWithoutRoute } from "api";
 import VotingResultsContainer from "./VotingResultsContainer";
@@ -36,48 +35,6 @@ import ChatInterface from "./ChatInterface";
 import { IUserMessage } from "interfaces/RoomMessages/IRoomMessage";
 import RoomMessageService from "api/RoomMessageService";
 
-const useStyles = makeStyles((theme) => ({
-  "@keyframes glowing": {
-    from: {
-      boxShadow: `0px 0px 10px 3px #67a3ee`
-    },
-    to: {
-      boxShadow: `0px 0px 20px 5px  #67a3ee`
-    }
-  },
-
-  pickCard: {
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: "22vh",
-    borderRadius: "20px",
-    width: "350px",
-    height: "150px",
-    [theme.breakpoints.down("md")]: {
-      width: "300px",
-      height: "150px"
-    }
-  },
-
-  glowingCard: {
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: "22vh",
-    borderRadius: "20px",
-    animation: `$glowing 0.5s infinite alternate`,
-    width: "350px",
-    height: "150px",
-    [theme.breakpoints.down("md")]: {
-      width: "300px",
-      height: "150px"
-    }
-  }
-}));
-
 type Props = {
   room: IRoom;
   socket: any;
@@ -88,7 +45,6 @@ type Props = {
 function VotingRoom(props: Props) {
   const { room, handleCreateUser, isModalOpen } = props;
   const { currentUser, setCurrentUser } = useContext(UserContext);
-  const classes = useStyles();
   const { isSidebarOpen } = useContext(SidebarContext);
   const { activeIssue, setActiveIssue } = useContext(IssueContext);
 
@@ -539,20 +495,224 @@ function VotingRoom(props: Props) {
     }
   }
 
-  const pickCardStyle = {
-    border: `2px solid ${currentRoomUser?.cardColor}`
+  // Distribute users around the 4 sides of the table
+  const distributeUsers = (users: IRoomUsers[]) => {
+    const top: IRoomUsers[] = [];
+    const bottom: IRoomUsers[] = [];
+    const left: IRoomUsers[] = [];
+    const right: IRoomUsers[] = [];
+
+    if (!users || users.length === 0) return { top, bottom, left, right };
+
+    const count = users.length;
+
+    if (count <= 2) {
+      // 1-2 users: top and bottom
+      users.forEach((u, i) => (i % 2 === 0 ? top : bottom).push(u));
+    } else if (count <= 4) {
+      // 3-4: top, bottom, and sides
+      top.push(users[0]);
+      bottom.push(users[1]);
+      if (users[2]) right.push(users[2]);
+      if (users[3]) left.push(users[3]);
+    } else {
+      // 5+: distribute proportionally
+      const topCount = Math.ceil(count / 4);
+      const bottomCount = Math.ceil((count - topCount) / 3);
+      const rightCount = Math.ceil((count - topCount - bottomCount) / 2);
+      const leftCount = count - topCount - bottomCount - rightCount;
+
+      let idx = 0;
+      for (let i = 0; i < topCount; i++) top.push(users[idx++]);
+      for (let i = 0; i < rightCount; i++) right.push(users[idx++]);
+      for (let i = 0; i < bottomCount; i++) bottom.push(users[idx++]);
+      for (let i = 0; i < leftCount; i++) left.push(users[idx++]);
+    }
+
+    return { top, bottom, left, right };
   };
 
-  const glowingCardCardStyle = {
-    border: `2px solid ${currentRoomUser?.cardColor}`
+  const sides = distributeUsers(roomUsers || []);
+
+  const renderUserCard = (roomUser: IRoomUsers, i: number) => {
+    const globalIndex =
+      roomUsers?.findIndex((ru) => ru._id === roomUser._id) ?? i;
+    return (
+      <Grid
+        key={roomUser._id}
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          mx: { md: 1.5, xs: 0.5 }
+        }}
+      >
+        <Card
+          variant="outlined"
+          sx={[
+            {
+              width: { md: 60, xs: 48 },
+              height: { md: 85, xs: 72 },
+              border: `1.5px solid ${roomUser?.cardColor}`,
+              cursor: "pointer",
+              borderRadius: "12px",
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "center",
+              alignItems: "center",
+              boxShadow: (theme) =>
+                theme.palette.mode === "dark"
+                  ? "0 2px 12px rgba(0, 0, 0, 0.3)"
+                  : "0 2px 12px rgba(0, 0, 0, 0.08)",
+              transition: "all 0.3s ease-in-out",
+              background: roomUser!.votedState!
+                ? `${roomUser.cardColor}`
+                : "secondary.main"
+            },
+            {
+              "&:hover": {
+                transform: "translateY(-3px)"
+              }
+            }
+          ]}
+        >
+          {!!votesCasted ? (
+            <CardContent sx={{ p: 1, "&:last-child": { pb: 1 } }}>
+              <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                {votesCasted[globalIndex]?.currentVote}
+              </Typography>
+            </CardContent>
+          ) : (
+            <Grid>
+              <Typography
+                variant="h4"
+                sx={{
+                  color: (theme) =>
+                    theme.palette.mode === "dark" ? "white" : "black"
+                }}
+              >
+                {roomUser.votedState
+                  ? roomUser._id === userId && roomUser?.currentVote
+                  : undefined}
+              </Typography>
+            </Grid>
+          )}
+        </Card>
+        <Typography
+          variant="body2"
+          sx={{
+            mt: 0.5,
+            fontSize: { md: "13px", xs: "10px" },
+            fontWeight: 600,
+            maxWidth: { md: "80px", xs: "55px" },
+            textAlign: "center",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap"
+          }}
+        >
+          {roomUser && roomUser.userName}
+        </Typography>
+      </Grid>
+    );
+  };
+
+  const renderSideUserCard = (roomUser: IRoomUsers, i: number) => {
+    const globalIndex =
+      roomUsers?.findIndex((ru) => ru._id === roomUser._id) ?? i;
+    return (
+      <Grid
+        key={roomUser._id}
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          my: { md: 1, xs: 0.5 }
+        }}
+      >
+        <Card
+          variant="outlined"
+          sx={[
+            {
+              width: { md: 55, xs: 44 },
+              height: { md: 78, xs: 65 },
+              border: `1.5px solid ${roomUser?.cardColor}`,
+              cursor: "pointer",
+              borderRadius: "12px",
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "center",
+              alignItems: "center",
+              boxShadow: (theme) =>
+                theme.palette.mode === "dark"
+                  ? "0 2px 12px rgba(0, 0, 0, 0.3)"
+                  : "0 2px 12px rgba(0, 0, 0, 0.08)",
+              transition: "all 0.3s ease-in-out",
+              background: roomUser!.votedState!
+                ? `${roomUser.cardColor}`
+                : "secondary.main"
+            },
+            {
+              "&:hover": {
+                transform: "translateY(-3px)"
+              }
+            }
+          ]}
+        >
+          {!!votesCasted ? (
+            <CardContent sx={{ p: 1, "&:last-child": { pb: 1 } }}>
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                {votesCasted[globalIndex]?.currentVote}
+              </Typography>
+            </CardContent>
+          ) : (
+            <Grid>
+              <Typography
+                variant="h5"
+                sx={{
+                  color: (theme) =>
+                    theme.palette.mode === "dark" ? "white" : "black"
+                }}
+              >
+                {roomUser.votedState
+                  ? roomUser._id === userId && roomUser?.currentVote
+                  : undefined}
+              </Typography>
+            </Grid>
+          )}
+        </Card>
+        <Typography
+          variant="body2"
+          sx={{
+            mt: 0.5,
+            fontSize: { md: "11px", xs: "9px" },
+            fontWeight: 600,
+            maxWidth: { md: "70px", xs: "50px" },
+            textAlign: "center",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap"
+          }}
+        >
+          {roomUser && roomUser.userName}
+        </Typography>
+      </Grid>
+    );
   };
 
   return (
     <Grid
-      style={{
+      className="voting-room-bg"
+      sx={{
         marginRight: isSidebarOpen ? "400px" : "0",
-        backgroundColor: "secondary.main",
-        height: "100vh"
+        backgroundColor: (theme) => theme.palette.secondary.main,
+        height: "100vh",
+        overflow: "hidden",
+        color: (theme) =>
+          theme.palette.mode === "dark"
+            ? "rgba(103, 163, 238, 0.7)"
+            : "rgba(91, 147, 217, 0.6)",
+        transition: "margin-right 0.3s ease"
       }}
     >
       {showCelebration && <Confetti width={width} height={height} />}
@@ -562,7 +722,8 @@ function VotingRoom(props: Props) {
           display: "flex",
           flexDirection: "column",
           justifyContent: "flex-start",
-          alignItems: "center"
+          alignItems: "center",
+          zIndex: 1
         }}
       >
         {showActiveIssue ? (
@@ -575,34 +736,71 @@ function VotingRoom(props: Props) {
               mt: 1,
               ml: { md: 4, xs: 1 },
               width: { md: "auto", xs: "95vw" },
+              maxWidth: { md: "400px" },
               height: { md: "auto", xs: "auto" },
-              px: 2,
-              py: 1,
-              borderRadius: "10px",
+              px: 2.5,
+              py: 1.5,
+              borderRadius: "14px",
               display: "flex",
               flexDirection: "column",
-              background: "secondary.main",
-              border: { md: "0px", xs: "1px solid green" },
+              background: (theme) =>
+                theme.palette.mode === "dark"
+                  ? "rgba(28, 35, 41, 0.95)"
+                  : "rgba(255, 255, 255, 0.95)",
+              backdropFilter: "blur(8px)",
+              border: (theme) =>
+                theme.palette.mode === "dark"
+                  ? "1px solid rgba(255, 255, 255, 0.08)"
+                  : "1px solid rgba(0, 0, 0, 0.08)",
+              boxShadow: (theme) =>
+                theme.palette.mode === "dark"
+                  ? "0 4px 16px rgba(0, 0, 0, 0.3)"
+                  : "0 4px 16px rgba(0, 0, 0, 0.06)",
               cursor: "pointer",
               alignItems: "flex-start",
-              justifyContent: "center"
+              justifyContent: "center",
+              animation: "fadeInUp 0.4s ease-out"
             }}
           >
             <Typography
-              variant="h5"
-              sx={{ wordBreak: "break-word", fontSize: { md: 24, xs: 10 } }}
+              sx={{
+                fontSize: "11px",
+                fontWeight: 600,
+                color: "primary.main",
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                mb: 0.3
+              }}
             >
-              Voting - {activeIssue?.name}
+              Now Voting
             </Typography>
-            <Link
-              variant="h6"
-              href={activeIssue?.link}
-              target="_blank"
-              rel="noreferrer"
-              sx={{ wordBreak: "break-word", fontSize: { md: 24, xs: 10 } }}
+            <Typography
+              sx={{
+                wordBreak: "break-word",
+                fontSize: { md: "16px", xs: "12px" },
+                fontWeight: 700,
+                letterSpacing: "-0.01em"
+              }}
             >
-              {activeIssue?.link}
-            </Link>
+              {activeIssue?.name}
+            </Typography>
+            {activeIssue?.link && (
+              <Link
+                href={activeIssue?.link}
+                target="_blank"
+                rel="noreferrer"
+                sx={{
+                  wordBreak: "break-word",
+                  fontSize: { md: "13px", xs: "10px" },
+                  color: "primary.main",
+                  mt: 0.3,
+                  fontWeight: 500,
+                  "&:hover": { textDecoration: "underline" }
+                }}
+              >
+                {activeIssue?.link}
+              </Link>
+            )}
           </Grid>
         ) : (
           <Grid></Grid>
@@ -647,160 +845,226 @@ function VotingRoom(props: Props) {
             />
           </Grid>
         </Grid>
+        {/* ====== TABLE LAYOUT ====== */}
         <Grid
-          className={isDisabled ? classes.pickCard : classes.glowingCard}
-          style={isDisabled ? pickCardStyle : glowingCardCardStyle}
+          sx={{
+            position: "relative",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            mt: { md: "14vh", xs: "12vh" },
+            width: "100%",
+            px: { md: 2, xs: 1 }
+          }}
         >
-          {!votesCasted ? (
+          {/* Top users */}
+          <Grid
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "center",
+              alignItems: "flex-end",
+              mb: { md: 1.5, xs: 1 },
+              minHeight: { md: "110px", xs: "90px" }
+            }}
+          >
+            {sides.top.map((u, i) => renderUserCard(u, i))}
+          </Grid>
+
+          {/* Middle row: Left users | Table | Right users */}
+          <Grid
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+          >
+            {/* Left users */}
             <Grid
               sx={{
                 display: "flex",
                 flexDirection: "column",
-                alignItems: "center"
+                justifyContent: "center",
+                alignItems: "center",
+                mr: { md: 1.5, xs: 0.5 },
+                minWidth: { md: "90px", xs: "65px" }
               }}
             >
-              {isDisabled ? (
-                <Grid>
-                  <Typography
-                    variant="h3"
-                    sx={{ fontSize: { md: "28px", xs: "16px" } }}
-                  >
-                    Choose Your Cards
-                  </Typography>
-                </Grid>
-              ) : (
-                <Grid sx={{ mt: 2 }}>
-                  <Button
-                    disabled={isDisabled}
-                    onClick={handleRevealVotes}
-                    sx={[
-                      {
-                        mt: 1,
-                        borderRadius: "5px",
-                        borderColor: `${currentRoomUser?.cardColor}`,
-                        color: (theme) =>
-                          theme.palette.mode === "dark" ? "white" : "black",
-                        px: { md: 3, xs: 2 },
-                        py: { md: 0.5 },
-                        fontSize: "16px"
-                      }
-                    ]}
-                    variant="outlined"
-                  >
-                    Reveal Votes
-                  </Button>
-                </Grid>
-              )}
+              {sides.left.map((u, i) => renderSideUserCard(u, i))}
             </Grid>
-          ) : (
-            <Grid>
-              <Button
-                onClick={handleNewVotingSession}
-                sx={[
-                  {
-                    mt: 1,
-                    width: "auto",
-                    borderRadius: "5px",
-                    borderColor: `${currentRoomUser?.cardColor}`,
-                    color: (theme) =>
-                      theme.palette.mode === "dark" ? "white" : "black",
-                    px: { md: 2, xs: 1 },
-                    py: { md: 1 },
-                    fontSize: { md: "16px", xs: "12px" }
-                  }
-                ]}
-                variant="outlined"
-              >
-                Start New Voting Session
-              </Button>
-            </Grid>
-          )}
-        </Grid>
 
-        <Grid
-          sx={{
-            width: "100vw",
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "center",
-            alignItems: "center",
-            mt: { md: 2, xs: 2 }
-          }}
-        >
-          {roomUsers &&
-            roomUsers.map((roomUser: IRoomUsers, i: number) => (
-              <Grid
-                key={roomUser._id}
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center"
-                }}
-              >
-                <Card
-                  variant="outlined"
-                  sx={[
-                    {
-                      width: { md: 70, xs: 60 },
-                      height: { md: 100, xs: 90 },
-                      mx: { md: 3, xs: 1 },
-                      border: `1px solid ${roomUser?.cardColor}`,
-                      cursor: "pointer",
-                      borderRadius: { md: "8px", xs: "4px" },
-                      display: "flex",
-                      flexDirection: "row",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      boxShadow: 5,
-                      transition: "transform ease 300ms",
-                      background: roomUser!.votedState!
-                        ? ` ${roomUser.cardColor}`
-                        : "secondary.main"
-                    },
-                    {
-                      "&:hover": {
-                        borderRadius: "8px"
-                      }
-                    }
-                  ]}
-                >
-                  {!!votesCasted ? (
-                    <CardContent>
-                      <Typography variant="h4">
-                        {votesCasted[i]?.currentVote}
-                      </Typography>
-                    </CardContent>
-                  ) : (
-                    <Grid>
-                      <Typography
-                        variant="h3"
-                        sx={{
-                          color: (theme) =>
-                            theme.palette.mode === "dark" ? "white" : "black"
-                        }}
-                      >
-                        {roomUser.votedState
-                          ? roomUser._id === userId && roomUser?.currentVote
-                          : undefined}
-                      </Typography>
-                    </Grid>
-                  )}
-                </Card>
+            {/* The Table (center area) */}
+            <Grid
+              sx={{
+                position: "relative",
+                width: { md: "400px", xs: "230px" },
+                height: { md: "190px", xs: "125px" },
+                borderRadius: "24px",
+                background: (theme) =>
+                  theme.palette.mode === "dark"
+                    ? "rgba(91, 147, 217, 0.04)"
+                    : "rgba(91, 147, 217, 0.03)",
+                border: (theme) =>
+                  theme.palette.mode === "dark"
+                    ? `2px solid ${currentRoomUser?.cardColor || "rgba(255,255,255,0.1)"}`
+                    : `2px solid ${currentRoomUser?.cardColor || "rgba(0,0,0,0.08)"}`,
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                boxShadow: (theme) =>
+                  theme.palette.mode === "dark"
+                    ? `inset 0 2px 30px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255,255,255,0.03)`
+                    : `inset 0 2px 30px rgba(0, 0, 0, 0.02), 0 0 0 1px rgba(0,0,0,0.02)`,
+                transition: "all 0.4s ease",
+                overflow: "hidden",
+                "&::before": {
+                  content: '""',
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  borderRadius: "24px",
+                  background: (theme: any) =>
+                    theme.palette.mode === "dark"
+                      ? `radial-gradient(ellipse at center, ${currentRoomUser?.cardColor || "rgba(103,163,238,0.08)"}15, transparent 70%)`
+                      : `radial-gradient(ellipse at center, ${currentRoomUser?.cardColor || "rgba(91,147,217,0.06)"}10, transparent 70%)`,
+                  pointerEvents: "none"
+                },
+                ...(!isDisabled && {
+                  animation: "tableGlow 0.6s infinite alternate"
+                })
+              }}
+            >
+              {!votesCasted ? (
                 <Grid
                   sx={{
-                    mt: 1,
                     display: "flex",
-                    flexDirection: "row",
-                    justifyContent: "center"
+                    flexDirection: "column",
+                    alignItems: "center"
                   }}
                 >
-                  <Typography variant="h4">
-                    {roomUser && roomUser.userName}
-                  </Typography>
+                  {isDisabled ? (
+                    <Grid
+                      sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center"
+                      }}
+                    >
+                      <Typography
+                        sx={{
+                          fontSize: { md: "11px", xs: "9px" },
+                          fontWeight: 600,
+                          color: "primary.main",
+                          letterSpacing: "0.08em",
+                          textTransform: "uppercase",
+                          mb: 0.5
+                        }}
+                      >
+                        Waiting for votes
+                      </Typography>
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          fontSize: { md: "20px", xs: "13px" },
+                          fontWeight: 700,
+                          color: "text.secondary",
+                          letterSpacing: "-0.01em"
+                        }}
+                      >
+                        Choose Your Cards
+                      </Typography>
+                    </Grid>
+                  ) : (
+                    <Button
+                      disabled={isDisabled}
+                      onClick={handleRevealVotes}
+                      sx={{
+                        borderRadius: "12px",
+                        borderColor: `${currentRoomUser?.cardColor}`,
+                        borderWidth: "2px",
+                        color: (theme) =>
+                          theme.palette.mode === "dark" ? "white" : "black",
+                        px: { md: 3.5, xs: 2.5 },
+                        py: { md: 0.8, xs: 0.5 },
+                        fontSize: { md: "15px", xs: "12px" },
+                        fontWeight: 700,
+                        letterSpacing: "0.01em",
+                        transition: "all 0.2s ease",
+                        "&:hover": {
+                          borderWidth: "2px",
+                          transform: "translateY(-2px)",
+                          boxShadow: `0 4px 16px ${currentRoomUser?.cardColor}30`
+                        }
+                      }}
+                      variant="outlined"
+                    >
+                      Reveal Votes
+                    </Button>
+                  )}
                 </Grid>
-              </Grid>
-            ))}
+              ) : (
+                <Button
+                  onClick={handleNewVotingSession}
+                  sx={{
+                    borderRadius: "12px",
+                    borderColor: `${currentRoomUser?.cardColor}`,
+                    borderWidth: "2px",
+                    color: (theme) =>
+                      theme.palette.mode === "dark" ? "white" : "black",
+                    px: { md: 3, xs: 2 },
+                    py: { md: 0.8, xs: 0.5 },
+                    fontSize: { md: "14px", xs: "11px" },
+                    fontWeight: 700,
+                    letterSpacing: "0.01em",
+                    transition: "all 0.2s ease",
+                    "&:hover": {
+                      borderWidth: "2px",
+                      transform: "translateY(-2px)",
+                      boxShadow: `0 4px 16px ${currentRoomUser?.cardColor}30`
+                    }
+                  }}
+                  variant="outlined"
+                >
+                  New Voting Session
+                </Button>
+              )}
+            </Grid>
+
+            {/* Right users */}
+            <Grid
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                ml: { md: 1.5, xs: 0.5 },
+                minWidth: { md: "90px", xs: "65px" }
+              }}
+            >
+              {sides.right.map((u, i) => renderSideUserCard(u, i))}
+            </Grid>
+          </Grid>
+
+          {/* Bottom users */}
+          <Grid
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "center",
+              alignItems: "flex-start",
+              mt: { md: 1.5, xs: 1 },
+              minHeight: { md: "110px", xs: "90px" }
+            }}
+          >
+            {sides.bottom.map((u, i) => renderUserCard(u, i))}
+          </Grid>
         </Grid>
+        {/* ====== END TABLE LAYOUT ====== */}
       </Grid>
 
       <Grid>

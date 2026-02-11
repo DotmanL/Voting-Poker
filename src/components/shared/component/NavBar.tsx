@@ -124,16 +124,29 @@ export const NavBar = (props: Props) => {
   return (
     <Grid>
       <AppBar
-        elevation={!scrolledDownEnough ? 0 : 7}
+        elevation={0}
         sx={{
           top: "0",
-          background: (theme) => theme.palette.secondary.main,
+          background: (theme) =>
+            scrolledDownEnough
+              ? theme.palette.mode === "dark"
+                ? "rgba(20, 26, 31, 0.85)"
+                : "rgba(248, 249, 250, 0.85)"
+              : theme.palette.secondary.main,
+          backdropFilter: scrolledDownEnough ? "blur(12px)" : "none",
+          WebkitBackdropFilter: scrolledDownEnough ? "blur(12px)" : "none",
           boxShadow: !scrolledDownEnough
             ? "none"
-            : "0 5px 5px -2px rgba(0, 0, 0, 0.2)",
-          height: { md: "90px", xs: "80px" },
-          // borderBottom: isBorderBottom ? "2px solid #67A3EE" : "",
-          justifyContent: { md: "space-between", xs: "flex-start" }
+            : "0 1px 0 rgba(0, 0, 0, 0.06)",
+          height: { md: "80px", xs: "70px" },
+          borderBottom: scrolledDownEnough
+            ? (theme) =>
+                theme.palette.mode === "dark"
+                  ? "1px solid rgba(255, 255, 255, 0.06)"
+                  : "1px solid rgba(0, 0, 0, 0.06)"
+            : "none",
+          justifyContent: { md: "space-between", xs: "flex-start" },
+          transition: "all 0.3s ease"
         }}
         position="fixed"
       >
@@ -155,7 +168,8 @@ export const NavBar = (props: Props) => {
             alignItems: "center",
             justifyContent: { md: "space-between", xs: "flex-start" },
             marginRight:
-              isSidebarOpen && urlPath.indexOf("/room") >= 0 ? "380px" : "0"
+              isSidebarOpen && urlPath.indexOf("/room") >= 0 ? "380px" : "0",
+            pb: 2
           }}
         >
           <Link
@@ -194,9 +208,10 @@ export const NavBar = (props: Props) => {
               <Typography
                 variant="h6"
                 sx={{
-                  fontFamily: "Jost",
-                  fontWeight: "bold",
-                  fontSize: { md: "24px", xs: "18px" },
+                  fontFamily: "Inter, sans-serif",
+                  fontWeight: 700,
+                  fontSize: { md: "22px", xs: "18px" },
+                  letterSpacing: "-0.01em",
                   color: "primary.main"
                 }}
               >
@@ -208,24 +223,30 @@ export const NavBar = (props: Props) => {
           <Grid
             sx={{
               display: isCopied ? "flex" : "none",
-              px: 4,
+              px: 2,
               height: "auto",
               ml: 4,
               mt: 4,
-              border: "1px solid none",
-              borderRadius: "8px",
-              background: "#14213d",
+              border: (theme) =>
+                theme.palette.mode === "dark"
+                  ? "1px solid rgba(46, 204, 113, 0.2)"
+                  : "1px solid rgba(39, 174, 96, 0.15)",
+              borderRadius: "12px",
+              background: (theme) =>
+                theme.palette.mode === "dark"
+                  ? "rgba(46, 204, 113, 0.08)"
+                  : "rgba(39, 174, 96, 0.06)",
+              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
               width: "auto",
-              color: (theme) => theme.palette.primary.main,
+              color: "success.main",
               flexDirection: "row",
               justifyContent: "center",
               alignItems: "center"
             }}
           >
             {isCopied ? (
-              <Typography variant="h6" fontSize="18px" sx={{ py: 1 }}>
-                Invitation Link Copied to you Clipboard,
-                <br /> You can now share with your team mates
+              <Typography sx={{ py: 1, fontSize: "14px", fontWeight: 600 }}>
+                ✓ Link copied! Share it with your team.
               </Typography>
             ) : (
               ""
@@ -251,17 +272,20 @@ export const NavBar = (props: Props) => {
                   mr: { md: 2, xs: 0 },
                   ml: { md: 0, xs: 2 },
                   mt: { md: 1, xs: 0.5 },
-                  borderRadius: "6px",
-                  border: "1px solid",
-                  borderColor: "gray",
+                  borderRadius: "10px",
+                  border: "1.5px solid",
+                  borderColor: (theme) =>
+                    theme.palette.mode === "dark"
+                      ? "rgba(255, 255, 255, 0.12)"
+                      : "rgba(0, 0, 0, 0.1)",
                   "&:hover": {
-                    borderRadius: "6px",
+                    borderRadius: "10px",
                     borderColor: (theme) => theme.palette.primary.main,
-                    transition: "box-shadow 0.3s ease-in-out",
+                    transition: "all 0.2s ease-in-out",
                     boxShadow: (theme) =>
                       theme.palette.mode === "dark"
-                        ? "0px 0px 10px 2px rgba(255, 255, 255, 0.4)"
-                        : "0px 0px 10px 2px rgba(0, 0, 0, 0.4)"
+                        ? "0 0 0 3px rgba(232, 234, 237, 0.08)"
+                        : "0 0 0 3px rgba(91, 147, 217, 0.12)"
                   }
                 }}
               >
@@ -352,22 +376,25 @@ export const NavBar = (props: Props) => {
                 display: urlPath.indexOf("/room") >= 0 ? "flex" : "none",
                 flexDirection: "row",
                 alignItems: "center",
-                borderRadius: "6px",
-                border: "1px solid",
-                fontFamily: "Jost",
+                borderRadius: "10px",
+                border: "1.5px solid",
+                fontFamily: "Inter, sans-serif",
                 cursor: "pointer",
                 color: (theme) => theme.palette.primary.main,
                 px: 1.5,
                 py: 0.5,
                 background: (theme) => theme.palette.secondary.main,
-                borderColor: "gray",
+                borderColor: (theme) =>
+                  theme.palette.mode === "dark"
+                    ? "rgba(255, 255, 255, 0.12)"
+                    : "rgba(0, 0, 0, 0.1)",
                 "&:hover": {
-                  opacity: 0.8,
-                  transition: "box-shadow 0.3s ease-in-out",
+                  borderColor: (theme) => theme.palette.primary.main,
+                  transition: "all 0.2s ease-in-out",
                   boxShadow: (theme) =>
                     theme.palette.mode === "dark"
-                      ? "0px 0px 10px 2px rgba(255, 255, 255, 0.4)"
-                      : "0px 0px 10px 2px rgba(0, 0, 0, 0.4)"
+                      ? "0 0 0 3px rgba(232, 234, 237, 0.08)"
+                      : "0 0 0 3px rgba(91, 147, 217, 0.12)"
                 }
               }}
               onClick={() => setIsInviteModalOpen(true)}
@@ -404,11 +431,22 @@ export const NavBar = (props: Props) => {
                   <Grid
                     sx={{
                       position: "absolute",
-                      top: "20px",
-                      right: "20px",
+                      top: "16px",
+                      right: "16px",
                       cursor: "pointer",
+                      width: "32px",
+                      height: "32px",
+                      borderRadius: "8px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      transition: "all 0.15s ease",
                       "&:hover": {
-                        color: "red"
+                        background: (theme) =>
+                          theme.palette.mode === "dark"
+                            ? "rgba(255, 255, 255, 0.06)"
+                            : "rgba(0, 0, 0, 0.04)",
+                        color: "error.main"
                       }
                     }}
                     onClick={() => {
@@ -416,19 +454,39 @@ export const NavBar = (props: Props) => {
                       setIsCopied(false);
                     }}
                   >
-                    <AiOutlineClose size={32} />
+                    <AiOutlineClose size={20} />
                   </Grid>
 
-                  <Grid sx={{ pl: 5 }}>
+                  <Grid sx={{ pl: 5, pr: 5 }}>
                     <Typography
-                      variant="h4"
                       sx={{
-                        fontSize: { md: "24px", xs: "24px" },
-                        fontStyle: "bolder",
-                        fontWeight: "900px"
+                        fontSize: "13px",
+                        fontWeight: 600,
+                        color: "primary.main",
+                        letterSpacing: "0.1em",
+                        textTransform: "uppercase",
+                        mb: 0.5
+                      }}
+                    >
+                      Share
+                    </Typography>
+                    <Typography
+                      sx={{
+                        fontSize: { md: "24px", xs: "20px" },
+                        fontWeight: 800,
+                        letterSpacing: "-0.02em"
                       }}
                     >
                       Invite Team Members
+                    </Typography>
+                    <Typography
+                      sx={{
+                        fontSize: "14px",
+                        color: "text.secondary",
+                        mt: 0.5
+                      }}
+                    >
+                      Share this link with your teammates to join the room.
                     </Typography>
                   </Grid>
                   <Grid
@@ -440,13 +498,16 @@ export const NavBar = (props: Props) => {
                       mt: { md: 4, xs: 2 },
                       width: "90%",
                       height: "auto",
-                      borderRadius: "6px",
-                      padding: "6px",
-                      fontSize: { md: "18px", xs: "10px" },
+                      borderRadius: "10px",
+                      padding: "8px 12px",
+                      fontSize: { md: "16px", xs: "10px" },
                       textAlign: { xs: "center" },
                       alignSelf: "center",
-                      border: { md: "1px solid", xs: "1px solid" },
-                      borderColor: "gray"
+                      border: "1.5px solid",
+                      borderColor: (theme) =>
+                        theme.palette.mode === "dark"
+                          ? "rgba(255, 255, 255, 0.12)"
+                          : "rgba(0, 0, 0, 0.1)"
                     }}
                   >
                     {currentRoomLink}
@@ -462,11 +523,17 @@ export const NavBar = (props: Props) => {
                       mb: { xs: 2 },
                       width: "90%",
                       height: { md: "50px", xs: "30px" },
-                      borderRadius: "8px",
+                      borderRadius: "10px",
                       alignSelf: "center",
-                      background: "gray",
+                      background: (theme) => theme.palette.primary.main,
+                      color: (theme) =>
+                        theme.palette.mode === "dark" ? "#141a1f" : "#ffffff",
+                      fontWeight: 600,
+                      fontSize: "16px",
+                      transition: "all 0.2s ease",
                       "&:hover": {
-                        opacity: 0.8
+                        opacity: 0.9,
+                        transform: "translateY(-1px)"
                       }
                     }}
                     onClick={() => handleCopyClick(currentRoomLink!)}
@@ -486,21 +553,24 @@ export const NavBar = (props: Props) => {
                 width: "auto",
                 height: "40px",
                 borderRadius: "10px",
-                borderWidth: "1px",
-                border: "1px solid",
-                borderColor: "gray",
+                borderWidth: "1.5px",
+                border: "1.5px solid",
+                borderColor: (theme) =>
+                  theme.palette.mode === "dark"
+                    ? "rgba(255, 255, 255, 0.12)"
+                    : "rgba(0, 0, 0, 0.1)",
                 mr: { md: 2, xs: 0 },
                 mt: { md: 1, xs: 0.5 },
                 p: { md: 1, xs: 0.5 },
                 cursor: "pointer",
                 display: urlPath.indexOf("/room") >= 0 ? "flex" : "none",
                 "&:hover": {
-                  opacity: 0.8,
-                  transition: "box-shadow 0.3s ease-in-out",
+                  borderColor: (theme) => theme.palette.primary.main,
+                  transition: "all 0.2s ease-in-out",
                   boxShadow: (theme) =>
                     theme.palette.mode === "dark"
-                      ? "0px 0px 10px 2px rgba(255, 255, 255, 0.4)"
-                      : "0px 0px 10px 2px rgba(0, 0, 0, 0.4)"
+                      ? "0 0 0 3px rgba(232, 234, 237, 0.08)"
+                      : "0 0 0 3px rgba(91, 147, 217, 0.12)"
                 }
               }}
             >

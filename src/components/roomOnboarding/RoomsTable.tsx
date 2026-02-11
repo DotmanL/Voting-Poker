@@ -52,7 +52,12 @@ function RoomsTable(props: Props) {
         alignItems: "center",
         backgroundColor: "secondary.main",
         transition: "box-shadow 0.3s ease-in-out",
-        boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.2)"
+        boxShadow: (theme) =>
+          theme.palette.mode === "dark"
+            ? "0 4px 24px rgba(0, 0, 0, 0.3)"
+            : "0 4px 24px rgba(0, 0, 0, 0.08)",
+        borderRadius: "16px",
+        overflow: "hidden"
       }}
       component={Paper}
     >
@@ -69,7 +74,9 @@ function RoomsTable(props: Props) {
               px: { md: 4, xs: 2 },
               py: { md: 0.7, xs: 0.5 },
               opacity: 1,
-              fontSize: "24px",
+              fontSize: "20px",
+              fontWeight: 700,
+              letterSpacing: "-0.01em",
               "&:hover": {
                 opacity: 1
               }
@@ -104,13 +111,19 @@ function RoomsTable(props: Props) {
                   sx={[
                     {
                       background: "primary.main",
-                      color: "secondary.main",
-                      fontSize: "14px"
+                      color: (theme) =>
+                        theme.palette.mode === "dark" ? "#141a1f" : "#ffffff",
+                      fontSize: "13px",
+                      fontWeight: 600,
+                      letterSpacing: "0.04em",
+                      px: 2,
+                      py: 0.4,
+                      borderRadius: "8px"
                     },
                     {
                       "&:hover": {
-                        color: "white",
-                        opacity: "0.6"
+                        transform: "translateY(-1px)",
+                        boxShadow: "0 2px 8px rgba(91, 147, 217, 0.3)"
                       }
                     }
                   ]}

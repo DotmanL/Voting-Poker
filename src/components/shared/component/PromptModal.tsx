@@ -97,11 +97,17 @@ function PromptModal(props: Props) {
                   mt: 0.5,
                   px: 2,
                   py: 0.5,
-                  borderRadius: "8px",
-                  background: "red",
+                  borderRadius: "10px",
+                  background: "#e74c3c",
                   color: "white",
-                  fontSize: "18px",
-                  cursor: "pointer"
+                  fontSize: "16px",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  boxShadow: "0 2px 8px rgba(231, 76, 60, 0.3)",
+                  "&:hover": {
+                    background: "#c0392b",
+                    transform: "translateY(-1px)"
+                  }
                 }}
               >
                 Cancel
@@ -113,11 +119,17 @@ function PromptModal(props: Props) {
                   mt: 0.5,
                   px: 2,
                   py: 0.5,
-                  borderRadius: "8px",
-                  background: "green",
+                  borderRadius: "10px",
+                  background: "#27ae60",
                   color: "white",
-                  fontSize: "18px",
-                  cursor: "pointer"
+                  fontSize: "16px",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  boxShadow: "0 2px 8px rgba(39, 174, 96, 0.3)",
+                  "&:hover": {
+                    background: "#219a52",
+                    transform: "translateY(-1px)"
+                  }
                 }}
               >
                 Confirm

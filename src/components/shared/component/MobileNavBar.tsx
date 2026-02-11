@@ -153,22 +153,55 @@ function MobileNavBar(props: Props) {
         >
           <DarkModeToggle isMobileFlex />
         </Grid>
-        <Grid sx={{}}>
+        <Grid sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
           <Grid
             sx={{
               display: urlPath.indexOf("/room") >= 0 ? "flex" : "none",
-              fontSize: "24px"
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 1.5,
+              px: 1,
+              py: 0.8,
+              borderRadius: "10px",
+              cursor: "pointer",
+              transition: "background 0.15s ease",
+              "&:hover": {
+                background: (theme) =>
+                  theme.palette.mode === "dark"
+                    ? "rgba(255, 255, 255, 0.04)"
+                    : "rgba(0, 0, 0, 0.03)"
+              }
             }}
             onClick={handleLeaveRoom}
           >
-            Leave Room
+            <Typography sx={{ fontSize: "15px", fontWeight: 500 }}>
+              Leave Room
+            </Typography>
           </Grid>
-          <Grid onClick={() => setIsMobileNavOpen(false)} sx={{ mt: 0.5 }}>
+          <Grid onClick={() => setIsMobileNavOpen(false)}>
             <Grid
               onClick={!user ? handleSignUp : handleSignOut}
-              sx={{ fontSize: "24px" }}
+              sx={{
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 1.5,
+                px: 1,
+                py: 0.8,
+                borderRadius: "10px",
+                cursor: "pointer",
+                transition: "background 0.15s ease",
+                "&:hover": {
+                  background: (theme) =>
+                    theme.palette.mode === "dark"
+                      ? "rgba(255, 255, 255, 0.04)"
+                      : "rgba(0, 0, 0, 0.03)"
+                }
+              }}
             >
-              {!user ? "Sign Up" : "Sign Out"}
+              <Typography sx={{ fontSize: "15px", fontWeight: 500 }}>
+                {!user ? "Sign Up" : "Sign Out"}
+              </Typography>
             </Grid>
           </Grid>
         </Grid>
@@ -214,8 +247,8 @@ function MobileNavBar(props: Props) {
                 src={darkvppLogo}
                 alt="waves"
                 sx={{
-                  height: { md: "60px", xs: "60px" },
-                  width: { md: "60px", xs: "60px" }
+                  height: { md: "60px", xs: "40px" },
+                  width: { md: "60px", xs: "40px" }
                 }}
               />
             ) : (
@@ -224,8 +257,8 @@ function MobileNavBar(props: Props) {
                 src={lightvpplogo}
                 alt="waves"
                 sx={{
-                  height: { md: "60px", xs: "60px" },
-                  width: { md: "60px", xs: "60px" }
+                  height: { md: "60px", xs: "40px" },
+                  width: { md: "60px", xs: "40px" }
                 }}
               />
             )}
@@ -234,9 +267,10 @@ function MobileNavBar(props: Props) {
             <Typography
               variant="h5"
               sx={{
-                fontFamily: "Jost",
-                fontWeight: "bold",
+                fontFamily: "Inter, sans-serif",
+                fontWeight: 700,
                 fontSize: { xs: "18px" },
+                letterSpacing: "-0.01em",
                 color: "primary.main"
               }}
             >
@@ -253,9 +287,11 @@ function MobileNavBar(props: Props) {
             height: "auto",
             ml: 4,
             mt: 2,
-            border: "2px solid none",
-            borderRadius: "8px",
-            background: "#14213d",
+            border: "none",
+            borderRadius: "12px",
+            background: (theme) =>
+              theme.palette.mode === "dark" ? "#1c2329" : "#1a1a2e",
+            boxShadow: "0 4px 16px rgba(0, 0, 0, 0.2)",
             width: "auto",
             color: (theme) => theme.palette.primary.main,
             flexDirection: "row",
@@ -281,7 +317,11 @@ function MobileNavBar(props: Props) {
             width: "auto",
             height: "50px",
             borderRadius: "10px",
-            border: "1px solid #67A3EE",
+            border: "1.5px solid",
+            borderColor: (theme) =>
+              theme.palette.mode === "dark"
+                ? "rgba(255, 255, 255, 0.12)"
+                : "rgba(91, 147, 217, 0.3)",
             mr: 1,
             mt: 0.5,
             px: 1,

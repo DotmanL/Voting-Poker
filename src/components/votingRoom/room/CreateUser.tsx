@@ -40,11 +40,37 @@ function CreateUser(props: Props) {
   );
 
   return (
-    <Grid sx={{ px: 4, py: { md: 2, xs: 1 }, mt: { md: 4, xs: 2 } }}>
+    <Grid sx={{ px: 4, py: { md: 3, xs: 2 }, mt: { md: 2, xs: 1 } }}>
       <Typography
-        sx={{ mb: { md: 1 }, fontSize: { md: "32px" }, fontWeight: 500 }}
+        sx={{
+          fontSize: "13px",
+          fontWeight: 600,
+          color: "primary.main",
+          letterSpacing: "0.1em",
+          textTransform: "uppercase",
+          mb: 0.5
+        }}
       >
-        Create Name
+        Welcome
+      </Typography>
+      <Typography
+        sx={{
+          mb: { md: 0.5 },
+          fontSize: { md: "28px", xs: "22px" },
+          fontWeight: 800,
+          letterSpacing: "-0.02em"
+        }}
+      >
+        What's your name?
+      </Typography>
+      <Typography
+        sx={{
+          fontSize: "14px",
+          color: "text.secondary",
+          mb: { md: 3, xs: 2 }
+        }}
+      >
+        This is how your teammates will see you in the room.
       </Typography>
       <Formik
         initialValues={initialValues}
@@ -83,14 +109,17 @@ function CreateUser(props: Props) {
                       width: { md: "100%", xs: "100%" },
                       height: { md: "auto", xs: "auto" },
                       px: { md: 2, xs: 1 },
-                      fontSize: { md: "24px", xs: "16px" },
+                      fontSize: { md: "20px", xs: "16px" },
+                      fontWeight: 600,
                       background: "primary.main",
-                      color: "secondary.main"
+                      color: (theme) =>
+                        theme.palette.mode === "dark" ? "#141a1f" : "#ffffff",
+                      borderRadius: "12px"
                     },
                     {
                       "&:hover": {
-                        color: "white",
-                        backgroundColor: "green"
+                        transform: "translateY(-1px)",
+                        boxShadow: "0 4px 16px rgba(91, 147, 217, 0.3)"
                       }
                     }
                   ]}

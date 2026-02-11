@@ -176,7 +176,7 @@ function ChatInterface(props: Props) {
     <Grid
       sx={{
         position: "absolute",
-        bottom: 30,
+        bottom: 70,
         zIndex: 120,
         left: 100,
         width: "50px",
@@ -185,7 +185,8 @@ function ChatInterface(props: Props) {
         flexDirection: "row",
         cursor: "pointer",
         justifyContent: "center",
-        alignItems: "center"
+        alignItems: "center",
+        borderTop: "none"
       }}
     >
       {!isChatBoxOpen ? (
@@ -199,223 +200,304 @@ function ChatInterface(props: Props) {
               .to((y) => `translateY(${y}px)`)
           }}
         >
-          <ChatIcon
-            onClick={() => {
-              setIsChatBoxOpen(!isChatBoxOpen);
-            }}
-            sx={{
-              width: "50px",
-              height: "50px"
-            }}
-          />
-        </animated.div>
-      ) : (
-        <CancelIcon
-          onClick={() => setIsChatBoxOpen(!isChatBoxOpen)}
-          sx={{
-            width: "50px",
-            height: "50px"
-          }}
-        />
-      )}
-
-      <Grid
-        sx={{
-          position: "absolute",
-          bottom: 60,
-          left: 0,
-          width: "400px",
-          height: "auto",
-          display: { md: "flex", xs: "none" },
-          backgroundColor: (theme) =>
-            theme.palette.mode === "dark" ? "#171a1d" : "#adb5bd",
-          borderRadius: "15px",
-          flexDirection: "row",
-          cursor: "pointer",
-          justifyContent: "center",
-          alignItems: "center"
-        }}
-      >
-        {isChatBoxOpen && (
           <Grid
+            onClick={() => setIsChatBoxOpen(!isChatBoxOpen)}
             sx={{
-              display: {
-                md: "flex",
-                flexDirection: "column",
-                width: "400px",
-                height: "450px",
-                padding: "10px",
-                marginBottom: "75px"
+              width: "52px",
+              height: "52px",
+              borderRadius: "16px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: (theme) => theme.palette.primary.main,
+              color: (theme) =>
+                theme.palette.mode === "dark" ? "#141a1f" : "#ffffff",
+              boxShadow: (theme) =>
+                theme.palette.mode === "dark"
+                  ? "0 4px 16px rgba(0, 0, 0, 0.4)"
+                  : "0 4px 16px rgba(91, 147, 217, 0.3)",
+              transition: "all 0.2s ease",
+              cursor: "pointer",
+              "&:hover": {
+                transform: "translateY(-2px)",
+                boxShadow: (theme) =>
+                  theme.palette.mode === "dark"
+                    ? "0 6px 20px rgba(0, 0, 0, 0.5)"
+                    : "0 6px 20px rgba(91, 147, 217, 0.4)"
               }
             }}
           >
-            <>
-              {isLoadingMessages ? (
-                <Spinner />
-              ) : (
-                <Scrollbar
-                  ref={scrollContainerRef}
-                  style={{
-                    width: "100%",
-                    height: "450px"
-                  }}
-                  noScrollX
-                >
-                  <Grid
-                    sx={{
-                      display: {
-                        md: "flex",
-                        flexDirection: "column",
-                        height: "100%"
-                      }
-                    }}
-                  >
-                    {roomGroupedMessages &&
-                      Object.keys(roomGroupedMessages).map((messageDate, i) => (
-                        <Grid
-                          key={i}
-                          sx={{
-                            display: {
-                              md: "flex",
-                              flexDirection: "column",
-                              height: "100%"
-                            }
-                          }}
-                        >
-                          <Typography sx={{ mr: "auto", ml: "auto" }}>
-                            {messageDate !== "Invalid Date" &&
-                              (messageDate === new Date().toDateString()
-                                ? "Today"
-                                : messageDate)}
-                          </Typography>
-                          {roomGroupedMessages[messageDate].map(
-                            (message, i) => (
-                              <Grid
-                                sx={{
-                                  marginY: "8px",
-                                  marginRight: "8px",
-                                  paddingX: "10px",
-                                  width: "70%",
-                                  paddingY: "2px",
-                                  borderRadius: "5px",
-                                  color: (theme) =>
-                                    theme.palette.mode === "dark"
-                                      ? "white"
-                                      : "black",
-                                  background: (theme) =>
-                                    theme.palette.mode === "dark"
-                                      ? "#343a40"
-                                      : "#dee2e6",
-                                  display: "flex",
-                                  flexDirection: "column",
-                                  alignSelf:
-                                    currentRoomUser._id === message.userId
-                                      ? "flex-end"
-                                      : "flex-start"
-                                }}
-                                key={i}
-                              >
-                                <Typography
-                                  sx={{
-                                    display: "flex",
-                                    color: roomUsers.find(
-                                      (user) => user._id === message.userId
-                                    )?.cardColor
-                                  }}
-                                  fontSize={18}
-                                >
-                                  {currentRoomUser._id === message.userId
-                                    ? "me"
-                                    : message.userName}
-                                </Typography>
-                                <Typography
-                                  fontSize={16}
-                                  sx={{
-                                    wordBreak: "break-word",
-                                    alignSelf: "flex-start",
-                                    display: "flex"
-                                  }}
-                                >
-                                  {message.message}
-                                </Typography>
-                              </Grid>
-                            )
-                          )}
-                        </Grid>
-                      ))}
-                  </Grid>
-                </Scrollbar>
-              )}
-            </>
+            <ChatIcon sx={{ width: "26px", height: "26px" }} />
+          </Grid>
+        </animated.div>
+      ) : (
+        <Grid
+          onClick={() => setIsChatBoxOpen(!isChatBoxOpen)}
+          sx={{
+            width: "52px",
+            height: "52px",
+            borderRadius: "16px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: (theme) =>
+              theme.palette.mode === "dark"
+                ? "rgba(255, 255, 255, 0.08)"
+                : "rgba(0, 0, 0, 0.06)",
+            cursor: "pointer",
+            transition: "all 0.2s ease",
+            "&:hover": {
+              background: (theme) =>
+                theme.palette.mode === "dark"
+                  ? "rgba(255, 255, 255, 0.12)"
+                  : "rgba(0, 0, 0, 0.1)"
+            }
+          }}
+        >
+          <CancelIcon sx={{ width: "26px", height: "26px" }} />
+        </Grid>
+      )}
 
+      {isChatBoxOpen && (
+        <Grid
+          sx={{
+            position: "absolute",
+            bottom: 64,
+            left: 0,
+            width: "380px",
+            height: "auto",
+            display: { md: "flex", xs: "none" },
+            backgroundColor: (theme) =>
+              theme.palette.mode === "dark" ? "#1c2329" : "#ffffff",
+            borderRadius: "18px",
+            flexDirection: "row",
+            justifyContent: "center",
+            alignItems: "center",
+            border: (theme) =>
+              theme.palette.mode === "dark"
+                ? "1px solid rgba(255, 255, 255, 0.06)"
+                : "1px solid rgba(0, 0, 0, 0.08)",
+            boxShadow: (theme) =>
+              theme.palette.mode === "dark"
+                ? "0 12px 40px rgba(0, 0, 0, 0.5)"
+                : "0 12px 40px rgba(0, 0, 0, 0.12)"
+          }}
+        >
+          {isChatBoxOpen && (
             <Grid
               sx={{
-                display: "flex",
-                alignItems: "center",
-                paddingRight: "4px",
-                position: "absolute",
-                borderBottomLeftRadius: "15px",
-                borderBottomRightRadius: "15px",
-                mt: 4,
-                bottom: 0,
-                zIndex: 80,
-                left: 0,
-                height: "auto",
-                width: "400px",
-                background: (theme) =>
-                  theme.palette.mode === "dark" ? "#171a1d" : "#adb5bd",
-                borderTop: "1px solid",
-                borderColor: "#8d99ae"
+                display: {
+                  md: "flex",
+                  flexDirection: "column",
+                  width: "400px",
+                  height: "450px",
+                  padding: "10px",
+                  marginBottom: "75px"
+                }
               }}
             >
-              <TextField
+              <>
+                {isLoadingMessages ? (
+                  <Spinner />
+                ) : (
+                  <Scrollbar
+                    ref={scrollContainerRef}
+                    style={{
+                      width: "100%",
+                      height: "450px"
+                    }}
+                    noScrollX
+                  >
+                    <Grid
+                      sx={{
+                        display: {
+                          md: "flex",
+                          flexDirection: "column",
+                          height: "100%"
+                        }
+                      }}
+                    >
+                      {roomGroupedMessages &&
+                        Object.keys(roomGroupedMessages).map(
+                          (messageDate, i) => (
+                            <Grid
+                              key={i}
+                              sx={{
+                                display: {
+                                  md: "flex",
+                                  flexDirection: "column",
+                                  height: "100%"
+                                }
+                              }}
+                            >
+                              <Typography sx={{ mr: "auto", ml: "auto" }}>
+                                {messageDate !== "Invalid Date" &&
+                                  (messageDate === new Date().toDateString()
+                                    ? "Today"
+                                    : messageDate)}
+                              </Typography>
+                              {roomGroupedMessages[messageDate].map(
+                                (message, i) => (
+                                  <Grid
+                                    sx={{
+                                      my: "4px",
+                                      mx: "8px",
+                                      px: "12px",
+                                      py: "8px",
+                                      maxWidth: "75%",
+                                      borderRadius:
+                                        currentRoomUser._id === message.userId
+                                          ? "14px 14px 4px 14px"
+                                          : "14px 14px 14px 4px",
+                                      color: (theme) =>
+                                        theme.palette.mode === "dark"
+                                          ? "#E8EAED"
+                                          : "#1a1a2e",
+                                      background: (theme) =>
+                                        currentRoomUser._id === message.userId
+                                          ? theme.palette.mode === "dark"
+                                            ? "rgba(232, 234, 237, 0.08)"
+                                            : "rgba(91, 147, 217, 0.1)"
+                                          : theme.palette.mode === "dark"
+                                            ? "rgba(255, 255, 255, 0.04)"
+                                            : "rgba(0, 0, 0, 0.04)",
+                                      display: "flex",
+                                      flexDirection: "column",
+                                      alignSelf:
+                                        currentRoomUser._id === message.userId
+                                          ? "flex-end"
+                                          : "flex-start"
+                                    }}
+                                    key={i}
+                                  >
+                                    <Typography
+                                      sx={{
+                                        display: "flex",
+                                        fontSize: "12px",
+                                        fontWeight: 600,
+                                        mb: 0.3,
+                                        color: roomUsers.find(
+                                          (user) => user._id === message.userId
+                                        )?.cardColor
+                                      }}
+                                    >
+                                      {currentRoomUser._id === message.userId
+                                        ? "me"
+                                        : message.userName}
+                                    </Typography>
+                                    <Typography
+                                      sx={{
+                                        fontSize: "14px",
+                                        wordBreak: "break-word",
+                                        alignSelf: "flex-start",
+                                        lineHeight: 1.5
+                                      }}
+                                    >
+                                      {message.message}
+                                    </Typography>
+                                  </Grid>
+                                )
+                              )}
+                            </Grid>
+                          )
+                        )}
+                    </Grid>
+                  </Scrollbar>
+                )}
+              </>
+
+              <Grid
                 sx={{
-                  width: "100%",
-                  border: "none",
-                  paddingX: "2px",
-                  paddingY: "2px",
-                  maxHeight: "90px",
-                  overflowY: "auto",
-                  "& fieldset": { border: "none" }
+                  display: "flex",
+                  alignItems: "center",
+                  px: "10px",
+                  position: "absolute",
+                  borderBottomLeftRadius: "18px",
+                  borderBottomRightRadius: "18px",
+                  bottom: 0,
+                  zIndex: 80,
+                  left: 0,
+                  height: "auto",
+                  width: "380px",
+                  py: "6px",
+                  background: (theme) =>
+                    theme.palette.mode === "dark" ? "#1c2329" : "#ffffff",
+                  borderTop: (theme) =>
+                    theme.palette.mode === "dark"
+                      ? "1px solid rgba(255, 255, 255, 0.06)"
+                      : "1px solid rgba(0, 0, 0, 0.06)"
                 }}
-                autoFocus={true}
-                autoComplete="false"
-                placeholder="Send a message..."
-                multiline
-                rows={2}
-                InputProps={{
-                  sx: {
+              >
+                <TextField
+                  sx={{
+                    width: "100%",
+                    border: "none",
+                    px: "4px",
+                    maxHeight: "80px",
+                    overflowY: "auto",
+                    "& fieldset": { border: "none" },
+                    "& .MuiInputBase-root": {
+                      fontSize: "14px"
+                    }
+                  }}
+                  autoFocus={true}
+                  autoComplete="false"
+                  placeholder="Type a message..."
+                  multiline
+                  rows={2}
+                  InputProps={{
+                    sx: {
+                      color: (theme) =>
+                        theme.palette.mode === "dark" ? "#E8EAED" : "#1a1a2e",
+                      border: "none",
+                      p: 0
+                    }
+                  }}
+                  id="userMessage"
+                  name="userMessage"
+                  value={userMessage}
+                  onChange={(event) => {
+                    setUserMessage(event.target.value);
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" && userMessage.length > 0) {
+                      handleSendMessageAsync();
+                    }
+                  }}
+                />
+                <Grid
+                  onClick={() =>
+                    userMessage.length > 0 && handleSendMessageAsync()
+                  }
+                  sx={{
+                    width: "36px",
+                    height: "36px",
+                    borderRadius: "10px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    ml: 0.5,
+                    cursor: "pointer",
+                    background: (theme) =>
+                      userMessage.length > 0
+                        ? theme.palette.primary.main
+                        : "transparent",
                     color: (theme) =>
-                      theme.palette.mode === "dark" ? "white" : "black",
-                    border: "none"
-                  }
-                }}
-                id="userMessage"
-                name="userMessage"
-                value={userMessage}
-                onChange={(event) => {
-                  setUserMessage(event.target.value);
-                }}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter" && userMessage.length > 0) {
-                    handleSendMessageAsync();
-                  }
-                }}
-              />
-              <SendIcon
-                sx={{
-                  marginLeft: 1,
-                  color: (theme) =>
-                    theme.palette.mode === "dark" ? "white" : "black"
-                }}
-                onClick={() =>
-                  userMessage.length > 0 && handleSendMessageAsync()
-                }
-              />
+                      userMessage.length > 0
+                        ? theme.palette.mode === "dark"
+                          ? "#141a1f"
+                          : "#ffffff"
+                        : theme.palette.text.secondary,
+                    transition: "all 0.2s ease"
+                  }}
+                >
+                  <SendIcon sx={{ fontSize: "18px" }} />
+                </Grid>
+              </Grid>
             </Grid>
-          </Grid>
-        )}
-      </Grid>
+          )}
+        </Grid>
+      )}
     </Grid>
   );
 }
