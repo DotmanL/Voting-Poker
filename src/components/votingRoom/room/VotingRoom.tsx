@@ -602,7 +602,7 @@ function VotingRoom(props: Props) {
           variant="body2"
           sx={{
             mt: 0.5,
-            fontSize: { md: "13px", xs: "10px" },
+            fontSize: { md: "16px", xs: "10px" },
             fontWeight: 600,
             maxWidth: { md: "80px", xs: "55px" },
             textAlign: "center",
@@ -685,7 +685,7 @@ function VotingRoom(props: Props) {
           variant="body2"
           sx={{
             mt: 0.5,
-            fontSize: { md: "11px", xs: "9px" },
+            fontSize: { md: "16px", xs: "9px" },
             fontWeight: 600,
             maxWidth: { md: "70px", xs: "50px" },
             textAlign: "center",
@@ -853,7 +853,7 @@ function VotingRoom(props: Props) {
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            mt: { md: "14vh", xs: "12vh" },
+            mt: { md: "20vh", xs: "12vh" },
             width: "100%",
             px: { md: 2, xs: 1 }
           }}
